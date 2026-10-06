@@ -9,7 +9,8 @@
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node tests/browser-check.cjs",
     "build": "node scripts/build.mjs",
-    "test:browser:expansion": "node tests/expansion-browser.cjs"
+    "test:browser:expansion": "node tests/expansion-browser.cjs",
+    "test:browser:hold": "node tests/hold-browser.cjs"
   },
   "engines": {
     "node": ">=22"

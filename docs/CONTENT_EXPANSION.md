@@ -51,6 +51,6 @@ Chỉ mua/trang bị khi đã kết thúc lượt và xử lý cá vừa bắt. 
 
 ## Kiểm chứng
 
-22 test cơ chế, 19 nhóm kiểm tra trình duyệt cơ bản và 8 nhóm kiểm tra mở rộng đã đạt. Có kiểm tra tất cả 50 loài ở khối lượng tối đa, tính nguyên tử của giao dịch/trang bị, hiệu ứng phụ kiện, bản lưu cũ, vòng câu đáy thật và cả 10 tranh cảnh. Chi tiết ở [VERIFICATION.md](VERIFICATION.md).
+25 test cơ chế, 19 nhóm kiểm tra trình duyệt cơ bản và 8 nhóm kiểm tra mở rộng đã đạt. Có kiểm tra tất cả 50 loài ở khối lượng tối đa, tính nguyên tử của giao dịch/trang bị, hiệu ứng phụ kiện, bản lưu cũ, vòng câu đáy thật và cả 10 tranh cảnh. Chi tiết ở [VERIFICATION.md](VERIFICATION.md).
 
 Khối lượng, giá, phân bố và tập tính được cân bằng cho game. Dữ liệu nghiên cứu GDD vẫn có trạng thái chờ duyệt chuyên gia; bản mở rộng không xác nhận định danh/phân bố sinh học ngoài đời. Không có thay đổi thanh toán hoặc tiền thật.

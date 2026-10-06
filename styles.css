@@ -107,3 +107,13 @@ body[data-screen=fishing] #toast{bottom:calc(94px + env(safe-area-inset-bottom))
  body[data-screen=fishing] .scene-bottom{width:min(520px,calc(100% - 200px));bottom:calc(16px + env(safe-area-inset-bottom));gap:8px}body[data-screen=fishing] .water-controls button{min-height:48px}body[data-screen=fishing] .status-box{min-height:48px}
  body[data-screen=fishing] .fight{padding:12px 16px}body[data-screen=fishing] .fight-actions button{min-height:48px}body[data-screen=fishing] .fight p{margin:6px 0;font-size:12px}body[data-screen=fishing] .fight .meter-head{font-size:12px}
  .focus-save-warning{top:130px;left:16px;right:116px}.session-end{padding:16px}}
+
+/* The same hold control stays under the finger from hookset through landing. */
+body[data-screen=fishing] .is-fighting .water-controls{display:grid}
+body[data-screen=fishing] .scene[data-phase=waiting] .water-controls,body[data-screen=fishing] .scene[data-phase=nibble] .water-controls,body[data-screen=fishing] .scene[data-phase=bite] .water-controls,body[data-screen=fishing] .is-fighting .water-controls{grid-template-columns:1.4fr 1fr}
+#strike{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#strike[aria-pressed=true]{background:linear-gradient(#f5d998,#deb66b);color:#382b13;border-color:var(--gold-light);box-shadow:inset 0 3px 8px #6d512d66}
+.tension-track{background:linear-gradient(to right,#c1c4a6 0 var(--safe-min,25%),#77a55f var(--safe-min,25%) var(--safe-max,83%),#d9aa51 var(--safe-max,83%) var(--danger-min,91%),#bf5745 var(--danger-min,91%))}
+.rod-control-note{color:var(--paper);font-size:12px;line-height:1.5;text-align:center;margin:0;text-shadow:0 1px 3px var(--forest-deep)}
+@media(max-width:700px){.rod-control-note{font-size:11px}body[data-screen=fishing] .water-controls #strike{font-size:14px}body[data-screen=fishing] .water-controls #ease{font-size:12px}}
+@media(max-height:619px) and (min-width:540px){.rod-control-note{display:none}body[data-screen=fishing] .water-controls #strike,body[data-screen=fishing] .water-controls #ease{min-height:48px}}

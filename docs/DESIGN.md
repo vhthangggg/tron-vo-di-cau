@@ -1,6 +1,6 @@
 # Trốn Vợ Đi Câu — giao diện game v0.1
 
-Một game câu cá Việt Nam với luồng Bến → Chuẩn bị → Đi câu. Bến chứa hành trình và các màn quản lý. Chuẩn bị chứa map, góc bờ, cần và mồi. Đi câu là hoạt động riêng phủ viewport; cảnh nước và nhịp câu là trung tâm.
+Một game câu cá Việt Nam với luồng Nhà → Chuẩn bị → Đi câu. Nhà chứa hành trình và các màn quản lý. Chuẩn bị chứa map, góc bờ, cần và mồi. Đi câu là hoạt động riêng phủ viewport; cảnh nước và nhịp câu là trung tâm.
 
 ## Phương pháp và quyết định
 
@@ -22,17 +22,17 @@ Dùng UIUX Pro Max: đã chạy truy vấn design-system `fishing game immersive
 
 | Màn | Thiết kế và thao tác |
 |---|---|
-| Bến câu | Cảnh ao phủ khung, tiêu đề game, nút chơi lớn, 3 thẻ map gần đây và nút mở bộ chọn cả 10 vùng. Map mở đi vào Chuẩn bị; map khóa mở nhóm bản đồ tại chợ. Nhiệm vụ lấy từ cá, bài học và bộ sưu tập thật. |
+| Nhà | Cảnh ao phủ khung, tiêu đề game, nút chơi lớn, 3 thẻ map gần đây và nút mở bộ chọn cả 10 vùng. Map mở đi vào Chuẩn bị; map khóa mở nhóm bản đồ tại chợ. Nhiệm vụ lấy từ cá, bài học và bộ sưu tập thật. |
 | Chuẩn bị | Tranh map, bộ chọn cả 10 vùng, ba góc bờ; chọn cần/mồi đã sở hữu, xem tầng mồi và phụ kiện. Bộ chưa cân/hết mồi có hướng phục hồi; chỉ một nút chính Bắt đầu đi câu. |
-| Đi câu | Cảnh phủ viewport, ẩn header và dock. Về bến trái trên, pause/help phải trên; phao hoặc đầu cần/dây phóng đại bên phải, thao tác và lực dây đáy giữa. Không có bảng map/đồ nghề hoặc liên kết chợ/sổ cá trong cảnh. |
-| Tạm dừng | Cá và đồng hồ dừng; Tiếp tục câu, Chuẩn bị lại, Về bến. Thoát lượt đang chờ/cắn/dẫn cần xác nhận thu cần; không tiêu thêm mồi. Khi idle có thể bắt đầu buổi mới. |
+| Đi câu | Cảnh phủ viewport, ẩn header và dock. Về nhà trái trên, pause/help phải trên; phao hoặc đầu cần/dây phóng đại bên phải, thao tác và lực dây đáy giữa. Nút Giữ để giật giữ nguyên vị trí qua lúc đóng lưỡi/dẫn; giữ tạo lực ngay, nhả nới lực. Không có bảng map/đồ nghề hoặc liên kết chợ/sổ cá trong cảnh. |
+| Tạm dừng | Cá và đồng hồ dừng; Tiếp tục câu, Chuẩn bị lại, Về nhà. Thoát lượt đang chờ/cắn/dẫn cần xác nhận thu cần; không tiêu thêm mồi. Khi idle có thể bắt đầu buổi mới. |
 | Đồ nghề | Ô cần có trạng thái sở hữu/trang bị, minh họa bộ hiện tại, chọn mồi và tinh chỉnh phao/tầng nước. Năm ô phụ kiện có hiệu ứng thật; máy/phao không tương thích hiện trạng thái đang cất. Ô khóa mở chợ cần. |
 | Học câu | Ba thẻ nhiệm vụ, số thứ tự, thưởng lần đầu và trạng thái hoàn thành. Quiz có phản hồi, thử lại khi sai. |
 | Sổ cá | Thẻ loài, trạng thái khám phá, số gặp, kỷ lục và map. Tìm kiếm tên cá, lọc map, gợi ý mồi/kỹ thuật/tầng nước và tiến độ 50 loài. |
 | Chợ bến | Thẻ đồ, giá và sở hữu. Lọc tất cả/cần/mồi/phụ kiện/bản đồ; nhóm được giữ sau khi mua. |
 | Cá lên bờ | Cửa sổ thành tích có hình cá, khối lượng, giá bán và lựa chọn bán/thả. Không đổi cách xử lý giao dịch. |
 
-HUD tại bến và các màn chuẩn bị/quản lý có số xu và cấp cần thủ. Cấp là cách trình bày tổng cá đã câu, tăng ở 5/15/30/60 con; không tạo thêm XP, thưởng xu hoặc yêu cầu thay đổi bản lưu. Thanh điều hướng đáy tại bến có đúng năm mục; mục Đi câu mở Chuẩn bị, logo đưa về bến. Deep link `#fishing` vẫn mở chế độ chơi riêng; `#prepare` mở chuẩn bị.
+HUD tại nhà và các màn chuẩn bị/quản lý có số xu và cấp cần thủ. Cấp là cách trình bày tổng cá đã câu, tăng ở 5/15/30/60 con; không tạo thêm XP, thưởng xu hoặc yêu cầu thay đổi bản lưu. Thanh điều hướng đáy tại nhà có đúng năm mục; mục Đi câu mở Chuẩn bị, logo đưa về nhà. Deep link `#fishing` vẫn mở chế độ chơi riêng; `#prepare` mở chuẩn bị.
 
 ![Chế độ Đi câu riêng](gameplay.webp)
 
@@ -42,9 +42,11 @@ HUD tại bến và các màn chuẩn bị/quản lý có số xu và cấp cầ
 
 Đi câu dùng 100dvh, chừa safe area cho các điều khiển; không có dock hoặc bảng đồ ở dưới cảnh. Điện thoại dọc đặt điểm/mồi và tín hiệu phía trên, nhịp/điều khiển phía dưới. Màn hình ngang thu gọn thông tin; khi dẫn cá chỉ giữ lực dây, tiến độ và nút dẫn/nới. Chuẩn bị/quản lý vẫn cuộn, có khoảng chừa cho dock. Cho phép zoom 200% và thao tác bàn phím.
 
-Dialog có focus trap, Escape, trả focus về trigger. Các nút biểu tượng có tên; hình trang trí ẩn khỏi cây trợ năng. Một vùng live thông báo thay đổi trạng thái, không đọc lại lực dây liên tục. Giữ giải pháp native cho range/select/checkbox.
+Pointer capture giữ thao tác khi ngón tay/chuột đi khỏi nút; pointerup/cancel/lostcapture, pause và blur đều xóa lực đang giữ. Phím Space/A dùng down/up, không bật/tắt. Màu vùng lực lấy cùng ngưỡng 25–83% của engine; đỏ từ trên 91%.
 
-22 test cơ chế, 19 nhóm kiểm tra trình duyệt cơ bản và 8 nhóm bản mở rộng, gồm lượt câu tự nhiên, bán một lần sau reload, bài học, mua/đào mồi, chọn map, ô khóa, bộ lọc chợ, cảm ứng, bốn viewport, zoom và reduced motion. Xem `VERIFICATION.md` cho phạm vi kiểm chứng.
+Dialog có focus trap, Escape, trả focus về trigger. Thao tác giữ đang kết thúc sau khi cá lên bờ không được kích hoạt nút hoặc đóng hộp kết quả; người chơi phải bắt đầu lần chạm mới trong hộp. Các nút biểu tượng có tên; hình trang trí ẩn khỏi cây trợ năng. Một vùng live thông báo thay đổi trạng thái, không đọc lại lực dây liên tục. Giữ giải pháp native cho range/select/checkbox.
+
+25 test cơ chế, 19 nhóm kiểm tra trình duyệt cơ bản, 8 nhóm bản mở rộng và bộ hồi quy nhấn giữ bằng chuột/cảm ứng/bàn phím, gồm lượt câu tự nhiên, bán một lần sau reload, bài học, mua/đào mồi, chọn map, ô khóa, bộ lọc chợ, cảm ứng, bốn viewport, zoom và reduced motion. Xem `VERIFICATION.md` cho phạm vi kiểm chứng.
 
 ## Phạm vi hình ảnh
 

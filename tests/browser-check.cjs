@@ -74,7 +74,7 @@ let server;
  await page.locator('#strike').click();assert(await page.locator('#fight').isVisible());
  for(const [width,height,label] of [[375,812,'mobile'],[844,390,'landscape'],[640,360,'small-landscape']]){
    await page.setViewportSize({width,height});
-   for(const id of ['pull','ease','pause','leave-fishing']){
+   for(const id of ['strike','ease','pause','leave-fishing']){
      const box=await page.locator('#'+id).boundingBox();assert(box.height>=44&&box.width>=44,id+' fight touch target');assert(box.y>=0&&box.y+box.height<=height,id+' fight outside viewport');
    }
    const fight=await page.locator('#fight').boundingBox(),caption=await page.locator('.scene-caption').boundingBox(),signal=await page.locator('#float-zoom').boundingBox();
@@ -89,11 +89,12 @@ let server;
    if(await page.locator('#dialog').evaluate(el=>el.open))break;
    assert(await page.locator('#fight').isVisible(),'Fight failed: '+await page.locator('#status-copy').innerText());
    const t=parseInt(await page.locator('#tension-value').innerText()),surge=(await page.locator('#fight-hint').innerText()).startsWith('Cá bứt');
-   const pulling=await page.locator('#pull').getAttribute('aria-pressed')==='true';
-   if((t>78||surge)&&pulling)await page.locator('#ease').click();
-   else if(t<76&&!surge&&!pulling)await page.locator('#pull').click();
+   const pulling=await page.locator('#strike').getAttribute('aria-pressed')==='true';
+   if((t>78||surge)&&pulling)await page.keyboard.up('a');
+   else if(t<76&&!surge&&!pulling)await page.keyboard.down('a');
    await page.clock.runFor(100);
  }
+ await page.keyboard.up('a');
  assert(await page.locator('#dialog').evaluate(el=>el.open),'Catch dialog missing');
  const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')));
  assert.equal(before.catches,1);assert(before.pending);const catchId=before.pending.id;

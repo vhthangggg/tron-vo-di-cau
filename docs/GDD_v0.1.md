@@ -56,7 +56,7 @@ Mốc thời gian là khoảng dự kiến, không phải đồng hồ ép hoàn
 
 ## 04. Vòng lặp, phiên chơi và ba chế độ
 
-Trong bản web, **Đi câu** là không gian chơi riêng theo luồng **Bến → Chuẩn bị → Đi câu**. Map, điểm, cần và mồi được chọn trước khi vào bờ; đồ nghề, học câu, sổ cá và chợ ở ngoài cảnh chơi. Cảnh câu phủ toàn màn hình với tín hiệu, lực dây và điều khiển. Menu tạm dừng cho tiếp tục, chuẩn bị lại hoặc về bến; rời một lượt đang diễn ra cần xác nhận thu cần. Các chế độ nội dung dưới đây là hướng phát triển, dùng chung không gian chơi này.
+Trong bản web, **Đi câu** là không gian chơi riêng theo luồng **Nhà → Chuẩn bị → Đi câu**. Map, điểm, cần và mồi được chọn trước khi vào bờ; đồ nghề, học câu, sổ cá và chợ ở ngoài cảnh chơi. Cảnh câu phủ toàn màn hình với tín hiệu, lực dây và điều khiển. Bản web dùng một nút nhấn giữ để đóng lưỡi rồi tiếp tục dẫn/thu dây; nhả để nới, đạt 100% tiến độ sẽ vớt cá. Chuột, cảm ứng và giữ phím Space/A dùng cùng nguyên tắc. Menu tạm dừng cho tiếp tục, chuẩn bị lại hoặc về nhà; rời một lượt đang diễn ra cần xác nhận thu cần. Các chế độ nội dung dưới đây là hướng phát triển, dùng chung không gian chơi này.
 
 Vòng thao tác: quan sát điểm → chọn trường phái → lắp bộ câu → dò/chỉnh → ném/thả → theo dõi tín hiệu → đóng cá → giữ tải → đưa vào vợt → xử lý kết quả. Khi trượt, game giữ lại cảnh và giải thích một nguyên nhân chính cùng bằng chứng, rồi cho sửa bộ câu hoặc ném lại.
 
@@ -522,7 +522,7 @@ S03: sơ đồ có hit area rộng cho linh kiện nhỏ. Chọn dây/phao/mồi
 
 S04: phao và mặt nước là tiêu điểm; số mục là kết quả, không là mục tiêu mù. Buttons +/- thay kéo slider được; mỗi bước có đơn vị. Khi chì dư, số mục 0 kèm “Phao chìm”, SVG phải chìm tương ứng. Khi thay mồi, ghi đây là tải hiệu dụng trong bài mẫu. Trạng thái chạm đáy có mô tả cùng hình.
 
-S05: tối thiểu 65% vùng trung tâm không có panel. Phao được phóng trong một kính quan sát tự chọn ở góc; kính chỉ phóng hình hiện có, không hiện cá. Thanh tải là trợ giúp, có thể ẩn; tín hiệu vẫn thể hiện bằng cần cong/dây/âm thanh. Giữ nút thu và bấm bật/tắt là hai lựa chọn. Pause, thu bộ câu và về bến luôn tìm được.
+S05: tối thiểu 65% vùng trung tâm không có panel. Phao được phóng trong một kính quan sát tự chọn ở góc; kính chỉ phóng hình hiện có, không hiện cá. Thanh tải là trợ giúp, có thể ẩn; tín hiệu vẫn thể hiện bằng cần cong/dây/âm thanh. Giữ nút thu và bấm bật/tắt là hai lựa chọn. Pause, thu bộ câu và về nhà luôn tìm được.
 
 Catch sheet: tên loài, số đo game, tình trạng ghi sổ, giá xu và danh vọng. “Thả cá” và “Giữ cá” có nhãn rõ; giữ/giao/bán là các bước khác nhau. UI không tự bán khi bấm đóng sheet. Trong prototype đơn giản, nút bán giải quyết giao dịch ngay với nhãn rõ đây là mẫu, không có inventory/server thật.
 
