@@ -37,3 +37,73 @@ dialog[data-kind=atlas]{max-width:1050px;width:calc(100% - 32px);padding:26px}.a
 @media(max-width:700px){.atlas-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}dialog[data-kind=atlas]{padding:18px;width:calc(100% - 24px)}.atlas-art{height:108px}.atlas-copy{padding:13px}.atlas-copy h3{font-size:20px}.atlas-copy button{font-size:12px;padding:8px 4px}.atlas-copy p{min-height:52px}.atlas-intro{font-size:12px}.atlas-spec{font-size:10px;flex-wrap:wrap}.travel-title .atlas-open{font-size:10px;gap:5px;padding:6px 8px}.travel-title h2{white-space:normal}.map-water-label{font-size:10px;padding:6px 8px;max-width:44%}.map-strip{max-width:calc(100% - 32px)}.map-strip button{flex:1.4;font-size:11px}.accessory-slots{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.accessories-head{flex-wrap:wrap}.accessory-slot{padding:12px}.accessory-slot select{font-size:11px}.accessory-slot p{font-size:12px}.accessories-panel{padding:18px 13px}.equipped-rod-art svg{height:170px}.loadout-summary{margin-top:10px;padding:10px 0}.rig-drawing .loadout-summary{font-size:11px}.filter{grid-template-columns:1fr;gap:8px}.filter label,.filter input,.filter select{grid-row:auto}.filter label[for=fish-map]{margin-top:8px}.fish-card-copy .fish-tips{font-size:11px}.float-zoom svg{width:60px;height:108px;margin:3px auto}.float-zoom #tip-detail{height:90px}}
 @media(max-width:390px){.atlas-grid{grid-template-columns:1fr}.atlas-art{height:140px}.atlas-copy p{min-height:0}.travel-title .atlas-open{max-width:65%}.gear-slot small{font-size:10px}}
 @media(max-height:619px) and (min-width:701px){.float-zoom svg{height:76px;width:50px;margin:2px auto}.float-zoom #tip-detail{height:60px}.map-water-label{font-size:10px;padding:5px 8px}.atlas-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Prepare at the dock; fishing is a separate, immersive activity. */
+.prepare-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.8fr);gap:24px;align-items:start}
+.prepare-destination,.prepare-loadout{background:var(--paper);border:1px solid var(--line);border-bottom:3px solid #9b9d7b;border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.prepare-landscape{position:relative;min-height:330px;aspect-ratio:16/8;isolation:isolate;background:var(--forest)}
+.prepare-landscape>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+.prepare-landscape-shade{position:absolute;inset:0;background:linear-gradient(0deg,#102a23ec,transparent 70%);z-index:-1}
+.prepare-map-copy{position:absolute;left:24px;right:24px;bottom:22px;color:var(--surface)}
+.prepare-map-copy .water-tag{position:static;display:inline-block;margin-bottom:12px}
+.prepare-map-copy h2{font:700 38px/1.15 VietDisplay,Georgia,serif;margin-bottom:10px;color:var(--surface)}
+.prepare-map-copy p{margin:0;max-width:520px;font-size:15px}
+.prepare-map-button{position:absolute;right:20px;top:20px;font-size:14px;min-height:48px}
+.prepare-spots{padding:24px}.prepare-spots h3{margin-bottom:14px}.prepare-spots .hint-note{margin-bottom:0}
+.prepare-spot-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.prepare-spot-list button{justify-content:flex-start;text-align:left;padding:12px;gap:8px;min-height:76px}
+.prepare-spot-list button>span{min-width:0;flex:1}.prepare-spot-list strong,.prepare-spot-list small{display:block}
+.prepare-spot-list strong{font-size:14px;line-height:1.4}.prepare-spot-list small{font-size:12px;font-weight:400;margin-top:4px}
+.prepare-spot-list button>.icon{width:18px}.prepare-spot-list button>.icon:last-child{width:16px}
+.prepare-loadout{padding:24px}.prepare-gear-heading{display:flex;gap:16px;justify-content:space-between;align-items:center}
+.prepare-gear-heading>svg{width:70px;height:70px;flex-shrink:0}.prepare-gear-heading h2{margin:0;color:var(--ink)}.prepare-gear-heading .eyebrow{color:var(--muted);font-size:11px}
+.prepare-loadout label{margin-top:16px}.prepare-loadout select{font-size:16px}.prepare-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:16px 0;margin:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);gap:12px}
+.prepare-stats dt{font-size:12px;color:var(--muted)}.prepare-stats dd{margin:4px 0 0;font-size:16px;font-weight:700}
+.prepare-accessories{display:flex;flex-wrap:wrap;gap:8px 18px;margin:16px 0;font-size:12px;color:var(--muted)}.prepare-accessories span{display:flex;gap:6px}.prepare-accessories b{color:var(--ink)}
+.prepare-rig-link{width:100%;min-height:48px;font-size:14px;background:transparent}
+.prepare-launch{margin-top:24px;display:flex;gap:24px;align-items:center;justify-content:space-between;padding:22px 26px;border:1px solid var(--hud-line);border-radius:12px;background:var(--forest);color:var(--surface)}
+.prepare-launch strong{font-size:18px;color:var(--gold-light)}.prepare-launch p{margin:6px 0 0;font-size:14px;max-width:680px}.prepare-launch button{min-width:240px;min-height:56px;flex-shrink:0;font-size:17px}
+.pause-location{display:flex;gap:14px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line);margin-bottom:16px}.pause-location>.icon{color:var(--pond);width:30px;height:30px}.pause-location strong,.pause-location span{display:block}.pause-location span{font-size:13px;color:var(--muted);margin-top:4px}
+#pause-new-session{width:100%;margin-bottom:16px}
+.pause-options{display:flex;gap:4px;flex-direction:column;margin-bottom:20px}.pause-options .checkline{min-height:44px;margin:0;cursor:pointer}
+dialog[data-kind=pause] .actions{display:grid;grid-template-columns:1fr 1fr}dialog[data-kind=pause] .actions button:first-child{grid-column:1/-1;min-height:54px}
+body[data-screen=fishing] .game-header,body[data-screen=fishing] .game-dock{display:none}
+body[data-screen=fishing] #live{top:0;left:0}
+body[data-screen=fishing] #main{max-width:none;width:100%;margin:0;padding:0;min-height:100svh}
+body[data-screen=fishing] .scene{height:100svh;height:100dvh;min-height:390px;border:0;border-radius:0;box-shadow:none}
+body[data-screen=fishing] .scene-bg{object-position:center}
+body[data-screen=fishing] .scene-vignette{background:linear-gradient(180deg,#0a241bdd,transparent 28%,transparent 60%,#0a241bbf)}
+.focus-back{position:absolute;left:calc(24px + env(safe-area-inset-left));top:calc(24px + env(safe-area-inset-top));min-height:48px;gap:8px;color:var(--surface);background:#163b30e8;border-color:var(--hud-line);border-bottom-color:var(--forest-deep);font-size:14px}
+body[data-screen=fishing] .location-hud{left:calc(162px + env(safe-area-inset-left));top:calc(22px + env(safe-area-inset-top));max-width:calc(100% - 410px)}
+body[data-screen=fishing] .location-hud h1{font-size:32px;line-height:1.2;margin-bottom:5px}body[data-screen=fishing] .location-hud .eyebrow{margin-bottom:4px;font-size:10px}body[data-screen=fishing] .location-hud p:last-child{margin:0;font-size:13px}
+body[data-screen=fishing] .scene-tools{top:calc(24px + env(safe-area-inset-top));right:calc(24px + env(safe-area-inset-right))}
+body[data-screen=fishing] .session-hud{right:calc(26px + env(safe-area-inset-right));top:calc(90px + env(safe-area-inset-top))}
+body[data-screen=fishing] .scene-caption{left:calc(24px + env(safe-area-inset-left));top:calc(132px + env(safe-area-inset-top));bottom:auto;max-width:calc(100% - 200px);gap:8px 16px;align-items:center;background:#102a238f;border:1px solid #f1e8d230;padding:10px 14px;border-radius:9px;font-size:13px}
+body[data-screen=fishing] .scene-caption strong{font-size:14px}.focus-bait{font-size:12px;color:var(--paper)}.focus-bait b{font-weight:400}
+body[data-screen=fishing] .float-zoom{right:calc(26px + env(safe-area-inset-right));top:calc(166px + env(safe-area-inset-top));width:104px}
+body[data-screen=fishing] .scene-bottom{bottom:calc(28px + env(safe-area-inset-bottom));width:min(580px,calc(100% - 48px));gap:12px}
+body[data-screen=fishing] .water-controls button{min-height:56px}.focus-save-warning{position:absolute;left:24px;right:160px;top:202px}.focus-save-warning .save-warning{margin:0;font-size:12px;padding:10px}
+.session-end{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);width:min(380px,calc(100% - 40px));padding:24px;background:var(--paper);border:1px solid var(--gold);border-radius:12px;box-shadow:var(--shadow);text-align:center}.session-end p{font-size:15px}.session-end button{width:100%}
+#toast{pointer-events:none}
+body[data-screen=fishing] #toast{bottom:calc(94px + env(safe-area-inset-bottom))}
+@media(max-width:1050px){.prepare-layout{grid-template-columns:minmax(0,1fr) minmax(300px,.9fr);gap:18px}.prepare-landscape{min-height:320px}.prepare-spot-list{grid-template-columns:1fr}.prepare-spot-list button{min-height:56px}.prepare-spot-list strong,.prepare-spot-list small{display:inline}.prepare-spot-list small{margin-left:10px}.prepare-spots,.prepare-loadout{padding:20px}}
+@media(max-width:700px){.prepare-layout{grid-template-columns:1fr;gap:18px}.prepare-landscape{min-height:290px}.prepare-map-copy{left:20px;right:20px;bottom:20px}.prepare-map-copy h2{font-size:32px}.prepare-map-button{top:16px;right:16px}.prepare-launch{padding:20px;flex-direction:column;align-items:stretch;gap:16px}.prepare-launch button{min-width:0;width:100%}.prepare-stats dd{font-size:15px}
+ body[data-screen=fishing] .scene{min-height:540px}.focus-back{left:calc(16px + env(safe-area-inset-left));top:calc(16px + env(safe-area-inset-top));min-height:48px;padding:10px 12px}
+ body[data-screen=fishing] .scene-tools{top:calc(16px + env(safe-area-inset-top));right:calc(16px + env(safe-area-inset-right));gap:8px}body[data-screen=fishing] .scene-tools button{width:48px;height:48px;min-width:48px}
+ body[data-screen=fishing] .location-hud{left:calc(18px + env(safe-area-inset-left));top:calc(88px + env(safe-area-inset-top));max-width:calc(100% - 134px)}body[data-screen=fishing] .location-hud h1{font-size:28px}body[data-screen=fishing] .location-hud p:last-child{font-size:12px;line-height:1.5}
+ body[data-screen=fishing] .session-hud{top:calc(90px + env(safe-area-inset-top));right:calc(18px + env(safe-area-inset-right))}
+ body[data-screen=fishing] .scene-caption{top:calc(188px + env(safe-area-inset-top));left:calc(18px + env(safe-area-inset-left));max-width:calc(100% - 132px);padding:10px 12px;gap:5px 10px;font-size:12px}body[data-screen=fishing] .scene-caption strong{font-size:13px}.focus-bait{flex-basis:100%}
+ body[data-screen=fishing] .float-zoom{top:calc(188px + env(safe-area-inset-top));right:calc(18px + env(safe-area-inset-right));width:80px}
+ body[data-screen=fishing] .scene-bottom{bottom:calc(20px + env(safe-area-inset-bottom));width:calc(100% - 28px);gap:10px}body[data-screen=fishing] .water-controls button{min-height:56px;font-size:13px;padding:8px 10px;gap:6px}body[data-screen=fishing] .phase-track{gap:10px;font-size:11px}
+ .focus-save-warning{top:310px;left:18px;right:18px}}
+@media(max-height:619px) and (min-width:540px){
+ body[data-screen=fishing] .scene{min-height:330px}.focus-back{left:calc(16px + env(safe-area-inset-left));top:calc(12px + env(safe-area-inset-top));min-height:48px}
+ body[data-screen=fishing] .location-hud{left:calc(150px + env(safe-area-inset-left));top:calc(12px + env(safe-area-inset-top));max-width:calc(100% - 420px)}body[data-screen=fishing] .location-hud h1{font-size:25px;margin:0}body[data-screen=fishing] .location-hud p:last-child{display:none}
+ body[data-screen=fishing] .scene-tools{top:calc(12px + env(safe-area-inset-top));right:calc(16px + env(safe-area-inset-right))}body[data-screen=fishing] .scene-tools button{width:48px;height:48px;min-width:48px}
+ body[data-screen=fishing] .session-hud{right:calc(140px + env(safe-area-inset-right));top:calc(13px + env(safe-area-inset-top))}
+ body[data-screen=fishing] .scene-caption{top:calc(78px + env(safe-area-inset-top));left:calc(16px + env(safe-area-inset-left));max-width:calc(100% - 200px);padding:8px 12px;gap:5px 12px;font-size:12px}body[data-screen=fishing] .focus-bait,body[data-screen=fishing] #tech-label{display:none}
+ body[data-screen=fishing] .is-fighting .status-box{display:none}
+ body[data-screen=fishing] .float-zoom{top:calc(84px + env(safe-area-inset-top));right:calc(18px + env(safe-area-inset-right));width:80px}
+ body[data-screen=fishing] .scene-bottom{width:min(520px,calc(100% - 200px));bottom:calc(16px + env(safe-area-inset-bottom));gap:8px}body[data-screen=fishing] .water-controls button{min-height:48px}body[data-screen=fishing] .status-box{min-height:48px}
+ body[data-screen=fishing] .fight{padding:12px 16px}body[data-screen=fishing] .fight-actions button{min-height:48px}body[data-screen=fishing] .fight p{margin:6px 0;font-size:12px}body[data-screen=fishing] .fight .meter-head{font-size:12px}
+ .focus-save-warning{top:130px;left:16px;right:116px}.session-end{padding:16px}}

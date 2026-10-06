@@ -59,9 +59,16 @@
   },
   "icon_stroke": 1.8,
   "world_hud": {
-    "left_panel_width_px": 242,
     "safe_inset_px": 24,
     "bottom_nav_destinations": 5,
-    "center_status_max_width_px": 560
+    "center_status_max_width_px": 580,
+    "immersive_fishing": true,
+    "management_chrome_in_fishing": false,
+    "entry_flow": [
+      "home",
+      "prepare",
+      "fishing"
+    ],
+    "focus_control_min_px": 48
   }
 }

@@ -6,9 +6,11 @@ Một buổi câu bên bờ nước Việt Nam. Bản web **v0.1** chơi trực 
 
 ## Giao diện game
 
-Cảnh ao phủ vùng chơi, HUD xanh rêu và vàng đồng, thanh đồ nghề ở đáy. Bến câu có nhiệm vụ theo thành tích thật và thẻ chọn bản đồ; đồ nghề có ô trang bị; sổ cá có thẻ khám phá; chợ lọc theo nhóm hàng. Cấp cần thủ tăng khi câu được 5, 15, 30 và 60 con, không cần thêm tiền hay điểm kinh nghiệm.
+Luồng **Bến → Chuẩn bị → Đi câu**. Chọn map, góc bờ, cần và mồi trước khi ra câu. **Đi câu** phủ toàn màn hình, ẩn thanh điều hướng, cấp cần thủ, xu và menu quản lý; chỉ giữ cảnh nước, tín hiệu cá, đồng hồ và điều khiển. Tạm dừng để tiếp tục, chuẩn bị lại hoặc về bến. Đồ nghề, sổ cá và chợ nằm ở bến; cấp cần thủ tăng theo số cá đã câu.
 
-![Cảnh chơi và HUD mới](docs/gameplay.webp)
+![Chế độ Đi câu tập trung](docs/gameplay.webp)
+
+![Chuẩn bị trước khi ra bờ](docs/prepare.webp)
 
 ## Đã chơi được
 
@@ -26,15 +28,15 @@ Khởi đầu có cần tre, 12.000 xu và mồi. Xu hoàn toàn là tiền tron
 
 ## Cách chơi
 
-1. Vào **Buổi câu**, giữ điểm Chân cầu tre và mồi giun cho lượt đầu.
+1. Chọn **Đi câu** ở bến, giữ góc Chân cầu tre và mồi giun, rồi bấm **Bắt đầu đi câu**.
 2. **Thả câu**, quan sát phao. Rung nhẹ chưa phải lúc giật.
 3. Khi phao chìm rõ, **Giật cần**.
 4. **Bật dẫn cá**, giữ lực trong vùng xanh. **Nới lực** khi cá bứt hoặc lực tăng cao; kéo liên tục ở vùng đỏ có thể đứt dây.
 5. **Bán** để kiếm xu hoặc **Thả về ao**; cả hai đều giữ thành tích trong sổ cá.
 
-Space thả/giật, A bật/tắt dẫn, D nới, P tạm dừng khi vùng chơi đang nhận focus. Các nút có hành vi tương đương. Với lure, cần **Bật thu mồi** trước khi cá tiếp cận.
+Space thả/giật, A bật/tắt dẫn, D nới, P hoặc Esc mở menu tạm dừng. Esc trong hộp thoại đóng và quay lại buổi câu. Các nút có hành vi tương đương. Với lure, cần **Bật thu mồi** trước khi cá tiếp cận.
 
-Đổi mồi, bộ cần hoặc độ sâu tại **Đồ nghề**. Chọn điểm mới tự dò độ sâu đáy; chỉnh lại tầng nông hơn để tìm cá giữa nước. Hết mồi và xu vẫn dùng cần tre, đào thêm giun miễn phí. **Buổi câu mới** tạo lại quần thể cho một chuyến mới.
+Chọn **Tạm dừng → Chuẩn bị lại** để đổi map, góc bờ, cần hoặc mồi; dùng **Đồ nghề** để chỉnh phụ kiện và độ sâu. Rời bờ giữa lượt cần xác nhận thu cần; mồi đã thả không được hoàn lại. Chọn điểm mới tự dò độ sâu đáy; chỉnh lại tầng nông hơn để tìm cá giữa nước. Hết mồi và xu vẫn dùng cần tre, đào thêm giun miễn phí. **Bắt đầu buổi câu mới** trong menu tạm dừng khi chưa thả câu tạo lại quần thể và đặt lại đồng hồ; cũng có nút bắt đầu buổi mới khi đến giờ về nhà.
 
 ## Chạy tại máy
 

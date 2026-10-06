@@ -56,6 +56,8 @@ Mốc thời gian là khoảng dự kiến, không phải đồng hồ ép hoàn
 
 ## 04. Vòng lặp, phiên chơi và ba chế độ
 
+Trong bản web, **Đi câu** là không gian chơi riêng theo luồng **Bến → Chuẩn bị → Đi câu**. Map, điểm, cần và mồi được chọn trước khi vào bờ; đồ nghề, học câu, sổ cá và chợ ở ngoài cảnh chơi. Cảnh câu phủ toàn màn hình với tín hiệu, lực dây và điều khiển. Menu tạm dừng cho tiếp tục, chuẩn bị lại hoặc về bến; rời một lượt đang diễn ra cần xác nhận thu cần. Các chế độ nội dung dưới đây là hướng phát triển, dùng chung không gian chơi này.
+
 Vòng thao tác: quan sát điểm → chọn trường phái → lắp bộ câu → dò/chỉnh → ném/thả → theo dõi tín hiệu → đóng cá → giữ tải → đưa vào vợt → xử lý kết quả. Khi trượt, game giữ lại cảnh và giải thích một nguyên nhân chính cùng bằng chứng, rồi cho sửa bộ câu hoặc ném lại.
 
 Vòng chuyến: chọn map/giờ → chuẩn bị đủ đồ → đến điểm → thử 2-3 giả thuyết → ghi nhận kết quả → bán/thả/hoàn đơn → bảo trì → trở về làng. Vòng dài hạn: hoàn bài học → có chứng chỉ → mở tình huống/map → khám phá loài → làm nhiệm vụ/giải đấu → hoàn thiện bộ đồ theo mục đích.

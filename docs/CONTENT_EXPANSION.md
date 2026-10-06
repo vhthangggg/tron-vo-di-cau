@@ -19,7 +19,7 @@ Mỗi map có ba góc bờ với độ sâu riêng. Mở bằng xu một lần, 
 | Cửa Sông | Bãi triều, rừng đước, nước lợ | ISO/lure | `assets/maps/cua-song.webp` |
 | Ghềnh Biển | Đá granit, sóng xanh, vịnh biển | ISO/câu đáy/lure | `assets/maps/ghenh-bien.webp` |
 
-Chín tranh mới tạo bằng **Imagegen tích hợp**, một ảnh cho mỗi map. Bộ prompt cuối: [data/map_art_prompts.json](data/map_art_prompts.json). Ảnh nền WebP rộng tối đa 1536 px; ảnh nhỏ rộng tối đa 480 px nằm ở `assets/maps/thumbs/`. Bản đồ, thẻ chợ và cảnh câu dùng đúng hình của cùng map.
+Chín tranh mới tạo bằng **Imagegen tích hợp**, một ảnh cho mỗi map. Bộ prompt cuối: [data/map_art_prompts.json](data/map_art_prompts.json). Ảnh nền WebP rộng tối đa 1536 px; ảnh nhỏ rộng tối đa 480 px nằm ở `assets/maps/thumbs/`. Bản đồ, thẻ chợ và cảnh câu dùng đúng hình của cùng map. Chọn map/góc bờ ở Chuẩn bị rồi vào chế độ Đi câu riêng phủ toàn màn hình.
 
 ![Bộ chọn vùng câu](map-atlas.webp)
 
@@ -51,6 +51,6 @@ Chỉ mua/trang bị khi đã kết thúc lượt và xử lý cá vừa bắt. 
 
 ## Kiểm chứng
 
-22 test cơ chế, 15 nhóm kiểm tra trình duyệt cơ bản và 8 nhóm kiểm tra mở rộng đã đạt. Có kiểm tra tất cả 50 loài ở khối lượng tối đa, tính nguyên tử của giao dịch/trang bị, hiệu ứng phụ kiện, bản lưu cũ, vòng câu đáy thật và cả 10 tranh cảnh. Chi tiết ở [VERIFICATION.md](VERIFICATION.md).
+22 test cơ chế, 19 nhóm kiểm tra trình duyệt cơ bản và 8 nhóm kiểm tra mở rộng đã đạt. Có kiểm tra tất cả 50 loài ở khối lượng tối đa, tính nguyên tử của giao dịch/trang bị, hiệu ứng phụ kiện, bản lưu cũ, vòng câu đáy thật và cả 10 tranh cảnh. Chi tiết ở [VERIFICATION.md](VERIFICATION.md).
 
 Khối lượng, giá, phân bố và tập tính được cân bằng cho game. Dữ liệu nghiên cứu GDD vẫn có trạng thái chờ duyệt chuyên gia; bản mở rộng không xác nhận định danh/phân bố sinh học ngoài đời. Không có thay đổi thanh toán hoặc tiền thật.
