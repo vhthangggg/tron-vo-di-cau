@@ -1,16 +1,17 @@
 {
   "name": "tron-vo-di-cau",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Game câu cá Việt Nam, bản web v0.1",
+  "description": "Game câu cá Việt Nam, hai tay và môi trường động",
   "scripts": {
     "start": "node scripts/serve.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:browser": "node tests/browser-check.cjs",
     "build": "node scripts/build.mjs",
     "test:browser:expansion": "node tests/expansion-browser.cjs",
-    "test:browser:hold": "node tests/hold-browser.cjs"
+    "test:browser:hold": "node tests/hold-browser.cjs",
+    "test:browser:two-hands": "node tests/two-hands-browser.cjs"
   },
   "engines": {
     "node": ">=22"

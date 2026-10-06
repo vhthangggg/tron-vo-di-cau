@@ -1,4 +1,4 @@
-# Trốn Vợ Đi Câu — giao diện game v0.1
+# Trốn Vợ Đi Câu — giao diện game v0.2
 
 Một game câu cá Việt Nam với luồng Nhà → Chuẩn bị → Đi câu. Nhà chứa hành trình và các màn quản lý. Chuẩn bị chứa map, góc bờ, cần và mồi. Đi câu là hoạt động riêng phủ viewport; cảnh nước và nhịp câu là trung tâm.
 
@@ -46,8 +46,14 @@ Pointer capture giữ thao tác khi ngón tay/chuột đi khỏi nút; pointerup
 
 Dialog có focus trap, Escape, trả focus về trigger. Thao tác giữ đang kết thúc sau khi cá lên bờ không được kích hoạt nút hoặc đóng hộp kết quả; người chơi phải bắt đầu lần chạm mới trong hộp. Các nút biểu tượng có tên; hình trang trí ẩn khỏi cây trợ năng. Một vùng live thông báo thay đổi trạng thái, không đọc lại lực dây liên tục. Giữ giải pháp native cho range/select/checkbox.
 
-25 test cơ chế, 19 nhóm kiểm tra trình duyệt cơ bản, 8 nhóm bản mở rộng và bộ hồi quy nhấn giữ bằng chuột/cảm ứng/bàn phím, gồm lượt câu tự nhiên, bán một lần sau reload, bài học, mua/đào mồi, chọn map, ô khóa, bộ lọc chợ, cảm ứng, bốn viewport, zoom và reduced motion. Xem `VERIFICATION.md` cho phạm vi kiểm chứng.
+34 test cơ chế, 19 nhóm kiểm tra trình duyệt cơ bản, 8 nhóm bản mở rộng và bộ hồi quy hai tay bằng chuột/cảm ứng/bàn phím, gồm lượt câu tự nhiên, bán một lần sau reload, bài học, mua/đào mồi, chọn map, ô khóa, bộ lọc chợ, cảm ứng, bốn viewport, zoom và reduced motion. Xem `VERIFICATION.md` cho phạm vi kiểm chứng.
 
 ## Phạm vi hình ảnh
 
 10 cảnh chơi có tranh riêng: ruộng lúa, suối, hồ núi, lòng đập, kênh dừa, hồ dịch vụ, bãi bồi, cửa sông và biển bên cạnh ao khởi đầu. Đồ và cá là minh họa trong game; chưa phải định danh sinh học hoặc mô hình vật lý. Không giả nút multiplayer, dữ liệu người chơi, loot rarity, thanh năng lượng hay tính năng chưa triển khai.
+
+## Điều khiển v0.2
+
+Hai vùng trái/phải cố định qua lúc giật và dẫn. Tay trái bám dấu cá trong mặt phẳng 2D; tay phải giữ và kéo lên/xuống chỉnh lực liên tục. Chế độ dọc xếp thanh lực/tiến độ phía trên hai tay; màn hình ngang đặt ở giữa hai tay. Cận cảnh phao ẩn khi dẫn cá. Hỗ trợ hai pointer độc lập, chuột + bàn phím và bàn phím đầy đủ.
+
+Cảnh nền được bổ sung mặt nước chảy, bọt, vật trôi và cành lá tiền cảnh theo từng map. Xem [TWO_HANDS.md](TWO_HANDS.md) để biết cơ chế và phạm vi.
