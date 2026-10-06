@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:di-cau:content-bundle:0.1",
+  "title": "DI CAU content bundle v0.1",
+  "type": "object",
+  "required": ["version", "fish", "maps", "items", "lessons"],
+  "properties": {
+    "version": {"type": "string"},
+    "fish": {"type": "array", "items": {"$ref": "#/$defs/fish"}},
+    "maps": {"type": "array", "items": {"$ref": "#/$defs/map"}},
+    "items": {"type": "array", "items": {"$ref": "#/$defs/item"}},
+    "lessons": {"type": "array", "items": {"$ref": "#/$defs/lesson"}}
+  },
+  "$defs": {
+    "scope": {"enum": ["MVP", "EXPANSION"]},
+    "fish": {
+      "type": "object",
+      "required": ["id", "name_vi", "scientific_name_candidate", "release_scope", "map_ids", "technique_ids", "sim_weight_min_kg", "sim_weight_max_kg", "biology_review_status", "range_review_status"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^fish_[0-9]{2,}$"},
+        "name_vi": {"type": "string", "minLength": 1},
+        "scientific_name_candidate": {"type": "string", "minLength": 1},
+        "release_scope": {"$ref": "#/$defs/scope"},
+        "map_ids": {"type": "string"},
+        "technique_ids": {"type": "string"},
+        "sim_weight_min_kg": {"type": "number", "exclusiveMinimum": 0},
+        "sim_weight_max_kg": {"type": "number", "exclusiveMinimum": 0},
+        "base_price_xu_per_kg": {"type": "integer", "minimum": 0},
+        "biology_review_status": {"enum": ["pending_expert_review", "approved", "deprecated"]},
+        "range_review_status": {"enum": ["pending_map_review", "approved", "deprecated"]}
+      }
+    },
+    "map": {
+      "type": "object",
+      "required": ["id", "name_vi", "release_scope", "depth_min_m", "depth_max_m", "fish_ids", "ecology_status"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Z]+$"},
+        "name_vi": {"type": "string"},
+        "release_scope": {"$ref": "#/$defs/scope"},
+        "depth_min_m": {"type": "number", "minimum": 0},
+        "depth_max_m": {"type": "number", "minimum": 0},
+        "sim_current_m_s": {"type": "number", "minimum": 0},
+        "fish_ids": {"type": "string"},
+        "ecology_status": {"type": "string"}
+      }
+    },
+    "item": {
+      "type": "object",
+      "required": ["id", "name_vi", "category", "release_scope", "price_xu", "stats_json", "is_fictional"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^(rod|reel|other)_[0-9]{2,}$"},
+        "name_vi": {"type": "string"},
+        "category": {"enum": ["rod", "reel", "bait", "lure", "line", "hook", "float", "weight", "accessory"]},
+        "release_scope": {"$ref": "#/$defs/scope"},
+        "price_xu": {"type": "integer", "minimum": 0},
+        "stats_json": {"type": "string", "contentMediaType": "application/json"},
+        "affiliate_url": {"type": "string"},
+        "real_price_vnd": {"type": ["integer", "string", "null"]},
+        "is_fictional": {"type": "boolean"}
+      }
+    },
+    "lesson": {
+      "type": "object",
+      "required": ["id", "title_vi", "player_action", "pass_rule", "teaching_note", "release_scope"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^L[0-9]{2,}$"},
+        "title_vi": {"type": "string"},
+        "player_action": {"type": "string"},
+        "pass_rule": {"type": "string"},
+        "teaching_note": {"type": "string"},
+        "release_scope": {"$ref": "#/$defs/scope"}
+      }
+    }
+  },
+  "$comment": "Cross-reference IDs, unique IDs, min/max ordering, stats payload semantics, and release-review gates require semantic validation beyond JSON Schema. Comma-separated references mirror the CSV handoff; production may normalize them to arrays."
+}

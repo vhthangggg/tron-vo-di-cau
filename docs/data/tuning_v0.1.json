@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "all_values": "game_design_starting_values_not_field_measurements",
+  "physics_hz": 60,
+  "fish_ai_hz_near": 10,
+  "fish_ai_hz_far": 2,
+  "fish_count_mvp_per_map": 96,
+  "surface_grid_m": 2,
+  "training_clock_rate": 1,
+  "session_clock_rate": 6,
+  "bite_window_s": [
+    0.5,
+    1.4
+  ],
+  "reaction_assist_multiplier": 1.5,
+  "bamboo_rebuild_active_seconds": 60,
+  "free_worm_portions": 6,
+  "free_worm_minigame_seconds": 45,
+  "cast_worm_consumption": "only_when_bait_is_lost_or_removed",
+  "false_strike_spook_s": 8,
+  "tutorial_bait_attraction": "uses_existing_training_fish_no_hook_time_spawn",
+  "prices": "xu_only_fictional_not_vnd",
+  "world_rememory_cap": 1000,
+  "noise_lure_repeat_penalty_cap": 0.25
+}

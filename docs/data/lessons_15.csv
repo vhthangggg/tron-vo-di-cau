@@ -1,0 +1,16 @@
+﻿id,title_vi,technique_ids,player_action,pass_rule,teaching_note,release_scope
+L01,Đào giun,don,4 ô đất; chọn vùng ẩm,Có 6 phần giun; không giới hạn số lần thử,Trợ giúp vị trí; giảm dần,MVP
+L02,Làm nút buộc mẫu,don,"Luồn, quấn, trở lại, làm ẩm, siết",Đúng thứ tự; thử tải 3 lần,"Số vòng là recipe của nút mẫu, không luật chung",MVP
+L03,Móc giun và chọn lưỡi,don,Lắp lưỡi; móc mồi,Mồi/lưỡi tương thích 3/4 tình huống,Cho thao tác theo từng bước,MVP
+L04,Dò đáy ao,"don,dai",Dò 3 điểm,Ghi đúng 3 độ sâu với sai số game ±0.15m,Mặt cắt chỉ mở sau khi đo,MVP
+L05,Cân phao không mồi,dai,Thêm/bớt chì 0.02g,Lộ đúng 4 mục trong cấu hình bài mẫu,Nêu điều kiện bài mẫu,MVP
+L06,Tải mồi và câu đáy,dai,Gắn mồi; đặt độ sâu,Phân biệt lửng/chạm đáy 4/5,Không suy từ số mục ra kết luận duy nhất,MVP
+L07,Đọc phao theo tình huống,dai,10 tín hiệu có nhãn ground-truth,Đúng ≥8/10; giật giả ≤2; xem giải thích,"Có rung gió, chạm dây, thử mồi, ăn thật",MVP
+L08,Đóng cá,"don,dai",Giật theo cửa sổ ăn của scenario,Thành công 3/5 lần; không yêu cầu phản xạ cố định,"Cửa sổ mặc định 0.5-1.4s, chỉnh được",MVP
+L09,Giữ tải và đưa cá vào vợt,"don,dai,lure",Giữ góc; ngừng/thu/nhả,Vào vợt 2 lần; giải thích nếu đứt,Cần tre/Đài không có drag máy,MVP
+L10,Bộ lure phù hợp,lure,Chọn cần-máy-dây-mồi,Tương thích 4/5 bộ,Không dùng bảng size máy như sức mạnh,MVP
+L11,Ném lure chính xác,lure,Ngắm mép cỏ; canh lực,3/5 lần trong vùng 1.5m,Có hỗ trợ ném một nút,MVP
+L12,Retrieve và Stop & Go,lure,Thu đều rồi thu/ngừng,Đúng 3 chu kỳ; thấy đường đi mồi,Không chấm theo click nhanh,MVP
+L13,Walk the dog / Twitch,lure,Chọn mồi tương thích; đổi nhịp,Đạt 3/5 lần đường đi yêu cầu,Hai kiểu mồi không dùng chung script,MVP
+L14,Chỉnh drag máy,lure,Chỉnh ngưỡng bằng cân tải game,Có nhả dây trước sức bền mắt xích yếu,Tải game kgf/N; không cam kết thông số thật,MVP
+L15,"Bán, thả, ghi sổ",all,Chọn một kết quả bắt cá,Cá chỉ được xử lý một lần; sổ có nguồn phát hiện,Cá nhỏ bắt buộc thả theo quy tắc map giả tưởng,MVP

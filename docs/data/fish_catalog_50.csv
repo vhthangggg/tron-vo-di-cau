@@ -1,0 +1,51 @@
+﻿id,name_vi,scientific_name_candidate,aliases_vi,release_scope,map_ids,depth_role,diet_role,technique_ids,bait_tags,sim_weight_min_kg,sim_weight_max_kg,base_price_xu_per_kg,biology_review_status,range_review_status,notes
+fish_01,Cá chép,Cyprinus carpio,,MVP,"AO,HO,SONG",bottom,omnivore,"don,dai,bottom","corn,dough,worm",0.15,7,22000,pending_expert_review,pending_map_review,Tên thông dụng; quần thể nuôi và tự nhiên tách ở cấp map.
+fish_02,Cá diếc,Carassius auratus,,MVP,"AO,HO",bottom,omnivore,"don,dai","worm,dough",0.05,1,26000,pending_expert_review,pending_map_review,Nhóm diếc cần kiểm tra định danh địa phương; chưa khóa taxon phát hành.
+fish_03,Cá rô đồng,Anabas testudineus,,MVP,"AO,KENH,MT",mid,omnivore,"don,dai","worm,cricket",0.04,0.45,30000,pending_expert_review,pending_map_review,Không nhập chung rô phi.
+fish_04,Cá lóc,Channa striata,,MVP,"AO,KENH,HO,MT",cover,predator,"lure,don","frog,softbait,livefish",0.15,5,34000,pending_expert_review,pending_map_review,Còn gọi cá quả ở một số vùng; tên hiển thị theo locale.
+fish_05,Cá trê vàng,Clarias macrocephalus,,MVP,"AO,KENH,MT",bottom,omnivore,"don,bottom","worm,shrimp",0.08,1.5,38000,pending_expert_review,pending_map_review,"Trê lai là biến thể lai, không tính thêm loài."
+fish_06,Cá rô phi vằn,Oreochromis niloticus,,MVP,"AO,KENH,HO,MT",mid,omnivore,"don,dai","worm,dough",0.1,2,42000,pending_expert_review,pending_map_review,Điêu hồng không được tính là một loài thứ 51.
+fish_07,Cá trắm cỏ,Ctenopharyngodon idella,,MVP,"AO,HO",mid,herbivore,"dai,bottom","leaf,corn,dough",0.4,15,46000,pending_expert_review,pending_map_review,Ao/hồ thả nuôi; không khẳng định phổ biến mọi hệ sinh thái.
+fish_08,Cá mè trắng,Hypophthalmichthys molitrix,,MVP,"AO,HO",mid,filter,"dai,bottom",cloudbait,0.3,10,18000,pending_expert_review,pending_map_review,"Lọc ăn; bắt bằng cụm mồi hấp dẫn là mô hình cần cần thủ duyệt, không giả làm cá săn mồi."
+fish_09,Cá mè hoa,Hypophthalmichthys nobilis,,MVP,"AO,HO",mid,filter,"bottom,dai",cloudbait,0.4,15,22000,pending_expert_review,pending_map_review,Không trùng mè trắng; trạng thái thả nuôi ở map hồ.
+fish_10,Cá trôi Ấn Độ / rohu,Labeo rohita,,MVP,"AO,HO",bottom,omnivore,"dai,bottom","dough,corn",0.2,6,26000,pending_expert_review,pending_map_review,Tên cá trôi chung có thể chỉ nhiều taxon; UI dùng tên đầy đủ.
+fish_11,Cá sặc rằn,Trichopodus pectoralis,,MVP,"KENH,MT",mid,omnivore,"don,dai","worm,dough",0.05,0.35,30000,pending_expert_review,pending_map_review,Catalog MVP; việc câu lưỡi và hình thái phải duyệt.
+fish_12,Cá sặc bướm,Trichopodus trichopterus,,MVP,"KENH,MT",mid,omnivore,don,worm,0.02,0.12,34000,pending_expert_review,pending_map_review,Cá nhỏ; không dùng farm tiền bằng số lượng vô hạn.
+fish_13,Cá trê đen,Clarias fuscus,,EXPANSION,"AO,SONG",bottom,omnivore,"don,bottom","worm,shrimp",0.1,2,38000,pending_expert_review,pending_map_review,Đối chiếu tên địa phương trước khóa nội dung.
+fish_14,Cá trê phi,Clarias gariepinus,,EXPANSION,AO,bottom,predator,bottom,"worm,livefish",0.3,12,42000,pending_expert_review,pending_map_review,Chỉ hồ dịch vụ thả nuôi; không thêm tự do vào map hoang dã.
+fish_15,Cá tra,Pangasianodon hypophthalmus,,EXPANSION,"MT,HO",mid,omnivore,"bottom,dai","dough,shrimp",0.5,20,46000,pending_expert_review,pending_map_review,Nhiều nội dung là cá nuôi; map dùng quần thể giả tưởng có nguồn gốc rõ.
+fish_16,Cá basa,Pangasius bocourti,,EXPANSION,MT,mid,omnivore,bottom,"shrimp,dough",0.5,15,18000,pending_expert_review,pending_map_review,Tách cá tra ở định danh và hình dáng.
+fish_17,Cá lăng đuôi đỏ,Hemibagrus wyckioides,,EXPANSION,"SONG,HO,DAP",bottom,predator,bottom,"shrimp,livefish",0.4,18,22000,pending_expert_review,pending_map_review,Tên lăng nha/lăng đuôi đỏ phải xác nhận theo vùng.
+fish_18,Cá bỗng,Spinibarbus denticulatus,,EXPANSION,"SONG,SUOI,HO",mid,omnivore,"don,bottom","worm,cricket",0.2,8,26000,pending_expert_review,pending_map_review,Nguồn FAO có đề cập cá bỗng; quần thể suối cần duyệt riêng.
+fish_19,Cá chiên,Bagarius yarrelli,,EXPANSION,"SONG,DAP",bottom,predator,bottom,"livefish,shrimp",0.8,25,30000,pending_expert_review,pending_map_review,Candidate; kiểm tra taxon và ràng buộc bảo tồn trước phát hành.
+fish_20,Cá ngạnh,Cranoglanis bouderius,,EXPANSION,SONG,bottom,omnivore,"bottom,don","worm,shrimp",0.1,1.8,34000,pending_expert_review,pending_map_review,Tên và phân bố cần chuyên gia duyệt.
+fish_21,Cá nheo,Silurus asotus,,EXPANSION,"SONG,HO",bottom,predator,bottom,"livefish,worm",0.2,4,38000,pending_expert_review,pending_map_review,Candidate theo vùng; không gọi tất cả cá da trơn là nheo.
+fish_22,Cá lóc bông,Channa micropeltes,,EXPANSION,"MT,HO",cover,predator,lure,"frog,hardbait",0.5,12,42000,pending_expert_review,pending_map_review,Tách với lóc thường.
+fish_23,Cá thát lát,Notopterus notopterus,,EXPANSION,"MT,KENH",mid,predator,"don,bottom","worm,shrimp",0.1,0.8,46000,pending_expert_review,pending_map_review,Không nhập chung thát lát cườm.
+fish_24,Cá thát lát cườm,Chitala ornata,,EXPANSION,"MT,HO",mid,predator,"lure,bottom","softbait,livefish",0.3,7,18000,pending_expert_review,pending_map_review,Candidate; gọi cá nàng hai theo vùng.
+fish_25,Cá bống tượng,Oxyeleotris marmorata,,EXPANSION,"MT,KENH",bottom,predator,"don,bottom","shrimp,livefish",0.1,2,22000,pending_expert_review,pending_map_review,"Hành vi nằm chờ, không đuổi lure như lóc."
+fish_26,Cá bống kèo,Pseudapocryptes elongatus,,EXPANSION,"MT,CSONG",bottom,omnivore,don,worm,0.015,0.06,26000,pending_expert_review,pending_map_review,Nước lợ; học ranh giới môi trường thay vì cá nào cũng ở ao.
+fish_27,Cá chạch bùn,Misgurnus anguillicaudatus,,EXPANSION,"AO,KENH",bottom,omnivore,don,worm,0.015,0.1,30000,pending_expert_review,pending_map_review,Candidate cần kiểm tra định danh tại Việt Nam.
+fish_28,Cá chạch lấu,Mastacembelus favus,,EXPANSION,"SONG,MT",bottom,predator,"bottom,don","worm,shrimp",0.15,1.8,34000,pending_expert_review,pending_map_review,Không nhập với lươn.
+fish_29,Cá chày mắt đỏ,Squaliobarbus curriculus,,EXPANSION,"SONG,SUOI",mid,omnivore,"don,dai","worm,cricket",0.1,2,38000,pending_expert_review,pending_map_review,Candidate; tên địa phương và phân bố cần duyệt.
+fish_30,Cá mè vinh,Barbonymus gonionotus,,EXPANSION,"MT,KENH",mid,omnivore,"don,dai","dough,worm",0.1,1.2,42000,pending_expert_review,pending_map_review,Species nuôi được ghi nhận trong tài liệu FAO; alias đang duyệt.
+fish_31,Cá trắm đen,Mylopharyngodon piceus,,EXPANSION,"AO,HO,DICHVU",bottom,predator,bottom,"snail,shrimp",0.5,18,46000,pending_expert_review,pending_map_review,Cá nuôi có trong nguồn FAO; mồi ốc thuộc mở rộng.
+fish_32,Cá trôi mrigal,Cirrhinus cirrhosus,,EXPANSION,"AO,HO,DICHVU",bottom,omnivore,"dai,bottom",dough,0.2,6,18000,pending_expert_review,pending_map_review,Cirrhinus mrigala là tên đồng nghĩa cần lưu và đối chiếu hiện hành.
+fish_33,Cá mè trắng Việt Nam,Hypophthalmichthys harmandi,,EXPANSION,"SONG,HO",mid,filter,bottom,cloudbait,0.3,8,22000,pending_expert_review,pending_map_review,Nguồn FAO có đề cập; trạng thái bảo tồn/phân bố phải duyệt riêng.
+fish_34,Cá bống cát,Glossogobius giuris,,EXPANSION,"KENH,CSONG",bottom,predator,don,"shrimp,worm",0.025,0.3,26000,pending_expert_review,pending_map_review,Candidate; địa phương có thể dùng tên bống cát cho loài khác.
+fish_35,Cá chẽm / vược,Lates calcarifer,,EXPANSION,"CSONG,GHE,MT",mid,predator,"lure,iso,bottom","hardbait,shrimp",0.3,15,30000,pending_expert_review,pending_map_review,Chỉ map phù hợp độ mặn; chưa có trong MVP.
+fish_36,Cá đối mục,Mugil cephalus,,EXPANSION,"CSONG,GHE",mid,omnivore,"iso,don",dough,0.15,3,34000,pending_expert_review,pending_map_review,Không giả định mọi cá đối cùng loài.
+fish_37,Cá mú chấm cam,Epinephelus coioides,,EXPANSION,"GHE,CSONG",bottom,predator,"iso,bottom,lure","shrimp,softbait",0.4,12,38000,pending_expert_review,pending_map_review,Trạng thái bảo tồn/size giữ cá cần duyệt.
+fish_38,Cá mú mè,Epinephelus malabaricus,,EXPANSION,GHE,bottom,predator,"bottom,iso","livefish,shrimp",0.5,20,42000,pending_expert_review,pending_map_review,Candidate; tên mú mè cần đối chiếu.
+fish_39,Cá hồng bạc,Lutjanus argentimaculatus,,EXPANSION,"CSONG,GHE",mid,predator,"iso,lure","shrimp,hardbait",0.2,7,46000,pending_expert_review,pending_map_review,Tên địa phương khác nhau.
+fish_40,Cá hồng chấm đen,Lutjanus russellii,,EXPANSION,"GHE,CSONG",mid,predator,"iso,bottom",shrimp,0.15,2,18000,pending_expert_review,pending_map_review,Candidate theo vùng biển.
+fish_41,Cá dìa chấm,Siganus guttatus,,EXPANSION,"GHE,CSONG",mid,herbivore,iso,"leaf,dough",0.1,1.5,22000,pending_expert_review,pending_map_review,Tên dìa chấm là nhãn tạm cần duyệt.
+fish_42,Cá dìa công,Siganus javus,,EXPANSION,GHE,mid,herbivore,iso,"leaf,dough",0.1,2,26000,pending_expert_review,pending_map_review,Candidate; minh họa gai cá cần kiểm tra.
+fish_43,Cá chim vây vàng,Trachinotus blochii,,EXPANSION,GHE,mid,predator,"iso,lure","shrimp,metal",0.2,5,30000,pending_expert_review,pending_map_review,Không nhập với chim trắng nước ngọt.
+fish_44,Cá tráp vây vàng,Acanthopagrus latus,,EXPANSION,"CSONG,GHE",bottom,omnivore,"iso,bottom","shrimp,worm",0.15,2.5,34000,pending_expert_review,pending_map_review,Candidate; định danh họ cá tráp phải duyệt.
+fish_45,Cá tráp đen,Acanthopagrus schlegelii,,EXPANSION,GHE,bottom,omnivore,"iso,bottom",shrimp,0.2,4,38000,pending_expert_review,pending_map_review,Ứng viên vùng biển phía bắc; phân bố cần xác nhận.
+fish_46,Cá nhồng vàng,Sphyraena obtusata,,EXPANSION,GHE,mid,predator,lure,"hardbait,metal",0.15,1.2,42000,pending_expert_review,pending_map_review,Tên nhồng chung có nhiều loài.
+fish_47,Cá cá cháo lớn,Megalops cyprinoides,,EXPANSION,CSONG,surface,predator,lure,softbait,0.2,3,46000,pending_expert_review,pending_map_review,Alias địa phương phải duyệt.
+fish_48,Cá cá măng sữa,Chanos chanos,,EXPANSION,CSONG,mid,omnivore,iso,dough,0.3,6,18000,pending_expert_review,pending_map_review,Không nhập với cá măng nước ngọt.
+fish_49,Cá cá đù bạc,Pennahia argentata,,EXPANSION,GHE,bottom,predator,bottom,"shrimp,worm",0.1,1,22000,pending_expert_review,pending_map_review,Candidate; tên đù bạc cần đối chiếu.
+fish_50,Cá cá đục,Sillago sihama,,EXPANSION,"CSONG,GHE",bottom,predator,"bottom,don","worm,shrimp",0.03,0.25,26000,pending_expert_review,pending_map_review,Ứng viên câu bãi cát ven biển.

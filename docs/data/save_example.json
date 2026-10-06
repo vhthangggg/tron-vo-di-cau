@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "content_version": "0.1",
+  "profile_id": "local_example",
+  "wallet_xu": 0,
+  "reputation": 0,
+  "certificates": [],
+  "lesson_progress": {},
+  "inventory": [
+    {
+      "instance_id": "inv_bamboo_001",
+      "item_id": "rod_01",
+      "durability": 1
+    },
+    {
+      "instance_id": "inv_worm_001",
+      "item_id": "other_01",
+      "quantity": 6
+    }
+  ],
+  "rigs": [],
+  "fish_discoveries": [],
+  "world_fish": [
+    {
+      "fish_id": "world_ao_001",
+      "species_id": "fish_01",
+      "map_id": "AO",
+      "position_m": [
+        12,
+        6,
+        1.8
+      ],
+      "weight_kg": 0.65,
+      "energy": 0.8,
+      "fear": 0.12,
+      "status": "free",
+      "capture_history": []
+    }
+  ],
+  "transactions": [],
+  "rng_state": "example_only_use_serialized_engine_rng",
+  "game_clock_minutes": 330
+}

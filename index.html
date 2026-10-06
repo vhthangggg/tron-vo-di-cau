@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#183D37">
+  <meta name="description" content="Một buổi câu bên ao Việt Nam. Chọn mồi, đọc phao, dẫn cá và ghi lại những lần gặp cá đẹp.">
+  <title>Trốn Vợ Đi Câu — Một buổi bên bờ nước</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./src/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Đến nội dung chính</a>
+  <header class="header">
+    <a class="brand" href="#home" aria-label="Trốn Vợ Đi Câu, về bến"><span class="brand-icon" aria-hidden="true">↗</span><span>Trốn Vợ<br><b>Đi Câu</b></span></a>
+    <nav aria-label="Các màn chơi">
+      <a href="#home" data-screen="home">Bến câu</a>
+      <a href="#fishing" data-screen="fishing">Ra ao</a>
+      <a href="#rig" data-screen="rig">Bàn đồ</a>
+      <a href="#learn" data-screen="learn">Sổ học</a>
+      <a href="#journal" data-screen="journal">Sổ cá</a>
+      <a href="#shop" data-screen="shop">Cửa hàng</a>
+    </nav>
+    <button class="wallet" id="settings" aria-label="Tùy chọn và bản lưu"><span class="coin" aria-hidden="true">◉</span> <span id="wallet" class="num">12.000</span> <span class="wallet-unit">xu</span></button>
+  </header>
+  <main id="main" tabindex="-1"></main>
+  <footer class="footer"><span>Một buổi bên bờ nước.</span><span>Bản web v0.1 · Tiến độ lưu trên thiết bị này</span></footer>
+  <div id="live" role="status" aria-live="polite" class="sr-only"></div>
+  <div id="toast" role="status" hidden></div>
+  <dialog id="dialog" aria-labelledby="dialog-title"><div id="dialog-content"></div></dialog>
+  <noscript><p class="nojs">Bật JavaScript để chơi. Game chạy ngay trong trình duyệt, không cần đăng nhập.</p></noscript>
+</body>
+</html>

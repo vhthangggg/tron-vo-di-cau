@@ -1,0 +1,54 @@
+{
+  "color": {
+    "paper": "#F4F0E6",
+    "surface": "#FFFCF5",
+    "ink": "#183D37",
+    "text": "#223E38",
+    "muted": "#5C6E63",
+    "pond": "#2D6458",
+    "accent": "#B44727",
+    "on_accent": "#FFFFFF",
+    "line": "#D5DACF",
+    "danger": "#9D2929",
+    "focus": "#183D37"
+  },
+  "space": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64
+  ],
+  "radius": {
+    "control": 8,
+    "panel": 12,
+    "pill": 999
+  },
+  "type": {
+    "display": "Georgia / serif with Vietnamese fallback",
+    "body": "DejaVu Sans / system sans with full Vietnamese support",
+    "heading_px": [
+      44,
+      32,
+      24
+    ],
+    "body_px": 16,
+    "caption_px": 13,
+    "body_line_height": 1.5
+  },
+  "motion_ms": {
+    "press": 100,
+    "panel": 180,
+    "screen": 240
+  },
+  "targets_css_px": 48,
+  "icon_stroke": 1.7,
+  "world_hud": {
+    "center_clear_percent_min": 65,
+    "right_rail_max_width_px": 300,
+    "safe_inset_px": 24
+  }
+}
