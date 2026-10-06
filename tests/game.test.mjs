@@ -1,10 +1,11 @@
+import {guideFish,freeSnag} from './control-player.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {FishingGame,floatMarks} from '../src/engine.js';
 import {newPlayer,validateSave,savePlayer,loadPlayer,SAVE_KEY} from '../src/save.js';
 
-function advanceUntil(g,predicate,max=50){for(let i=0;i<max*10;i++){g.step(.1);if(predicate())return;}assert.fail(`Timed out: ${g.phase} — ${g.message}`);}
-function land(g){assert.ok(g.cast());advanceUntil(g,()=>g.phase==='bite');assert.ok(g.holdRod());advanceUntil(g,()=>{if(g.tension>78)g.ease();else if(!g.surge)g.setPulling(true);return g.phase==='landed';},60);}
+function advanceUntil(g,predicate,max=50){for(let i=0;i<max*10;i++){freeSnag(g);g.step(.1);if(predicate())return;}assert.fail(`Timed out: ${g.phase} — ${g.message}`);}
+function land(g){assert.ok(g.cast());advanceUntil(g,()=>g.phase==='bite');assert.ok(g.holdRod());advanceUntil(g,()=>{guideFish(g);return g.phase==='landed';},60);}
 
 test('Fish exist before casting; the bite and catch retain the same instance',()=>{const p=newPlayer(),g=new FishingGame(p,{seed:22});const before=new Set(g.fish.map(f=>f.id));land(g);assert.ok(before.has(g.hooked.id));assert.ok(g.hooked.caught);assert.equal(p.catches,1);assert.equal(p.collection[p.pending.fishId].count,1);});
 test('A catch can credit the wallet once, including after save/reload',()=>{const p=newPlayer(),g=new FishingGame(p,{seed:4});land(g);const saved=validateSave(JSON.parse(JSON.stringify(p))),restored=new FishingGame(saved);const {id,value}=saved.pending,start=saved.coins;assert.ok(restored.resolveCatch(id,'sell'));assert.equal(saved.coins,start+value);assert.equal(restored.resolveCatch(id,'sell'),false);assert.equal(saved.coins,start+value);assert.equal(saved.sold,1);});
@@ -21,10 +22,10 @@ test('Deadline stops active fishing and a new session resumes',()=>{const p=newP
 test('Broken saves and blocked storage safely report a new session',()=>{const storage={getItem:()=>'{broken',setItem:()=>{throw Error('blocked');}};const result=loadPlayer(storage);assert.equal(result.player.coins,12000);assert.ok(result.warning);assert.equal(savePlayer(storage,result.player),false);assert.throws(()=>validateSave({...newPlayer(),coins:-10}));});
 test('Save roundtrip preserves owned gear, bait, progress and settings',()=>{let raw;const storage={getItem:()=>raw,setItem:(k,v)=>{assert.equal(k,SAVE_KEY);raw=v;}};const p=newPlayer();p.rods.push('dai');p.map='AO';p.lessons.push('signal');p.settings.deadline=300;assert.ok(savePlayer(storage,p));assert.deepEqual(loadPlayer(storage).player,p);});
 
-test('One hold hooks and immediately leads the same fish; release relaxes without another toggle',()=>{
+test('Right hold hooks the same fish, both hands lead it, release relaxes without another toggle',()=>{
  const p=newPlayer(),g=new FishingGame(p,{seed:22});assert.ok(g.cast());advanceUntil(g,()=>g.phase==='bite');
  const fish=g.target,bait=p.baits.worm;assert.ok(g.holdRod());assert.equal(g.hooked,fish);assert.equal(g.pulling,true);
- for(let i=0;i<6;i++)g.step(.1);assert(g.energy<100,'Holding after hookset must make immediate progress');
+ for(let i=0;i<6;i++)g.step(.1);assert.equal(g.energy,100,'Right hand alone cannot land a fish');for(let i=0;i<6;i++){guideFish(g);g.step(.1);}assert(g.energy<100,'Both hands make progress');
  const energy=g.energy,tension=g.tension;assert.ok(g.holdRod());assert.equal(g.energy,energy,'Repeated hold must not reset the fight');assert.equal(p.baits.worm,bait);
  g.setPulling(false);assert.equal(g.pulling,false);for(let i=0;i<5;i++)g.step(.1);assert(g.tension<tension,'Releasing must relax line tension');
  assert.equal(p.catches,0);assert.equal(p.pending,null);
@@ -37,12 +38,12 @@ test('Hold cannot start while paused, after landing or outside a cast; release a
  assert.equal(g.holdRod(),false);g.paused=false;assert.ok(g.holdRod());g.fail('Đã thu cần.');assert.equal(g.pulling,false);assert.equal(g.holdRod(),false);
 });
 
-test('Starter rod can land natural fish with continuous holds and 200 ms release reactions across 50 seeds',()=>{
+test('Starter rod can land natural fish with two hands and 200 ms tracking reactions across 50 seeds',()=>{
  for(let seed=1;seed<=50;seed++){
   const p=newPlayer(),g=new FishingGame(p,{seed}),bait=p.baits.worm;
   assert.ok(g.cast());advanceUntil(g,()=>g.phase==='bite');const target=g.target;assert.ok(g.holdRod());
   for(let i=0;i<300&&g.phase==='fight';i++){
-   g.setPulling(!g.surge&&g.tension<78);g.step(.1);g.step(.1);
+   guideFish(g);g.step(.1);g.step(.1);
   }
   assert.equal(g.phase,'landed','Starter catch failed on seed '+seed+' / '+g.message);
   assert.equal(g.hooked,target);assert.equal(p.catches,1);assert.equal(p.pending.fishId,target.fishId);assert.equal(p.baits.worm,bait-1);assert.equal(g.pulling,false);

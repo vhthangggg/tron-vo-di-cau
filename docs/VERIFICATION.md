@@ -1,69 +1,37 @@
-# Kiểm chứng bản web v0.1
+# Kiểm chứng v0.2 — hai tay và môi trường động
 
-Kiểm tra ngày 2026-10-06, trước khi xuất bản. Đây là kiểm chứng bản local phục vụ qua HTTP ở đường dẫn `/tron-vo-di-cau/`; không thay thế kiểm tra URL production khi quyền truy cập hosting được thay đổi.
+Kiểm tra ngày 2026-10-07. Mã nền trước thay đổi: `d1878652`. Các phiên trình duyệt dùng bản lưu riêng để không tác động tiến độ đang chơi.
 
-## Cơ chế: 25 test đạt
+## Cơ chế: 34 test đạt
 
-`npm test` kiểm tra cá có trước khi thả câu; giữ đúng cá từ tìm mồi đến bắt; bán đúng một lần sau tải lại; thả cá giữ sổ; giật sớm mất một phần mồi; mồi/tầng không phù hợp không tạo cá cắn giả; bộ chưa cân không tiêu mồi; kéo liên tục cá lớn có thể đứt dây; pause đóng băng cửa sổ giật và đồng hồ; phục hồi khi hết xu/mồi; mua đồ và nhận thưởng một lần; lure cần thu mồi; giờ về nhà; save hỏng/bị chặn và roundtrip dữ liệu. Ba hồi quy mới kiểm tra một lần giữ đóng lưỡi và dẫn ngay, nhả/paused không kẹt lực, và cần tre bắt được cá tự nhiên với phản ứng nhả mỗi 200 ms qua 50 seed. Không thay quần thể hoặc khối lượng trong kiểm tra cần tre.
+`npm test` kiểm tra vòng câu, giao dịch chỉ xử lý một lần, bản lưu hỏng/migration, đồ nghề và bài học; thêm lực cần liên tục, hai tay độc lập, mất cá khi không bám, chuyển động theo loài, input không hợp lệ, pause và mắc đáy.
 
-## Trình duyệt: 19 nhóm kiểm tra đạt
+- 50 hạt giống với bộ cần tre: cá tự tìm mồi → giật → bám cá và chỉnh lực mỗi 200 ms → lên bờ. Không thay khối lượng/quần thể trong nhóm này.
+- 50 loài ở khối lượng tối đa: fixture quần thể từng loài, bộ đồ phù hợp, điều khiển hai tay qua API của engine. Không gán năng lượng hoặc tạo catch để ép thắng.
+- Mắc đáy được rút một lần, phụ thuộc map/góc/tầng; giữ nhẹ và bám đúng gỡ được, kéo quá mạnh hoặc hết giờ mất lượt. Gỡ không tiêu thêm mồi/tiền và không phá đồ đã mua.
+- Bản lưu v0.1 giữ tiền, đồ, map, sổ cá, bài học và cá đang chờ bán/thả.
 
-- Chọn map đã mở tại nhà đưa vào Chuẩn bị; map khóa mở đúng nhóm bản đồ trong chợ, bộ lọc hoạt động.
-- Bảy màn tải dưới đường dẫn repo, font Việt và assets tải đúng.
-- Space thả câu, giật sớm nhận phản hồi.
-- Đi câu ẩn dock/profile/menu; Esc mở tạm dừng. Từ chối rời bờ giữ lượt; xác nhận về Chuẩn bị kết thúc lượt, không tiêu thêm mồi hoặc thay đổi xu/thành tích.
-- Khi dẫn cá tại 375×812, 844×390 và 640×360: nút dẫn/nới/pause/về nhà đủ 44 px, trong viewport, không bị thông tin map hoặc tín hiệu che.
-- Cá tự tìm mồi → cắn → giật → dẫn bằng UI → lên bờ. Cá chưa bán được giữ sau reload, bán cộng đúng giá một lần.
-- Trả lời sai có thể thử lại; bài học chỉ cấp thưởng lần đầu.
-- Chì chưa cân báo lỗi và chặn Bắt đầu đi câu ở Chuẩn bị; cân về bốn vạch; đào giun tăng đúng sáu phần.
-- Ô cần chưa sở hữu mở nhóm nâng cấp; HUD cấp cần thủ lấy số cá đã câu thật.
-- Mua mồi được lưu; dialog giữ focus trong hộp thoại, Escape trả focus.
-- Tìm sổ cá theo tên, lọc theo map và hiển thị đủ 50 thẻ.
-- 375×812: bảy màn không tràn ngang; đổi điểm trước khi vào bờ; thả, menu tạm dừng, tiếp tục và thu bằng cảm ứng.
-- 844×390: bảy màn không tràn ngang.
-- 640×360: bảy màn không tràn ngang, cảnh câu vẫn phủ viewport.
-- 768×1024: bảy màn không tràn ngang.
-- Zoom 200% có reflow.
-- Reduced motion vẫn thao tác được; pause dừng đồng hồ và mô phỏng.
-- Menu tạm dừng khi idle bắt đầu buổi mới, đặt đồng hồ về 00:00, bật lại điều khiển và không tiêu mồi.
+## Kiểm tra trình duyệt
 
-Nút thả/giật/thu, pause/help/về nhà đều từ 44×44 CSS px và nằm trong viewport tại bốn kích thước trên. Cảnh Đi câu đúng chiều rộng/chiều cao viewport, không có điều hướng quản lý. Kiểm tra bổ sung deep link `#fishing` ở desktop, dọc và ngang nhỏ: toàn trang vừa viewport, không có cuộn thừa. Toast không chặn pointer vào nút chơi.
+`npm run test:browser`: các màn, phím, lượt câu tự nhiên bằng chuột + Space/↑/↓, bản lưu cá chờ bán sau reload, bán đúng một lần, bài học, đào/mua mồi, đổi điểm, pause, thoát có xác nhận, bố cục bốn kích thước và zoom.
 
-Không ghi nhận lỗi JavaScript hoặc request tài nguyên lỗi. Đồng hồ ảo tăng animation frames của game; test không tạo cá giả, gọi hookset trực tiếp hay cộng tiền thay cho thao tác người chơi. Ảnh render đã được xem để chỉnh cận cảnh phao, bố cục dẫn cá và focus.
+`npm run test:browser:expansion`: mua/lắp phụ kiện, bộ câu đáy/lure/ISO, cả 10 map và tranh riêng, sổ 50 loài, bản lưu cũ, lượt câu đáy bằng hai tay, mồi giả không tiêu hao. Fixture chỉ cung cấp xu và đồ để xét nội dung; hành động đi qua UI.
 
-## Bản mở rộng: 8 nhóm kiểm tra trình duyệt đạt
+`npm run test:browser:two-hands` (lệnh `test:browser:hold` trỏ đến cùng bộ):
 
-`npm run test:browser:expansion` dùng bản lưu cũ có xu làm fixture để kiểm tra mua đồ. Mọi giao dịch, lắp đồ, đổi map và lượt câu đều đi qua UI thật.
+- Chuột bám cá + giữ Space; ↑/↓ chỉnh lực; W A S D bám cá; chuột giữ cần + W A S D.
+- Cảm ứng 390×844, 844×390, 640×360: hai ngón thật qua Chrome DevTools input, nhận ngón thứ hai ở cả hai thứ tự. Giữ nguyên hình học điều khiển qua giật/dẫn.
+- Di chuyển tay phải thay lực liên tục; nhấc một tay giữ nguyên tay kia. Cancel, mất pointer capture và pause xóa đúng input, resume không tự giữ lại.
+- Câu tự nhiên → dẫn bằng hai ngón → lên bờ; nhấc tay sau khi vớt không đóng hoặc bấm nhầm hộp cá. Reload giữ cá và bán đúng giá một lần.
+- Cảnh động thay đổi khi chờ và dừng cùng pause. Giảm chuyển động giữ môi trường tĩnh nhưng cá vẫn di chuyển để có thể điều khiển. Resize giữ lượt câu và nhả hai tay.
+- Chọn hạt giống đồng hồ để một lượt tự mắc đáy; UI thật gỡ bằng thao tác nhẹ, không gọi hàm engine hoặc ép trạng thái game từ trình duyệt.
 
-- Di chuyển bản lưu cũ, giữ xu và sổ cá; thêm phụ kiện cơ bản.
-- Mua phụ kiện trừ đúng giá, chặn mua lại; lắp dây/lưỡi/phao/vợt, tự cân phao và chặn máy trên cần tay.
-- Mua cần đáy/lure/ISO, mồi dùng lại và cả 10 map; tải lại giữ bộ đã lắp.
-- Chọn cả 10 map, giải mã đúng tranh cảnh trên mỗi map, đủ ba góc bờ và không tràn ngang.
-- Câu đáy: đầu cần báo cắn → giật → dẫn → vợt lên cá → thả; map và ba góc bờ nằm ở màn Chuẩn bị, không xuất hiện trong cảnh câu.
-- Crankbait thả/thu bằng spinning, không tiêu hao.
-- Sổ 50 loài lọc map, hiển thị mồi/kỹ thuật/tầng nước.
-- Bộ chọn map và ô phụ kiện thao tác được tại 375×812, 844×390.
+Kết quả và ảnh tự động nằm ở `test-results/` sau khi chạy. Script kiểm tra lỗi JavaScript và request tài nguyên, dùng đường dẫn `/tron-vo-di-cau/` để bảo vệ tính tương thích khi phục vụ dưới subpath.
 
-Test cơ chế mở rộng kiểm tra giao dịch/trang bị sai không thay đổi trạng thái, hiệu ứng lưỡi/máy/dây/phao/vợt thực sự tác động mô phỏng, cá lớn hơn 20 kg giữ được trong bản lưu. Một fixture quần thể tách riêng từng loài chạy cùng mô phỏng thật để kiểm chứng cả 50 loài có mồi/kỹ thuật/tầng hợp và có thể đưa lên bờ ở khối lượng tối đa. Đây là kiểm chứng khả năng bắt, không đo tần suất bắt hay tốc độ tiến độ của người chơi.
+## Bản dựng và production
 
-Không ghi nhận lỗi JavaScript hoặc request tài nguyên lỗi trong các bộ kiểm tra trình duyệt. `npm run build` kiểm tra đủ cả tranh và ảnh nhỏ của 10 map.
-
-## Hồi quy nhấn giữ / đưa cá lên bờ: 7 nhóm đạt
-
-`npm run test:browser:hold` dùng cá tự tìm mồi trong ao, cần tre và kho khởi đầu; không gọi engine qua hook hoặc tạo cá/catch từ test.
-
-- Mouse down đóng lưỡi và tăng tiến độ ngay; giữ nguyên tọa độ/kích thước nút qua chuyển pha. Di chuyển ra ngoài nút vẫn giữ nhờ pointer capture; mouse up nhả lực.
-- Space trên nút và A tại cảnh dùng keydown/keyup; thả một nguồn input không làm mất nguồn khác vẫn đang giữ.
-- Mất pointer capture, touchcancel, pause và window blur đều xóa lực; tiếp tục không tự giữ lại.
-- Chuột dẫn cá lên bờ, pending giữ qua reload, bán đúng một lần. Cả cảnh, tạm dừng và Chuẩn bị đều dùng nhãn Về nhà.
-- Sự kiện chạm qua Chromium ở 375×812 và 844×390: giữ để giật/dẫn, hủy và nhả, dẫn tới lên bờ rồi thả cá; nhả tay sau khi vớt không đóng hộp cá hoặc chọn bán/thả ngoài ý muốn; đúng một phần giun, không tràn trang.
-
-Đây là kiểm tra touch emulation trên Chromium; chưa thay thế thử trên điện thoại vật lý. Có ảnh trạng thái đang giữ, tiến độ thực, nút Về nhà và hộp cá sau khi nhấc tay.
-
-![Giữ để dẫn trên cảm ứng](hold-mobile.webp)
-
-![Cá lên bờ sau khi nhả tay](landed-mobile.webp)
+`npm run build` đóng gói mã, font và đầy đủ 10 ảnh nền/ảnh nhỏ. `git diff --check` kiểm tra bản vá. `tests/production-smoke.cjs`, với `GAME_URL`, kiểm tra bản live: tải ảnh/điều khiển v0.2, thả câu tự nhiên, hai ngón tạo tiến độ, pause, lưu sau reload và viewport mobile. Tình trạng deployment phải kiểm tra trên đúng commit phát hành; không lấy kết quả local thay bằng kết quả live.
 
 ## Giới hạn
 
-Chưa benchmark trên máy điện thoại vật lý, chưa đo FPS/native, chưa kiểm chứng kiến thức câu cá ngoài đời hoặc thời gian giữ chân người chơi. Source CI chạy test cơ chế và build; script Playwright có thể chạy riêng theo README. Vercel Git integration triển khai từ main. Trạng thái deployment được kiểm tra trên commit; URL deployment riêng hiện có Deployment Protection.
+Touch được giả lập bằng Chromium, chưa đo trên điện thoại vật lý. Chưa benchmark FPS/giữ chân người chơi, chưa xác nhận tập tính hay kỹ thuật câu ngoài đời. Cảnh động là lớp Canvas trên tranh; không phải mô phỏng chất lỏng hoặc va chạm mọi vật trôi. Nguy cơ mắc đáy là mô hình xác suất theo môi trường, không phải va chạm với từng viên đá trong ảnh.

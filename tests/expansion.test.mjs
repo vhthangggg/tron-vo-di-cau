@@ -1,10 +1,11 @@
+import {guideFish,freeSnag} from './control-player.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {stat,readFile} from 'node:fs/promises';
 import {MAPS,FISH,RODS,BAITS,ACCESSORIES,TECHNIQUES,loadoutStats,usesFloat,acceptsBait} from '../src/content.js';
 import {FishingGame,floatMarks,balancedLead} from '../src/engine.js';
 import {newPlayer,validateSave} from '../src/save.js';
-const tickUntil=(g,predicate,max=60)=>{for(let i=0;i<max*10;i++){g.step(.1);if(predicate())return;}assert.fail(g.message+' / '+g.phase);};
+const tickUntil=(g,predicate,max=60)=>{for(let i=0;i<max*10;i++){freeSnag(g);g.step(.1);if(predicate())return;}assert.fail(g.message+' / '+g.phase);};
 const fullPlayer=()=>{const p=newPlayer();p.coins=10000000;p.maps=MAPS.map(m=>m.id);p.rods=RODS.map(r=>r.id);p.accessories=ACCESSORIES.map(a=>a.id);p.baits=Object.fromEntries(BAITS.map(b=>[b.id,b.reusable?1:100]));return p;};
 const bite=g=>{assert.ok(g.cast());if(g.rod.tech==='lure')g.toggleRetrieve();tickUntil(g,()=>g.phase==='bite');};
 
@@ -56,7 +57,7 @@ test('Better hooks extend the actual bite window and an equipped net finishes th
 
 test('Upgraded line, reel and float improve the simulated fight against current',()=>{
  const run=upgraded=>{const p=fullPlayer();p.map='GHE';p.rod='iso53';p.bait='shrimp';p.rig.depth=2.4;if(upgraded){p.equipment.line='braid';p.equipment.reel='reel6000';p.equipment.float='float_sea';}p.rig.lead=balancedLead(p);
- const g=new FishingGame(p,{seed:7});bite(g);assert.ok(g.holdRod());g.hooked.weight=8;g.nextSurge=100;g.setPulling(true);for(let i=0;i<50;i++)g.step(.1);return g;};
+ const g=new FishingGame(p,{seed:7});bite(g);assert.ok(g.holdRod());g.hooked.weight=8;g.nextSurge=100;g.setPulling(true);for(let i=0;i<50;i++){g.setTracking(true,g.fishPosition.x,g.fishPosition.y);g.step(.1);}return g;};
  const base=run(false),up=run(true);assert.equal(base.phase,'fight');assert.equal(up.phase,'fight');assert(up.energy<base.energy,'Faster reel should drain more energy');assert(up.tension<base.tension,'Stronger line and stable float should reduce tension');
 });
 
@@ -68,7 +69,7 @@ test('Every species is reachable with matching bait, technique and depth, and ca
   const g=new FishingGame(p,{seed:123});g.selectSpot(2);const target=g.fish.find(f=>f.fishId===def.id&&f.spot===2);assert.ok(target,def.id+' exists');p.rig.depth=target.depth;
   // A deterministic isolated-population fixture validates each catalog entry through the real simulation.
   g.fish=[target];target.weight=def.max;assert.ok(g.eligible(target),def.id+' reachable');bite(g);assert.equal(g.target.id,target.id);assert.ok(g.holdRod());
-  tickUntil(g,()=>{if(g.surge||g.tension>87)g.ease();else g.setPulling(true);return g.phase==='landed';},120);
+  tickUntil(g,()=>{guideFish(g);return g.phase==='landed';},120);
   assert.equal(p.pending.fishId,def.id);assert.equal(p.pending.weight,def.max);assert.equal(validateSave(p).pending.weight,def.max);assert.equal(p.collection[def.id].best,def.max);
   assert.ok(g.resolveCatch(p.pending.id,'release'));
  }

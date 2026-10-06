@@ -117,3 +117,58 @@ body[data-screen=fishing] .scene[data-phase=waiting] .water-controls,body[data-s
 .rod-control-note{color:var(--paper);font-size:12px;line-height:1.5;text-align:center;margin:0;text-shadow:0 1px 3px var(--forest-deep)}
 @media(max-width:700px){.rod-control-note{font-size:11px}body[data-screen=fishing] .water-controls #strike{font-size:14px}body[data-screen=fishing] .water-controls #ease{font-size:12px}}
 @media(max-height:619px) and (min-width:540px){.rod-control-note{display:none}body[data-screen=fishing] .water-controls #strike,body[data-screen=fishing] .water-controls #ease{min-height:48px}}
+
+/* Two independent hands: fixed geometry across the hook / fight transition. */
+body[data-screen=fishing] .hand-panel{position:absolute;z-index:5;bottom:calc(42px + env(safe-area-inset-bottom));width:clamp(145px,22vw,228px);color:#fff5d8;user-select:none;-webkit-user-select:none}
+body[data-screen=fishing] .left-hand{left:calc(24px + env(safe-area-inset-left))}body[data-screen=fishing] .right-hand{right:calc(24px + env(safe-area-inset-right))}
+.hand-heading{display:flex;justify-content:space-between;gap:4px;align-items:center;margin-bottom:8px}.hand-heading span{font-size:10px;letter-spacing:1px;color:#e2d9b7;text-shadow:0 1px 4px #102b22}.hand-heading strong{font-size:11px;color:#ffe4a1;text-shadow:0 1px 4px #102b22}
+.hand-panel p{font-size:11px;text-align:center;margin:7px 0 0;color:#efecd3;text-shadow:0 1px 4px #102b22}
+body[data-screen=fishing] .track-pad,body[data-screen=fishing] .rod-pad{display:block;position:relative;width:100%;height:166px;min-height:0;padding:0;margin:0;border:1px solid #c5b887b0;border-bottom:2px solid #c5b887b0;border-radius:18px;background:#14372ddb;box-shadow:0 8px 28px #0b241f40;overflow:hidden;touch-action:none;-webkit-touch-callout:none;cursor:crosshair;transition:border-color .1s}
+body[data-screen=fishing] .track-pad:disabled,body[data-screen=fishing] .rod-pad:disabled{opacity:.55}
+body[data-screen=fishing] #strike{animation:none;transform:none;color:#fff4d0}
+body[data-screen=fishing] .scene[data-phase=bite] #strike{border-color:#ffe4a2;box-shadow:0 0 0 3px #ffe4a240;background:#45522de8}
+.pad-grid{position:absolute;inset:0;background:linear-gradient(#aac5a80c 1px,transparent 1px),linear-gradient(90deg,#aac5a80c 1px,transparent 1px);background-size:25% 25%}
+.fish-target{position:absolute;left:50%;top:50%;width:44px;height:44px;border:1px solid #f1d793bb;background:#d6c07822;border-radius:50%;transform:translate(-50%,-50%);display:grid;place-items:center;color:#ffdf91;pointer-events:none}.fish-target .icon{width:27px;height:27px}
+.aim-reticle{position:absolute;width:28px;height:28px;border:2px solid #faf9e7;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 4px #ffffff15;pointer-events:none}.aim-reticle::after,.aim-reticle::before{content:'';position:absolute;background:#f9f4d8}.aim-reticle::before{width:36px;height:1px;left:-6px;top:11px}.aim-reticle::after{height:36px;width:1px;top:-6px;left:11px}
+#track-pad[data-locked=true]{border-color:#a8d790;background:#1d453adb}#track-pad[data-locked=true] .fish-target{border-color:#b6e29a;color:#c8f0ab;background:#9ed77930}
+.pad-idle{position:absolute;left:0;right:0;bottom:14px;font-size:10px;font-weight:400;color:#e8dfbf;pointer-events:none}.is-fighting .pad-idle{display:none}
+.force-scale{position:absolute;top:16px;bottom:16px;left:18px;width:14px;border:1px solid #9eaf7f66;border-radius:7px;background:#0c2d24;overflow:visible}.force-scale i{position:absolute;bottom:0;left:0;right:0;border-radius:6px;background:linear-gradient(#edc278,#8ab572);height:0}.force-scale b{position:absolute;left:-6px;width:24px;height:10px;border-radius:4px;background:#ffedb4;box-shadow:0 1px 4px #0d281f}
+.force-top,.force-bottom{position:absolute;left:45px;right:8px;font-size:9px;letter-spacing:1px;pointer-events:none}.force-top{top:15px;color:#e8b88c}.force-bottom{bottom:15px;color:#b8d4b0}
+#rod-label{position:absolute;left:40px;right:10px;top:50%;transform:translateY(-50%);font-size:15px;line-height:1.6;pointer-events:none}
+.dual-instruction{position:absolute;bottom:12px;left:24px;right:24px;text-align:center;color:#ece7ce;font-size:11px;pointer-events:none;text-shadow:0 1px 4px #102b22}
+body[data-screen=fishing] .scene-bottom{bottom:64px;width:min(510px,calc(100% - 550px));gap:8px}
+body[data-screen=fishing] .is-fighting .status-box,body[data-screen=fishing] .is-fighting .phase-track{display:none}
+body[data-screen=fishing] .is-fighting .fight{display:block;padding:14px 16px;background:#12362fed}
+body[data-screen=fishing] .scene[data-phase=fight] .water-controls{display:none}
+body[data-screen=fishing] .water-controls{grid-template-columns:1fr;gap:6px}body[data-screen=fishing] .water-controls button{min-height:44px;font-size:12px}
+body[data-screen=fishing] .scene:is([data-phase=idle],[data-phase=failed],[data-phase=landed]) .hand-panel{display:none}
+body[data-screen=fishing] .scene:is([data-phase=idle],[data-phase=failed],[data-phase=landed]) .scene-bottom{width:min(540px,calc(100% - 40px))}
+body[data-screen=fishing] .scene-caption{left:24px;bottom:auto;top:170px;max-width:60%;background:#173b2eaa}
+body[data-screen=fishing] .fight #fight-hint{min-height:28px;line-height:1.45;margin:8px 0}
+body[data-screen=fishing] .scene[data-phase=snag] .fight{border-color:#e6b576}
+@media(pointer:coarse){.dual-instruction{display:none}}
+@media(max-width:700px) and (min-height:620px){
+ body[data-screen=fishing] .hand-panel{width:calc(50% - 22px);bottom:calc(28px + env(safe-area-inset-bottom))}
+ body[data-screen=fishing] .left-hand{left:14px}body[data-screen=fishing] .right-hand{right:14px}
+ body[data-screen=fishing] .track-pad,body[data-screen=fishing] .rod-pad{height:clamp(135px,20dvh,185px);border-radius:14px}
+ .hand-heading{flex-direction:column;align-items:flex-start;gap:4px}.hand-heading strong{font-size:12px}.hand-panel p{font-size:9px;min-height:24px;line-height:1.4}
+ body[data-screen=fishing] .scene-bottom{width:calc(100% - 28px);bottom:calc(clamp(135px,20dvh,185px) + 108px + env(safe-area-inset-bottom));gap:6px}
+ body[data-screen=fishing] .fight #fight-hint{font-size:11px;min-height:0;margin:7px 0}body[data-screen=fishing] .is-fighting .fight{padding:12px 14px}
+ body[data-screen=fishing] .scene-caption{top:160px;left:16px;max-width:55%;font-size:10px}
+ body[data-screen=fishing] .scene:is([data-phase=idle],[data-phase=failed],[data-phase=landed]) .scene-bottom{bottom:40px}
+ body[data-screen=fishing] .phase-track{display:none}.dual-instruction{display:none}
+}
+@media(max-height:619px){
+ body[data-screen=fishing] .hand-panel{width:clamp(132px,20vw,190px);bottom:calc(12px + env(safe-area-inset-bottom))}
+ body[data-screen=fishing] .left-hand{left:calc(14px + env(safe-area-inset-left))}body[data-screen=fishing] .right-hand{right:calc(14px + env(safe-area-inset-right))}
+ body[data-screen=fishing] .track-pad,body[data-screen=fishing] .rod-pad{height:clamp(102px,32dvh,155px);border-radius:13px}
+ .hand-panel p,.dual-instruction{display:none}.hand-heading{flex-direction:column;align-items:flex-start;gap:3px;margin-bottom:6px}.hand-heading span{font-size:9px}.hand-heading strong{font-size:11px}
+ body[data-screen=fishing] .scene-bottom{width:calc(100% - clamp(320px,45vw,440px));bottom:16px;gap:5px}
+ body[data-screen=fishing] .is-fighting .fight{padding:10px 12px}.meter-head{gap:6px}.meter-head strong{font-size:10px}body[data-screen=fishing] .fight #fight-hint{font-size:10px;min-height:0;margin:6px 0}
+ body[data-screen=fishing] .scene-caption{top:86px;left:18px;max-width:55%;font-size:9px}body[data-screen=fishing] .scene-caption .focus-bait{display:none}
+ body[data-screen=fishing] .float-zoom{top:77px;width:58px}body[data-screen=fishing] .float-zoom svg{height:54px;width:42px}
+ body[data-screen=fishing] .phase-track{display:none}body[data-screen=fishing] .scene[data-phase=snag] .water-controls button{min-height:44px}
+ #rod-label{font-size:12px}.force-top,.force-bottom{font-size:8px;letter-spacing:.4px}
+}
+body[data-screen=fishing] #strike[aria-pressed=true]{color:#173f30;background:linear-gradient(#ead29b,#cbb479)}
+body[data-screen=fishing] #strike[aria-pressed=true] .force-top,body[data-screen=fishing] #strike[aria-pressed=true] .force-bottom{color:#32563d}

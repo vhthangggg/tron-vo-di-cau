@@ -1,3 +1,4 @@
+const {driveHands,waitForBite}=require('./browser-player.cjs');
 const fs=require('fs');
 const path=require('path');
 const assert=require('node:assert/strict');
@@ -68,33 +69,22 @@ let server;
  checks.push('Focused mode hides dock/profile/management; Escape pauses; declined exit keeps cast; confirmed return to preparation spends no extra bait');
 
  await page.locator('#cast').click();
- let bite=false;
- for(let i=0;i<100;i++){await page.clock.runFor(250);if((await page.locator('#status-title').innerText()).includes('Đúng nhịp')){bite=true;break;}}
- assert(bite,'No natural bite within 25 seconds');
+ await waitForBite(page);
  await page.locator('#strike').click();assert(await page.locator('#fight').isVisible());
  for(const [width,height,label] of [[375,812,'mobile'],[844,390,'landscape'],[640,360,'small-landscape']]){
    await page.setViewportSize({width,height});
-   for(const id of ['strike','ease','pause','leave-fishing']){
+   for(const id of ['strike','track-pad','pause','leave-fishing']){
      const box=await page.locator('#'+id).boundingBox();assert(box.height>=44&&box.width>=44,id+' fight touch target');assert(box.y>=0&&box.y+box.height<=height,id+' fight outside viewport');
    }
    const fight=await page.locator('#fight').boundingBox(),caption=await page.locator('.scene-caption').boundingBox(),signal=await page.locator('#float-zoom').boundingBox();
    assert(caption.y+caption.height<=fight.y,'Map info obscures fight at '+label);
-   assert(signal.x>=fight.x+fight.width||signal.y+signal.height<=fight.y,'Signal obscures fight at '+label);
+   assert.equal(signal,null,'Float zoom is hidden during the two-hand fight');
    await page.screenshot({path:out+'/fight-'+label+'.png'});
  }
  await page.setViewportSize({width:1440,height:980});
  checks.push('Fight controls remain visible, at least 44 px and clear of map/signal at portrait and two landscape phone sizes');
 
- for(let i=0;i<450;i++){
-   if(await page.locator('#dialog').evaluate(el=>el.open))break;
-   assert(await page.locator('#fight').isVisible(),'Fight failed: '+await page.locator('#status-copy').innerText());
-   const t=parseInt(await page.locator('#tension-value').innerText()),surge=(await page.locator('#fight-hint').innerText()).startsWith('Cá bứt');
-   const pulling=await page.locator('#strike').getAttribute('aria-pressed')==='true';
-   if((t>78||surge)&&pulling)await page.keyboard.up('a');
-   else if(t<76&&!surge&&!pulling)await page.keyboard.down('a');
-   await page.clock.runFor(100);
- }
- await page.keyboard.up('a');
+ await driveHands(page);
  assert(await page.locator('#dialog').evaluate(el=>el.open),'Catch dialog missing');
  const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')));
  assert.equal(before.catches,1);assert(before.pending);const catchId=before.pending.id;
@@ -149,7 +139,7 @@ let server;
    assert(await page.locator('#game-nav').isHidden());assert(await page.locator('.game-header').isHidden());
    const scene=await page.locator('.scene').boundingBox();assert.equal(scene.width,width);assert.equal(scene.height,height);assert.equal(await page.evaluate(()=>document.documentElement.scrollHeight),height);
    assert.equal(await page.locator('.scene a,[data-open-maps],.bank-panel').count(),0);
-   for(const id of ['cast','strike','retrieve','pause','help','leave-fishing']){
+   for(const id of ['cast','retrieve','pause','help','leave-fishing']){
      const box=await page.locator('#'+id).boundingBox();
      assert(box.height>=44&&box.width>=44,id+' '+label+' touch target');
      assert(box.y>=0&&box.y+box.height<=height,id+' '+label+' outside viewport');
@@ -175,7 +165,7 @@ let server;
  checks.push('Idle pause menu starts a fresh session, resumes controls and does not consume bait');
 
  assert.deepEqual(errors,[],'Browser errors');assert.deepEqual(requests,[],'Failed network requests');
- const result={status:'passed',checks,console_errors:errors,failed_requests:requests,scope:'Playable web v0.1, local HTTP served under /tron-vo-di-cau/. Virtual clock drives real animation frames; inputs use the rendered UI.'};
+ const result={status:'passed',checks,console_errors:errors,failed_requests:requests,scope:'Playable web v0.2, local HTTP served under /tron-vo-di-cau/. Virtual clock drives real animation frames; inputs use the rendered UI.'};
  fs.writeFileSync(out+'/verification.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));
  await browser.close();server.kill();
 })().catch(e=>{if(server)server.kill();console.error(e.stack);process.exit(1);});

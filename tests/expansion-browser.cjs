@@ -1,3 +1,4 @@
+const {driveHands,waitForBite}=require('./browser-player.cjs');
 const fs=require('node:fs');
 const path=require('node:path');
 const assert=require('node:assert/strict');
@@ -59,14 +60,9 @@ let server,browser;
  checks.push('All 10 map choices render their own decoded landscape and three spots without overflow');
  await nav('prepare');await page.locator('[data-open-maps]').click();await page.locator('[data-atlas-map="AO"]').click();await nav('fishing');await page.locator('#cast').click();assert.equal(await page.locator('[data-open-maps]').count(),0);
  assert(await page.locator('#tip-detail').isVisible());assert(await page.locator('#float-detail').isHidden());
- let bite=false;for(let i=0;i<140;i++){await page.clock.runFor(250);if((await page.locator('#status-title').innerText()).includes('Đúng nhịp')){bite=true;break;}}assert(bite,'Bottom rod did not receive a bite');
+ await waitForBite(page);
  assert.match(await page.locator('#float-label').innerText(),/Đầu cần cong/);await page.locator('#strike').click();
- for(let i=0;i<600;i++){
-  if(await page.locator('#dialog').evaluate(el=>el.open))break;
-  assert(await page.locator('#fight').isVisible(),'Fight failed');const tension=parseInt(await page.locator('#tension-value').innerText()),surge=(await page.locator('#fight-hint').innerText()).startsWith('Cá bứt');const pulling=await page.locator('#strike').getAttribute('aria-pressed')==='true';
-  if((tension>78||surge)&&pulling)await page.keyboard.up('a');else if(tension<76&&!surge&&!pulling)await page.keyboard.down('a');await page.clock.runFor(100);
- }
- await page.keyboard.up('a');
+ await driveHands(page);
  assert(await page.locator('#dialog').evaluate(el=>el.open));const caught=await saved();assert.equal(caught.catches,8);assert(caught.pending);await page.locator('[data-dialog-action="0"]').click();assert.equal((await saved()).released,2);
  checks.push('Bottom fishing with upgraded loadout: tip signal → strike → controlled fight → net landing → release; map controls remain in preparation');
  await nav('rig');await page.locator('#rod').selectOption('spinheavy');await page.locator('#bait').selectOption('crank');await nav('fishing');await page.locator('#cast').click();await page.locator('#retrieve').click();assert.equal((await saved()).baits.crank,1);assert.match(await page.locator('#retrieve').innerText(),/Dừng thu mồi/);
