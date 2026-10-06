@@ -18,12 +18,22 @@ let server;
  page.on('pageerror',e=>errors.push(e.message));page.on('requestfailed',r=>requests.push(r.url()+': '+r.failure().errorText));
  await page.clock.install({time:new Date('2026-10-06T12:00:00Z')});
  await page.goto('http://127.0.0.1:5185/tron-vo-di-cau/');await page.evaluate(()=>document.fonts.ready);
+ await page.locator('[data-travel="HO"]').click();
+ assert.equal(await page.locator('[data-shop-category="map"]').getAttribute('aria-pressed'),'true');
+ assert(await page.locator('[data-category="map"]').isVisible());
+ assert(!await page.locator('[data-category="rod"]').isVisible());
+ await page.locator('[data-shop-category="bait"]').click();assert(await page.locator('[data-category="bait"]').isVisible());
+ await page.locator('[data-shop-category="all"]').click();
+ await page.locator('nav [data-screen="home"]').click();await page.locator('[data-travel="AO"]').click();
+ assert.equal(await page.locator('#map-heading').innerText(),'Ao Làng');
+ checks.push('Camp map travel works; locked destination opens map shop; category filters work');
  for(const screen of ['home','fishing','rig','learn','journal','shop']){
    await page.locator('nav [data-screen="'+screen+'"]').click();
    await page.screenshot({path:out+'/'+screen+'-desktop.png',fullPage:true});
    assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),screen+' desktop overflow');
  }
  checks.push('Six screens rendered with repository subpath; all assets loaded');
+ assert.deepEqual(errors,[],'Errors while rendering the six screens');
  await page.locator('nav [data-screen="fishing"]').click();
  await page.locator('#main').focus();await page.keyboard.press('Space');
  assert(await page.locator('#cast').isDisabled());
@@ -46,6 +56,7 @@ let server;
  assert(await page.locator('#dialog').evaluate(el=>el.open),'Catch dialog missing');
  const before=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')));
  assert.equal(before.catches,1);assert(before.pending);const catchId=before.pending.id;
+ assert.equal(await page.locator('#rank-count').innerText(),'1 / 5 cá');
  await page.screenshot({path:out+'/catch-desktop.png',fullPage:true});
  await page.reload();await page.evaluate(()=>document.fonts.ready);
  const restored=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')));
@@ -69,6 +80,10 @@ let server;
  const worms=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).baits.worm);
  await page.locator('#dig').click();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).baits.worm),worms+6);
  checks.push('Rig balancing and free bait recovery');
+ await page.locator('[data-equip="dai"]').click();
+ assert.equal(await page.locator('[data-shop-category="rod"]').getAttribute('aria-pressed'),'true');
+ await page.locator('[data-shop-category="all"]').click();
+ checks.push('Locked gear slot opens upgrade shop; rank HUD reflects the real catch');
  await page.locator('nav [data-screen="shop"]').click();const wallet=await page.locator('#wallet').innerText();
  await page.locator('[data-buy="bait"][data-id="dough"]').click();assert.notEqual(await page.locator('#wallet').innerText(),wallet);
  await page.reload();assert.equal(await page.locator('[data-buy="rod"][data-id="bamboo"]').isDisabled(),true);
@@ -85,6 +100,22 @@ let server;
      if(label==='mobile'||screen==='fishing'&&label==='landscape')await page.screenshot({path:out+'/'+screen+'-'+label+'.png',fullPage:true});
    }
    checks.push(label+' no horizontal overflow');
+   await page.locator('nav [data-screen="fishing"]').click();
+   const dock=await page.locator('#game-nav').boundingBox();
+   for(const id of ['cast','strike','retrieve']){
+     const box=await page.locator('#'+id).boundingBox();
+     assert(box.height>=44&&box.width>=44,id+' '+label+' touch target');
+     assert(box.y+box.height<dock.y,id+' '+label+' is hidden behind navigation');
+   }
+   if(label==='mobile'){
+     await page.locator('.bank-panel summary').click();await page.locator('[data-spot="1"]').click();
+     assert.equal(await page.locator('#spot-name').innerText(),'Mép bèo');
+     await page.locator('#cast').click();await page.locator('#pause').click();
+     const paused=await page.locator('#session-clock').innerText();await page.clock.runFor(1000);
+     assert.equal(await page.locator('#session-clock').innerText(),paused);
+     await page.locator('#pause').click();await page.locator('#retrieve').click();
+     checks.push('Mobile gear sheet selects a spot; touch cast, pause and retrieve work');
+   }
  }
  await page.setViewportSize({width:1440,height:980});await page.locator('nav [data-screen="rig"]').click();
  await page.evaluate(()=>document.body.style.zoom='2');assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),'Zoom 200% overflow');await page.evaluate(()=>document.body.style.zoom='');

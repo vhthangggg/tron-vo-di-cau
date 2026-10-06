@@ -1,16 +1,24 @@
 {
   "color": {
-    "paper": "#F4F0E6",
-    "surface": "#FFFCF5",
-    "ink": "#183D37",
-    "text": "#223E38",
-    "muted": "#5C6E63",
+    "forest": "#163B30",
+    "forest_deep": "#102A23",
+    "forest_light": "#2C5542",
+    "gold": "#E4BD70",
+    "gold_light": "#F5D998",
+    "paper": "#F1E8D2",
+    "surface": "#FCF5E5",
+    "ink": "#213E32",
+    "text": "#284336",
+    "muted": "#566454",
+    "hud_text": "#FCF5E5",
+    "hud_muted": "#C7D1BB",
     "pond": "#2D6458",
-    "accent": "#B44727",
-    "on_accent": "#FFFFFF",
-    "line": "#D5DACF",
-    "danger": "#9D2929",
-    "focus": "#183D37"
+    "accent": "#E4BD70",
+    "on_accent": "#382B13",
+    "line": "#C6C6A5",
+    "danger": "#982F26",
+    "focus_dark": "#F5D998",
+    "focus_paper": "#2D6458"
   },
   "space": [
     4,
@@ -23,20 +31,21 @@
     64
   ],
   "radius": {
-    "control": 8,
-    "panel": 12,
+    "control": 9,
+    "panel": 14,
+    "window": 18,
     "pill": 999
   },
   "type": {
-    "display": "Georgia / serif with Vietnamese fallback",
-    "body": "DejaVu Sans / system sans with full Vietnamese support",
+    "display": "VietDisplay / embedded DejaVu Serif",
+    "body": "Viet / embedded DejaVu Sans",
     "heading_px": [
-      44,
-      32,
-      24
+      76,
+      42,
+      22
     ],
     "body_px": 16,
-    "caption_px": 13,
+    "caption_px": 12,
     "body_line_height": 1.5
   },
   "motion_ms": {
@@ -44,11 +53,15 @@
     "panel": 180,
     "screen": 240
   },
-  "targets_css_px": 48,
-  "icon_stroke": 1.7,
+  "targets_css_px": {
+    "regular": 48,
+    "compact": 44
+  },
+  "icon_stroke": 1.8,
   "world_hud": {
-    "center_clear_percent_min": 65,
-    "right_rail_max_width_px": 300,
-    "safe_inset_px": 24
+    "left_panel_width_px": 242,
+    "safe_inset_px": 24,
+    "bottom_nav_destinations": 5,
+    "center_status_max_width_px": 560
   }
 }

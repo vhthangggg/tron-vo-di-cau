@@ -1,47 +1,45 @@
-# ĐI CÂU! - Design system v0.1
+# Trốn Vợ Đi Câu — giao diện game v0.1
 
-Visual thesis: sổ tay cần thủ bên bờ nước. Chữ có nhịp rõ, UI gọn, cảnh ao Việt Nam vẽ tay là phần cảm xúc. Cam đất chỉ hướng hành động chính; xanh ao làm cấu trúc và feedback có ý nghĩa.
+Hướng thiết kế mới: một game câu cá Việt Nam, cảnh ao là trung tâm, HUD và menu nằm trên thế giới chơi. Bến câu là menu chính có nút chơi, chọn địa điểm và theo dõi hành trình; các màn quản lý là những cửa sổ trong game.
 
-Nguồn phương pháp: UIUX Pro Max (hierarchy, contrast, input, responsive, accessibility); MengTo design-first-ui-prompting (goal → format → layout → type → color → copy → constraints) và no-ai-design-slop (rendered quality gates). Kết quả palette từ truy vấn skill được biên tập theo người chơi trưởng thành và gameplay.
+## Phương pháp và quyết định
 
-## Hệ thống
+Dùng UIUX Pro Max: đã chạy truy vấn design-system `fishing game immersive adventure`, truy vấn style `game HUD skeuomorphism` và UX `touch controls minimum target`. Kết quả design-system thiên về trang giới thiệu sản phẩm, nên không dùng bố cục chuyển đổi/marketing. Kết quả Skeuomorphism phù hợp HUD game và vật liệu có chiều sâu: biên vàng đồng, nút có gờ, nền đồ nghề như giấy. Chọn xanh rêu, giấy ngà và vàng đồng hợp cảnh ao Việt Nam; không dùng màu tím hay font esports trong kết quả gợi ý.
 
-- Tokens: data/design_tokens.json là nguồn màu/khoảng/chữ/timing của handoff.
-- Heading: serif có đầy đủ dấu Việt; prototype Georgia, PDF DejaVu Serif.
-- Body: DejaVu Sans nhúng; production cân nhắc Be Vietnam Pro sau kiểm tra license/subset.
-- Scale desktop: H1 44, H2 32, H3 24, body 16, caption 13. Font game phải kiểm tra kích thước quy đổi theo engine.
-- Spacing 4/8; grouping 24/32; panel 12px, control 8px, đường chia 1px. Dùng khoảng cách trước container.
-- Buttons ≥48 CSS px, gap ≥8; focus outline 3px; hover không thay bounds.
-- Color: paper #F4F0E6, surface #FFFCF5, ink #183D37, text #223E38, muted #5C6E63, pond #2D6458, accent #B44727, danger #9D2929.
-- Text-on-accent trắng; text-on-paper xanh mực; UI đặt trên cảnh có surface đủ đặc. Chỉ báo lỗi đi cùng chữ.
-- Press 100ms, panel 180ms, screen 240ms. Reduced motion có frame ổn định, không chỉ giảm tốc.
+`styles.css` và `src/ui.js` là phần trình bày. `src/engine.js`, `src/content.js` và định dạng bản lưu được giữ. Tokens cập nhật tại `data/design_tokens.json`.
 
-## Desktop
+## Hệ thiết kế
 
-Chuẩn nghiên cứu 1440x900. Header 80px, content margin 40px, max width 1440. S01: scene khoảng 72%, notebook 28%. S03: control/rig/summary xấp xỉ 30/40/30. S04: tank 60%, controls 40%. S05: scene tối thiểu 65% không có HUD trung tâm; điều khiển thấp, pause ở cạnh có safe inset.
+- Forest #163B30, deep #102A23, light #2C5542; chữ trên HUD #FCF5E5, phụ #C7D1BB.
+- Vàng đồng #E4BD70 / #F5D998; nút chính dùng chữ tối #382B13.
+- Giấy #F1E8D2, bề mặt #FCF5E5; chữ #284336, phụ #566454.
+- Font Viet/DejaVu Sans cho nội dung, VietDisplay/DejaVu Serif cho tên game và tiêu đề; WOFF nhúng có dấu Việt. Không tải font ngoài.
+- Nút thông thường 48 CSS px; nút gọn và nút biểu tượng điện thoại 44 CSS px. Viền focus 3px; hover/press giữ nguyên kích thước.
+- SVG do dự án vẽ, nét 1.8; không dùng emoji điều hướng. Tranh bản đồ nhỏ là biểu tượng cách điệu, không thay thế cảnh map.
+- Giảm chuyển động tắt hiệu ứng báo cắn và transition; tín hiệu phao, chữ và nút vẫn dùng được.
 
-Sổ học và shop dùng hàng thông tin có separator; không biến mọi con số thành card. Một hành động chính trong mỗi vùng công việc. Panel sidebar có lý do vì là lớp thông tin ngoài cảnh.
+## Các màn
 
-## Mobile và trợ năng
+| Màn | Thiết kế và thao tác |
+|---|---|
+| Bến câu | Cảnh ao phủ khung, tiêu đề game, nút chơi lớn, 3 thẻ map. Map mở đi vào cảnh; map khóa mở nhóm bản đồ tại chợ. Nhiệm vụ lấy từ cá, bài học và bộ sưu tập thật. |
+| Buổi câu | Ao chiếm toàn bộ vùng chơi. Địa điểm/map trái trên, pause/help phải trên, phao phóng đại phải, thao tác và lực dây đáy giữa. Bảng điểm/đồ có thể thu gọn. |
+| Đồ nghề | Ô cần có trạng thái sở hữu/trang bị, minh họa bộ hiện tại, chọn mồi và tinh chỉnh phao. Ô khóa mở chợ cần. |
+| Học câu | Ba thẻ nhiệm vụ, số thứ tự, thưởng lần đầu và trạng thái hoàn thành. Quiz có phản hồi, thử lại khi sai. |
+| Sổ cá | Thẻ loài, trạng thái khám phá, số gặp, kỷ lục và map. Tìm kiếm tên cá và tiến độ 12 loài. |
+| Chợ bến | Thẻ đồ, giá và sở hữu. Lọc tất cả/cần/mồi/bản đồ; nhóm được giữ sau khi mua. |
+| Cá lên bờ | Cửa sổ thành tích có hình cá, khối lượng, giá bán và lựa chọn bán/thả. Không đổi cách xử lý giao dịch. |
 
-375px dọc: nav có thể wrap, workspace thành một cột, scene/canvas co vừa không tràn. 844x390 ngang: controls gọn, vùng phao không bị ngón tay che; prototype cho cuộn khi cần. Production dùng canvas/native touch riêng, safe area và chế độ tay thuận. Điều khiển bằng keyboard, +/- và click là phương án thay cho kéo.
+HUD đầu màn hình có số xu và cấp cần thủ. Cấp là cách trình bày tổng cá đã câu, tăng ở 5/15/30/60 con; không tạo thêm XP, thưởng xu hoặc yêu cầu thay đổi bản lưu. Thanh điều hướng đáy có đúng năm mục; logo đưa về bến.
 
-Modal: focus trap, Escape, trả focus về trigger; một aria-live cho thông báo đầy đủ, không đọc tải liên tục. Search có visible label. Active nav dùng aria-current. Button disabled có lý do trong chữ gần đó. Zoom 200% reflow; không khóa browser zoom.
+## Responsive và kiểm chứng
 
-## Assets và honesty
+Desktop giữ HUD quanh cảnh, để giữa mặt nước thoáng. Điện thoại thu bảng đồ nghề thành details ngay dưới cảnh và đặt nút chơi phía trên dock. Màn hình ngang thấp dùng HUD gọn, bảng đồ cuộn tại góc trái; giữ điều khiển trong viewport. Chừa safe area cho dock, cho phép cuộn, zoom 200% và thao tác bàn phím.
 
-ao-lang-concept.png là concept art mới được tạo cho tài liệu này; không có chữ baked-in. Đây là một hình bối cảnh, chưa có layer/collision để dùng production. Font DejaVu được nhúng kèm license. Icon/fish schematic SVG do mã prototype vẽ để giải thích UI; hình cá chưa là tranh định danh. Không logo hãng thật, giá thật, link affiliate hay lịch sử người chơi thật trong mẫu.
+Dialog có focus trap, Escape, trả focus về trigger. Các nút biểu tượng có tên; hình trang trí ẩn khỏi cây trợ năng. Một vùng live thông báo thay đổi trạng thái, không đọc lại lực dây liên tục. Giữ giải pháp native cho range/select/checkbox.
 
-## Quality gates khi implement
+14 test cơ chế và 15 nhóm kiểm tra trình duyệt, gồm lượt câu tự nhiên, bán một lần sau reload, bài học, mua/đào mồi, chọn map, ô khóa, bộ lọc chợ, cảm ứng, ba viewport, zoom và reduced motion. Xem `VERIFICATION.md` cho phạm vi kiểm chứng.
 
-1. Hành động và state của màn nhìn thấy từ đầu.
-2. Tín hiệu phao rõ ở cảnh sáng/tối; HUD không che.
-3. Chữ Việt có dấu đủ ở mức font và wrap.
-4. Modal/nav/search đủ focus semantics và thao tác touch.
-5. Nội dung dài/375px/landscape/200% không overflow.
-6. Gỡ hiệu ứng không có nhiệm vụ; chỉ giữ chuyển động thể hiện trạng thái/cơ chế.
-7. Không gọi prototype UI là game hoàn chỉnh; không để nút giả mang vẻ dùng được.
+## Phạm vi hình ảnh
 
-## Bản chơi web
-
-Bản chơi dùng các nguyên tắc trên, font DejaVu subset WOFF và WebP cho tranh. Nội dung đang chạy nằm ở src/content.js; catalog trong docs/data giữ phạm vi nghiên cứu của GDD. Xem README và VERIFICATION.md để phân biệt bản chơi với prototype thiết kế ban đầu.
+Ba cảnh chơi vẫn dùng chung tranh ao với sắc độ khác nhau. SVG map, đồ và cá là minh họa trong game; chưa phải định danh sinh học hoặc mô hình vật lý. Không giả nút multiplayer, dữ liệu người chơi, loot rarity, thanh năng lượng hay tính năng chưa triển khai.
