@@ -1,0 +1,60 @@
+{
+  "mode": "Built-in Imagegen",
+  "created": "2026-10-06",
+  "assets": [
+    {
+      "id": "KENH",
+      "file": "kenh-dong",
+      "prompt": "Use case: stylized-concept. Asset type: production background for a relaxing Vietnamese 2D fishing game. Hand-painted landscape game illustration, softly textured detailed brushwork, believable scenery, gentle natural colors, no outlines, no photorealism. Landscape 16:9, eye level from near shore looking across water. Horizon around the upper third. Keep the lower 60 percent predominantly spacious fishable water, with unobstructed water at horizontal 28, 53 and 76 percent, vertical 55 to 66 percent. Scenery mostly upper third and outer edges. At most a thin near bank at bottom edge. No people, no fishing rod or line, no fish drawings, no text, no HUD, no border, no logo, no watermark. Scene: A narrow, slow irrigation canal in rural Vietnam, light green water, water hyacinths confined to edges, golden rice fields behind low grassy banks, a modest concrete footbridge across a distant upper corner, a dirt path. Morning sun, pastoral ochre and sage.",
+      "destination": "assets/maps/kenh-dong.webp"
+    },
+    {
+      "id": "HO",
+      "file": "ho-nui",
+      "prompt": "Use case: stylized-concept. Asset type: production background for a relaxing Vietnamese 2D fishing game. Hand-painted landscape game illustration, softly textured detailed brushwork, believable scenery, gentle natural colors, no outlines, no photorealism. Landscape 16:9, eye level from near shore looking across water. Horizon around the upper third. Keep the lower 60 percent predominantly spacious fishable water, with unobstructed water at horizontal 28, 53 and 76 percent, vertical 55 to 66 percent. Scenery mostly upper third and outer edges. At most a thin near bank at bottom edge. No people, no fishing rod or line, no fish drawings, no text, no HUD, no border, no logo, no watermark. Scene: A still mountainous freshwater lake in northern Vietnam, cool teal water, layered forested limestone hills across the horizon, rocky shoreline, a small partly submerged tree to one edge. Soft early morning mist, silver blue and pine green.",
+      "destination": "assets/maps/ho-nui.webp"
+    },
+    {
+      "id": "SONG",
+      "file": "song-bai-boi",
+      "prompt": "Use case: stylized-concept. Asset type: production background for a relaxing Vietnamese 2D fishing game. Hand-painted landscape game illustration, softly textured detailed brushwork, believable scenery, gentle natural colors, no outlines, no photorealism. Landscape 16:9, eye level from near shore looking across water. Horizon around the upper third. Keep the lower 60 percent predominantly spacious fishable water, with unobstructed water at horizontal 28, 53 and 76 percent, vertical 55 to 66 percent. Scenery mostly upper third and outer edges. At most a thin near bank at bottom edge. No people, no fishing rod or line, no fish drawings, no text, no HUD, no border, no logo, no watermark. Scene: A broad alluvial river in Vietnam, brown turquoise flowing water with gentle current seams, a sandy silty point on the far side, corn fields and reeds along the banks, a tiny distant bridge. Warm late afternoon amber light.",
+      "destination": "assets/maps/song-bai-boi.webp"
+    },
+    {
+      "id": "DAP",
+      "file": "long-dap",
+      "prompt": "Use case: stylized-concept. Asset type: production background for a relaxing Vietnamese 2D fishing game. Hand-painted landscape game illustration, softly textured detailed brushwork, believable scenery, gentle natural colors, no outlines, no photorealism. Landscape 16:9, eye level from near shore looking across water. Horizon around the upper third. Keep the lower 60 percent predominantly spacious fishable water, with unobstructed water at horizontal 28, 53 and 76 percent, vertical 55 to 66 percent. Scenery mostly upper third and outer edges. At most a thin near bank at bottom edge. No people, no fishing rod or line, no fish drawings, no text, no HUD, no border, no logo, no watermark. Scene: An immense hydroelectric reservoir amid steep Vietnamese mountains, deep blue open water, tall weathered limestone cliffs and distant forested slopes, dry bleached submerged branches only at a far edge, stony shore. Bright clear mountain morning.",
+      "destination": "assets/maps/long-dap.webp"
+    },
+    {
+      "id": "SUOI",
+      "file": "suoi-dai-ngan",
+      "prompt": "Use case: stylized-concept. Asset type: production background for a relaxing Vietnamese 2D fishing game. Hand-painted landscape game illustration, softly textured detailed brushwork, believable scenery, gentle natural colors, no outlines, no photorealism. Landscape 16:9, eye level from near shore looking across water. Horizon around the upper third. Keep the lower 60 percent predominantly spacious fishable water, with unobstructed water at horizontal 28, 53 and 76 percent, vertical 55 to 66 percent. Scenery mostly upper third and outer edges. At most a thin near bank at bottom edge. No people, no fishing rod or line, no fish drawings, no text, no HUD, no border, no logo, no watermark. Scene: A clear mountain stream pool in the Vietnamese highlands, shallow jade water with small rounded stones visible through it, a low flowing riffle at the very far side, mossy boulders and bamboo forest. Dappled woodland sunlight, lush green.",
+      "destination": "assets/maps/suoi-dai-ngan.webp"
+    },
+    {
+      "id": "MT",
+      "file": "kenh-mien-tay",
+      "prompt": "Use case: stylized-concept. Asset type: production background for a relaxing Vietnamese 2D fishing game. Hand-painted landscape game illustration, softly textured detailed brushwork, believable scenery, gentle natural colors, no outlines, no photorealism. Landscape 16:9, eye level from near shore looking across water. Horizon around the upper third. Keep the lower 60 percent predominantly spacious fishable water, with unobstructed water at horizontal 28, 53 and 76 percent, vertical 55 to 66 percent. Scenery mostly upper third and outer edges. At most a thin near bank at bottom edge. No people, no fishing rod or line, no fish drawings, no text, no HUD, no border, no logo, no watermark. Scene: A wide slow Mekong Delta channel in southern Vietnam, calm olive green water, dense nipa water palms and coconut trees lining the banks, one traditional wooden sampan tied against the far shore, small wooden stilt houses partly hidden by greenery. Humid golden morning.",
+      "destination": "assets/maps/kenh-mien-tay.webp"
+    },
+    {
+      "id": "DICHVU",
+      "file": "ho-dich-vu",
+      "prompt": "Use case: stylized-concept. Asset type: production background for a relaxing Vietnamese 2D fishing game. Hand-painted landscape game illustration, softly textured detailed brushwork, believable scenery, gentle natural colors, no outlines, no photorealism. Landscape 16:9, eye level from near shore looking across water. Horizon around the upper third. Keep the lower 60 percent predominantly spacious fishable water, with unobstructed water at horizontal 28, 53 and 76 percent, vertical 55 to 66 percent. Scenery mostly upper third and outer edges. At most a thin near bank at bottom edge. No people, no fishing rod or line, no fish drawings, no text, no HUD, no border, no logo, no watermark. Scene: A well maintained recreational stocked fishing lake in Vietnam, calm green blue open water, orderly small fishing platforms with plain canvas parasols and wooden stools along only the far banks, low landscaped trees, simple country lodge in the far distance. Warm cheerful daylight, nobody present.",
+      "destination": "assets/maps/ho-dich-vu.webp"
+    },
+    {
+      "id": "CSONG",
+      "file": "cua-song",
+      "prompt": "Use case: stylized-concept. Asset type: production background for a relaxing Vietnamese 2D fishing game. Hand-painted landscape game illustration, softly textured detailed brushwork, believable scenery, gentle natural colors, no outlines, no photorealism. Landscape 16:9, eye level from near shore looking across water. Horizon around the upper third. Keep the lower 60 percent predominantly spacious fishable water, with unobstructed water at horizontal 28, 53 and 76 percent, vertical 55 to 66 percent. Scenery mostly upper third and outer edges. At most a thin near bank at bottom edge. No people, no fishing rod or line, no fish drawings, no text, no HUD, no border, no logo, no watermark. Scene: A brackish river estuary on the Vietnamese coast, broad muted turquoise open water with subtle current seams, tidal mudflat and low mangrove roots along the far bank, a couple of very distant wooden fishing boats, low horizon and open sky. Hazy peach dawn, coastal atmosphere.",
+      "destination": "assets/maps/cua-song.webp"
+    },
+    {
+      "id": "GHE",
+      "file": "ghenh-bien",
+      "prompt": "Use case: stylized-concept. Asset type: production background for a relaxing Vietnamese 2D fishing game. Hand-painted landscape game illustration, softly textured detailed brushwork, believable scenery, gentle natural colors, no outlines, no photorealism. Landscape 16:9, eye level from near shore looking across water. Horizon around the upper third. Keep the lower 60 percent predominantly spacious fishable water, with unobstructed water at horizontal 28, 53 and 76 percent, vertical 55 to 66 percent. Scenery mostly upper third and outer edges. At most a thin near bank at bottom edge. No people, no fishing rod or line, no fish drawings, no text, no HUD, no border, no logo, no watermark. Scene: A sheltered Vietnamese coastal rocky bay looking out over the sea, deep blue turquoise open water with light waves, dark granite rocks at the outer edges and a distant rugged headland, sparse coastal shrubs, a little white sea foam restricted to rocks along the edges. Sunny sea breeze, aqua blue and warm stone.",
+      "destination": "assets/maps/ghenh-bien.webp"
+    }
+  ]
+}

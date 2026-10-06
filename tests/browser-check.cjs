@@ -17,6 +17,7 @@ let server;
  const errors=[],requests=[],checks=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('requestfailed',r=>requests.push(r.url()+': '+r.failure().errorText));
  await page.clock.install({time:new Date('2026-10-06T12:00:00Z')});
+ await page.clock.pauseAt(new Date('2026-10-06T12:00:01Z'));
  await page.goto('http://127.0.0.1:5185/tron-vo-di-cau/');await page.evaluate(()=>document.fonts.ready);
  await page.locator('[data-travel="HO"]').click();
  assert.equal(await page.locator('[data-shop-category="map"]').getAttribute('aria-pressed'),'true');
@@ -90,7 +91,9 @@ let server;
  await page.locator('#settings').click();for(let i=0;i<12;i++){await page.keyboard.press('Tab');assert(await page.evaluate(()=>document.querySelector('#dialog').contains(document.activeElement)));}
  await page.keyboard.press('Escape');assert(await page.locator('#settings').evaluate(el=>el===document.activeElement));
  checks.push('Purchases persisted; modal traps and restores focus');
- await page.locator('nav [data-screen="journal"]').click();await page.locator('#fish-search').fill('lóc');assert.equal(await page.locator('.fish-row').count(),1);
+ await page.locator('nav [data-screen="journal"]').click();await page.locator('#fish-search').fill('lóc');assert.equal(await page.locator('.fish-row').count(),2);
+ await page.locator('#fish-map').selectOption('AO');assert.equal(await page.locator('.fish-row').count(),1);
+ await page.locator('#fish-map').selectOption('all');await page.locator('#fish-search').fill('');assert.equal(await page.locator('.fish-row').count(),50);
  checks.push('Journal filter');
  for(const [width,height,label] of [[375,812,'mobile'],[844,390,'landscape'],[768,1024,'tablet']]){
    await page.setViewportSize({width,height});

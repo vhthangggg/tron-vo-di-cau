@@ -12,9 +12,11 @@ Cảnh ao phủ vùng chơi, HUD xanh rêu và vàng đồng, thanh đồ nghề
 
 ## Đã chơi được
 
-- Ao Làng, Kênh Đồng và Hồ Núi; ba điểm thả mồi tại mỗi map. Hai map sau mở bằng xu trong game.
-- 12 loài cá, cần tre, câu Đài và bộ lure. Cá được tạo khi vào map, tìm mồi theo loại mồi, kỹ thuật và tầng nước; cá không được tạo ở thao tác giật cần.
-- Phao rung, thăm mồi và chìm; giật sớm hoặc chậm đều có thể mất lượt. Cửa sổ giật 2,8 giây, có gợi ý tùy chọn.
+- 10 map với tranh nền riêng: Ao Làng, Kênh Đồng, Hồ Núi, Sông Bãi Bồi, Suối Đại Ngàn, Kênh Miền Tây, Hồ Dịch Vụ, Lòng Đập, Cửa Sông và Ghềnh Biển. Mỗi map có ba góc bờ, độ sâu, dòng nước và quần thể riêng; mở một lần bằng xu trong game.
+- 50 loài cá; sổ cá lọc theo tên/map, ghi mồi, kỹ thuật, tầng nước, số lần gặp và kỷ lục. Cá được tạo khi vào map, tìm mồi theo loại mồi, kỹ thuật và tầng nước; cá không được tạo ở thao tác giật cần.
+- 12 cần cho năm kỹ thuật: câu đơn, Đài, lure, câu đáy và ISO. 15 loại mồi, gồm giun, tôm, cá mồi, dế, ốc, rong, cám, nghêu và bốn mồi giả dùng lại.
+- 20 phụ kiện thuộc dây, lưỡi, phao, máy và vợt. Lắp đúng bộ để tăng sức tải, mở rộng cửa sổ giật, ổn định dòng nước, tăng tốc dẫn hoặc vớt cá sớm.
+- Phao rung, thăm mồi và chìm; giật sớm hoặc chậm đều có thể mất lượt. Cửa sổ giật cơ bản 2,8 giây, tăng theo lưỡi đang lắp; có gợi ý tùy chọn. Câu đáy và lure dùng tín hiệu đầu cần/dây.
 - Cá bứt lực, dây quá căng có thể đứt. Câu tay dùng thao tác dẫn cá; bộ spinning dùng thu dây.
 - Bán hoặc thả, sổ loài và thành tích khối lượng. Cá chưa quyết định bán/thả vẫn được giữ khi tải lại; mỗi giao dịch được xử lý một lần.
 - Cửa hàng, ba bài học có thưởng lần đầu, cân phao, đào giun miễn phí và xuất bản lưu JSON.
@@ -63,6 +65,7 @@ Kiểm tra trình duyệt tự động tùy chọn:
 npm ci
 npx playwright install chromium
 npm run test:browser
+npm run test:browser:expansion
 ```
 
 Script dùng UI thật và đồng hồ ảo để chạy animation frames. Ảnh và báo cáo xuất tại `test-results/`. Có thể đặt `CHROMIUM_EXECUTABLE` khi đã có Chromium. Chi tiết kiểm chứng tại [docs/VERIFICATION.md](docs/VERIFICATION.md).
@@ -87,16 +90,16 @@ Nếu Pages chưa bật: **Settings → Pages → Build and deployment → Deplo
 | `src/save.js` | Bản lưu phiên bản 1, kiểm tra dữ liệu và dự phòng khi không đọc được |
 | `src/app.js` | Canvas, âm báo, trợ năng và nối thao tác với engine |
 | `src/ui.js` | Màn game, HUD, biểu tượng, ô trang bị và thẻ bộ sưu tập |
-| `assets/` | Tranh ao, font, favicon và giấy phép font |
+| `assets/` | Tranh riêng cho 10 map, ảnh nhỏ của map, font, favicon và giấy phép font |
 | `tests/` | Kiểm thử cơ chế và vòng chơi qua trình duyệt |
 | `scripts/` | Máy chủ local và đóng gói bản tĩnh |
 | `docs/` | GDD, hệ thống thiết kế và kết quả kiểm chứng |
 
 ## Phạm vi v0.1
 
-Đây là bản chơi web đầu tiên của [GDD v0.1](docs/GDD_v0.1.md), sử dụng UIUX Pro Max và phương pháp design-first/no-ai-design-slop của MengTo cho hướng giao diện. GDD chứa kế hoạch dài hạn với 10 map, 50 cá, 75 đồ và 15 bài; các con số đó chưa phải nội dung đã triển khai trong game.
+Đây là bản chơi web đầu tiên của [GDD v0.1](docs/GDD_v0.1.md), sử dụng UIUX Pro Max và phương pháp design-first/no-ai-design-slop của MengTo cho hướng giao diện. Bản mở rộng hiện triển khai đủ 10 map và 50 cá; có 12 cần, 15 mồi, 20 phụ kiện và 3 bài học. Kế hoạch 75 đồ và 15 bài trong GDD vẫn là phạm vi dài hạn. Chi tiết ảnh, địa hình và tác dụng đồ ở [docs/CONTENT_EXPANSION.md](docs/CONTENT_EXPANSION.md).
 
-Ba map hiện dùng chung tranh nền Ao Làng với sắc độ khác nhau; vị trí, quần thể, độ sâu và nội dung map khác nhau. Hình cá là phác thảo SVG, mô hình tìm mồi và lực dây là mô phỏng 2D giản lược. Chưa có nhân vật 3D, mô phỏng nút buộc, thế giới mở, nhiều người chơi hoặc kiểm chứng hiệu năng native. Cân bằng riêng của bản web thay đổi giá đồ và cách mở map so với kế hoạch GDD. Dữ liệu kế hoạch giữ riêng ở `docs/data/`, không điều khiển bản chơi này.
+Mỗi map dùng tranh riêng, ảnh nhỏ trong bản đồ/chợ lấy từ đúng cảnh đó. Hình cá là SVG có dáng và hoa văn theo nhóm minh họa; mô hình tìm mồi và lực dây là mô phỏng 2D giản lược. Chưa có nhân vật 3D, mô phỏng nút buộc, thế giới mở, nhiều người chơi hoặc kiểm chứng hiệu năng native. Cân bằng riêng của bản web thay đổi giá đồ và cách mở map so với kế hoạch GDD. Dữ liệu kế hoạch giữ riêng ở `docs/data/`, không điều khiển bản chơi này.
 
 Tiến độ lưu theo trình duyệt/domain, không đồng bộ giữa thiết bị. Xóa dữ liệu trình duyệt sẽ xóa tiến độ. Xuất JSON giữ được bản riêng, nhưng v0.1 chưa có chức năng nhập lại trong giao diện. Thời lượng buổi câu bắt đầu lại khi tải trang; cá đang kéo không giữ giữa hai lần tải, cá đã lên bờ thì được giữ để quyết định bán/thả.
 
@@ -104,4 +107,4 @@ Các mô tả sinh học, tên phân loại và phân bố trong GDD đang chờ
 
 ## Tài nguyên
 
-Tranh ao được tạo cho dự án; SVG cá và biểu tượng được viết cho giao diện này. Font DejaVu được subset để có dấu Việt, kèm [giấy phép font](assets/FONT_LICENSE.txt). Thông tin tài nguyên và phương pháp ở [ATTRIBUTIONS.md](ATTRIBUTIONS.md). Repo chưa cấp giấy phép mã nguồn mở cho mã và nội dung gốc.
+10 tranh cảnh được tạo cho dự án; SVG cá, đồ nghề và biểu tượng được viết cho giao diện này. Font DejaVu được subset để có dấu Việt, kèm [giấy phép font](assets/FONT_LICENSE.txt). Thông tin tài nguyên và phương pháp ở [ATTRIBUTIONS.md](ATTRIBUTIONS.md). Repo chưa cấp giấy phép mã nguồn mở cho mã và nội dung gốc.
