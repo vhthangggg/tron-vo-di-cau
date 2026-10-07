@@ -219,3 +219,15 @@ body[data-screen=fishing] #strike[aria-pressed=true] .force-top,body[data-screen
  body[data-screen=fishing] .float-zoom svg{height:54px;width:42px}
  body[data-screen=fishing] .phase-track{display:none}
 }
+
+/* Invisible water hit-area: player taps the visible water, never a fixed cast point. */
+body[data-screen=fishing] .scene.tap-cast-enabled:is([data-phase=idle],[data-phase=failed],[data-phase=landed]){cursor:crosshair}
+body[data-screen=fishing] .scene.has-cast-target::after{
+ content:"";position:absolute;z-index:3;left:var(--cast-x);top:var(--cast-y);
+ width:34px;height:17px;border:2px solid #fffbd0;border-radius:50%;
+ transform:translate(-50%,-50%);pointer-events:none;
+ box-shadow:0 0 0 5px #fff3,0 2px 9px #102b2288;
+ animation:castTargetPulse 1.2s ease-in-out infinite;
+}
+@keyframes castTargetPulse{50%{transform:translate(-50%,-50%) scale(1.18);opacity:.65}}
+@media(prefers-reduced-motion:reduce){body[data-screen=fishing] .scene.has-cast-target::after{animation:none}}
