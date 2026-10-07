@@ -232,7 +232,7 @@ addEventListener('resize',()=>{clearRodHold();resizeCanvas();});
 addEventListener('orientationchange',suspendFishing);
 function paint(){
   if(!context||!canvas)return;const box=canvas.getBoundingClientRect(),w=box.width,h=box.height,c=context,t=reduced.matches?0:game.time;c.clearRect(0,0,w,h);
-  paintWater(c,w,h,game,$('.scene-bg'),reduced.matches);
+  if(!game.spotData.video)paintWater(c,w,h,game,$('.scene-bg'),reduced.matches);
   const spot=game.spotData;
   // Chỉ đánh dấu góc bờ đã chọn ở màn Chuẩn bị.
   if(!game.busy){c.beginPath();c.ellipse(spot.x*w,spot.y*h,23,8,0,0,Math.PI*2);c.strokeStyle='#FFFCF5';c.lineWidth=2.5;c.stroke();}
