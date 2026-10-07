@@ -36,27 +36,25 @@ export const MAPS = [
     "current": 0,
     "water": "Nước ngọt",
     "recommended": "don",
-    "background": "./assets/ao-lang.webp",
+    "background": "./assets/maps/ao-lang.png",
     "thumbnail": "./assets/maps/thumbs/ao-lang.webp",
     "maxDepth": 3.2,
     "spots": [
       {
-        "name": "Chân cầu tre",
-        "x": 0.53,
-        "y": 0.58,
-        "depth": 1.8
+        "id": "ben-cau-tre",
+        "name": "Bến Cầu Tre",
+        "x": 0.43,
+        "y": 0.86,
+        "depth": 1.0,
+        "video": "./assets/maps/ao-lang-ben-cau-tre.mp4"
       },
       {
-        "name": "Mép bèo",
-        "x": 0.29,
-        "y": 0.64,
-        "depth": 1.1
-      },
-      {
-        "name": "Hố bùn",
-        "x": 0.76,
-        "y": 0.56,
-        "depth": 2.6
+        "id": "mui-dat",
+        "name": "Mũi Đất",
+        "x": 0.67,
+        "y": 0.39,
+        "depth": 1.2,
+        "video": "./assets/maps/ao-lang-mui-dat.mp4"
       }
     ]
   },
