@@ -15,7 +15,8 @@
     "test:browser:spots": "node tests/spots-browser.cjs",
     "test:browser:experience": "node tests/experience-browser.cjs",
     "test:browser:fight": "node tests/fight-browser.cjs",
-    "test:browser:audio": "node tests/audio-browser.cjs"
+    "test:browser:audio": "node tests/audio-browser.cjs",
+    "test:browser:bag": "node tests/fishing-bag-browser.cjs"
   },
   "engines": {
     "node": ">=22"

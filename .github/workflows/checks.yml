@@ -21,3 +21,14 @@ jobs:
         run: npm test
       - name: Package static game
         run: npm run build
+      - name: Install browser test dependencies
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify packed gear and quiet fishing journey
+        run: npm run test:browser:bag
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fishing-bag-browser-evidence
+          path: test-results/

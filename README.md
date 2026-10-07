@@ -19,7 +19,8 @@ Luồng **Nhà → Chuẩn bị → Đi câu**. Chọn map, góc bờ, cần và
 - 10 map với tranh nền riêng: Ao Làng, Kênh Đồng, Hồ Núi, Sông Bãi Bồi, Suối Đại Ngàn, Kênh Miền Tây, Hồ Dịch Vụ, Lòng Đập, Cửa Sông và Ghềnh Biển. Mỗi map có ba góc bờ, độ sâu, dòng nước và quần thể riêng; mở một lần bằng xu trong game.
 - 50 loài cá; sổ cá lọc theo tên/map, ghi mồi, kỹ thuật, tầng nước, số lần gặp và kỷ lục. Cá được tạo khi vào map, tìm mồi theo loại mồi, kỹ thuật và tầng nước; cá không được tạo ở thao tác giật cần.
 - 12 cần cho năm kỹ thuật: câu đơn, Đài, lure, câu đáy và ISO. 15 loại mồi, gồm giun, tôm, cá mồi, dế, ốc, rong, cám, nghêu và bốn mồi giả dùng lại.
-- 20 phụ kiện thuộc dây, lưỡi, phao, máy và vợt. Lắp đúng bộ để tăng sức tải, mở rộng cửa sổ giật, ổn định dòng nước, tăng tốc dẫn hoặc vớt cá sớm.
+- 4 loại bao đựng đồ câu. Túi vải miễn phí mang 1 cần, 2 loại mồi và 5 phụ kiện; đồ chưa xếp vào túi được giữ ở nhà. Mua túi lớn hơn để mang thêm đồ dự phòng.
+- 22 phụ kiện thuộc dây/thẻo, lưỡi, phao, máy và vợt. Lắp đúng bộ để tăng sức tải, mở rộng cửa sổ giật, ổn định dòng nước, tăng tốc dẫn hoặc vớt cá sớm.
 - Phao rung, thăm mồi và chìm; giật sớm hoặc chậm đều có thể mất lượt. Cửa sổ giật cơ bản 2,8 giây, tăng theo lưỡi đang lắp; có gợi ý tùy chọn. Câu đáy và lure dùng tín hiệu đầu cần/dây.
 - Điều khiển hai tay độc lập: tay trái giữ và di chuyển theo dấu cá, tay phải giữ và kéo lên/xuống để điều chỉnh lực liên tục. Cá đổi hướng, bứt tốc và ghì lực theo loài; lệch mục tiêu, kéo quá căng hoặc để chùng đều có thể mất cá.
 - 10 map có dòng nước, bọt, cành/lá trôi và cây tiền cảnh đung đưa. Mỗi map có mặt nạ vùng nước, tốc độ dòng và nguy cơ mắc đáy riêng theo góc bờ/tầng mồi. Có thể gỡ bằng hai tay hoặc bỏ lượt.
@@ -42,6 +43,8 @@ Chi tiết bản cập nhật hai tay và cảnh động: [TWO_HANDS.md](docs/TW
 **Máy tính:** Space thả; giữ Space để giật/giữ cần, ↑ ↓ chỉnh lực, chuột nhấn giữ và bám dấu cá. Hoặc dùng W A S D bám cá cùng Space, hoặc W A S D + chuột giữ cần. P / Esc tạm dừng. Nhả Space khi muốn buông cần; tạm dừng, mất focus và đổi kích thước màn hình xóa các tay đang giữ. Cảm ứng nhận hai ngón theo bất kỳ thứ tự nào.
 
 **Mắc đáy:** góc bờ/tầng mồi quyết định nguy cơ, hiển thị ở Chuẩn bị. Bám điểm gỡ bằng tay trái và giữ lực cần 15–35% bằng tay phải trong vài giây. Kéo mạnh làm đứt dây, quá 16 giây thì mất lượt; Bỏ lượt giúp thử lại. Gỡ thành công không tiêu thêm mồi, không mất phụ kiện. Với lure, cần **Bật thu mồi** trước khi cá tiếp cận.
+
+Sau khoảng 35 giây cá chưa cắn, game đưa gợi ý nhưng giữ mồi dưới nước. Chọn **Chờ thêm**, đổi vị trí, đổi mồi mang theo, thay thẻo nhỏ hơn hoặc về chơi với vợ. Chỉ lựa chọn đổi đồ/vị trí/về nhà mới thu lượt hiện tại; chờ thêm không mất thêm mồi. Hai bộ thẻo 0,12/0,16 mm giúp cá tiếp cận nhanh hơn nhưng sức tải giảm. Mở **Thông tin buổi câu → Đồ câu mang theo** để đổi đồ trong túi.
 
 Chọn **Tạm dừng → Chuẩn bị lại** để đổi map, góc bờ, cần hoặc mồi; dùng **Đồ nghề** để chỉnh phụ kiện và độ sâu. Rời bờ giữa lượt cần xác nhận thu cần; mồi đã thả không được hoàn lại. Chọn điểm mới tự dò độ sâu đáy; chỉnh lại tầng nông hơn để tìm cá giữa nước. Hết mồi và xu vẫn dùng cần tre, đào thêm giun miễn phí. **Bắt đầu buổi câu mới** trong menu tạm dừng khi chưa thả câu tạo lại quần thể và đặt lại đồng hồ; cũng có nút bắt đầu buổi mới khi đến giờ về nhà.
 
@@ -108,7 +111,7 @@ Nếu Pages chưa bật: **Settings → Pages → Build and deployment → Deplo
 
 ## Phạm vi v0.2
 
-Bản v0.2 tiếp nối bản chơi web đầu tiên của [GDD v0.1](docs/GDD_v0.1.md), sử dụng UIUX Pro Max và phương pháp design-first/no-ai-design-slop của MengTo cho hướng giao diện. Bản mở rộng hiện triển khai đủ 10 map và 50 cá; có 12 cần, 15 mồi, 20 phụ kiện và 3 bài học. Kế hoạch 75 đồ và 15 bài trong GDD vẫn là phạm vi dài hạn. Chi tiết ảnh, địa hình và tác dụng đồ ở [docs/CONTENT_EXPANSION.md](docs/CONTENT_EXPANSION.md).
+Bản v0.2 tiếp nối bản chơi web đầu tiên của [GDD v0.1](docs/GDD_v0.1.md), sử dụng UIUX Pro Max và phương pháp design-first/no-ai-design-slop của MengTo cho hướng giao diện. Bản mở rộng hiện triển khai đủ 10 map và 50 cá; có 12 cần, 15 mồi, 22 phụ kiện, 4 túi đựng đồ và 3 bài học. Kế hoạch 75 đồ và 15 bài trong GDD vẫn là phạm vi dài hạn. Chi tiết ảnh, địa hình và tác dụng đồ ở [docs/CONTENT_EXPANSION.md](docs/CONTENT_EXPANSION.md).
 
 Mỗi map dùng tranh riêng, ảnh nhỏ trong bản đồ/chợ lấy từ đúng cảnh đó. Hình cá là SVG có dáng và hoa văn theo nhóm minh họa; mô hình tìm mồi và lực dây là mô phỏng 2D giản lược. Lớp cảnh động được vẽ bằng Canvas trên tranh hiện có; chưa phải mô phỏng chất lỏng. Giảm chuyển động tắt hiệu ứng cảnh nhưng giữ chuyển động cá cần thiết cho điều khiển. Chưa có nhân vật 3D, mô phỏng nút buộc, thế giới mở, nhiều người chơi hoặc kiểm chứng hiệu năng native. Cân bằng riêng của bản web thay đổi giá đồ và cách mở map so với kế hoạch GDD. Dữ liệu kế hoạch giữ riêng ở `docs/data/`, không điều khiển bản chơi này.
 

@@ -5,10 +5,10 @@ import {CONTAINERS,getContainer,catchTeaser,MAX_KEPT_FISH} from './catch-fate.js
 import {twoHands} from './two-hands.js';
 import {paintWater} from './water-world.js';
 import {rodLoad,rodGeometry,paintRod} from './fight-physics.js';
-import {MAPS,FISH,RODS,BAITS,LESSONS,getMap,getRod,getBait,getFish,usesFloat,usesReel} from './content.js';
-import {FishingGame,floatMarks,rigError,clamp,FIGHT_ZONE} from './engine.js';
+import {MAPS,FISH,RODS,BAITS,LESSONS,getMap,getRod,getBait,getFish,getBag,usesFloat,usesReel} from './content.js';
+import {FishingGame,floatMarks,rigError,clamp,FIGHT_ZONE,NO_BITE_HINT} from './engine.js';
 import {loadPlayer,savePlayer} from './save.js';
-import {icon,avatarArt,fishArt,NAV_ITEMS,rankFor,renderHome,renderPrepare,renderFishing,renderRig,renderLearn,journalRows as fishRows,renderJournal,renderShop,renderMapAtlas} from './ui.js';
+import {icon,avatarArt,fishArt,NAV_ITEMS,rankFor,renderHome,renderPrepare,renderFishing,renderRig,renderLearn,journalRows as fishRows,renderJournal,renderShop,renderMapAtlas,renderBagEditor,renderFieldKit} from './ui.js';
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -71,7 +71,7 @@ function shopHTML(){return renderShop(player);}
 function baitCount(){return getBait(player.bait).reusable?'Dùng lại':`${player.baits[player.bait]||0} phần`;}
 let shopCategory='all';
 function filterShop(category){
-  shopCategory=['all','rod','bait','accessory','map'].includes(category)?category:'all';
+  shopCategory=['all','rod','bait','accessory','bag','map'].includes(category)?category:'all';
   $('#shop-inventory').dataset.filter=shopCategory;
   $$('[data-category]').forEach(section=>section.hidden=shopCategory!=='all'&&section.dataset.category!==shopCategory);
   $$('[data-shop-category]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.shopCategory===shopCategory)));
@@ -111,6 +111,11 @@ async function setFishingOrientation(active){
 }
 function changeScreen(next){
   const wasFishing=screen==='fishing';
+  if(next==='fishing'&&!wasFishing){
+    if(player.pending)game.tripActive=true;
+    else if(!game.startTrip()){setHash(screen);toast(game.message);return;}
+  }
+  if(wasFishing&&next!=='fishing')game.endTrip();
   screen=next;setHash(next);
   if(next==='fishing')game.paused=document.hidden;
   render();window.scrollTo(0,0);$('#main').focus({preventScroll:true});
@@ -155,6 +160,7 @@ function bindWaterCast(){
 }
 function bindScreen(){
   $$('[data-open-keepnet]').forEach(button=>button.onclick=()=>showKeepnet());
+  $$('[data-open-packing]').forEach(button=>button.onclick=showPacking);
   $$('[data-open-maps]').forEach(button=>button.onclick=showMaps);
   $$('[data-travel]').forEach(button=>button.onclick=()=>travel(button.dataset.travel));
   $$('[data-stock]').forEach(button=>button.onclick=()=>{const category=button.dataset.stock;navigate('shop');filterShop(category);});
@@ -169,6 +175,8 @@ function bindScreen(){
   }
   if(screen==='fishing'){
     $('#help').onclick=showFishingInfo;
+    $('#quiet-more').onclick=showQuietAdvice;
+    $('#quiet-wait').onclick=()=>game.dismissQuietHint();
     $('#sound-toggle').onclick=()=>setSound(!player.settings.sound);
     $('#pause').onclick=showPause;
     $('#leave-fishing').onclick=()=>navigate('home');
@@ -187,7 +195,7 @@ function bindScreen(){
       if(game.equip('rod',id))render();else toast('Xử lý lượt câu trước khi lắp đồ.');
     });
     $('#rod').onchange=e=>{if(game.equip('rod',e.target.value)){render();$('#rod').focus();}else render();};
-    $('#bait').onchange=e=>{if(game.equip('bait',e.target.value)){updateRig();$('#bait-note').textContent=getBait(player.bait).note;}else render();};
+    $('#bait').onchange=e=>{if(game.equip('bait',e.target.value)){render();$('#bait').focus();}else render();};
     $$('[data-accessory]').forEach(select=>select.onchange=e=>{const id=e.target.id;if(game.equip(e.target.dataset.accessory,e.target.value)){render();$('#'+id).focus();}else toast('Phụ kiện chưa có hoặc không hợp bộ cần.');});
     $('#depth').oninput=e=>{game.setRig('depth',+e.target.value);updateRig();};
     $('#lead').oninput=e=>{game.setRig('lead',+e.target.value);updateRig();};
@@ -203,6 +211,7 @@ function clock(v){return `${String(Math.floor(v/60)).padStart(2,'0')}:${String(M
 function updateFishing(){
   if(!$('#cast'))return;
   const phase=game.phase,lure=game.rod.tech==='lure',float=usesFloat(game.rod),active=['waiting','nibble','bite'].includes(phase),casting=phase==='casting',fight=phase==='fight',snag=phase==='snag',duel=fight||snag;
+  $('#quiet-fishing-note').hidden=!sceneReady||phase!=='waiting'||!game.quietHint||game.paused;
   const names={idle:'Sẵn sàng',casting:'Đang vung cần',waiting:lure?'Mồi đang dưới nước':'Chờ cá tìm mồi',nibble:'Cá đang thăm mồi',bite:'Đúng nhịp — giữ tay phải!',fight:game.surge?'Cá bứt — hạ lực cần':'Bám cá · Giữ lực',snag:'Mắc đáy — giữ nhẹ để gỡ',landed:'Cá đã lên bờ',failed:'Thử lại một nhịp mới'};
   $('#status-title').textContent=game.paused?'Buổi câu tạm dừng':game.deadlineReached?'Đến giờ về nhà':(!player.settings.assist&&['nibble','bite'].includes(phase)?'Quan sát tín hiệu':names[phase]);
   $('#status-copy').textContent=game.message;
@@ -269,6 +278,49 @@ function showDialog(title,body,actions=[],{canClose=true,kind='standard'}={}){
   syncAtmosphere();
 }
 function closeDialog(){$('#dialog').close();}
+function showPacking(){
+  if(game.tripActive||game.busy){toast('Soạn túi ở bước chuẩn bị, trước khi ra bờ câu.');return;}
+  showDialog('Bao đựng đồ câu',renderBagEditor(player),[
+    {label:'Mua túi lớn hơn',action:()=>{closeDialog();navigate('shop');filterShop('bag');}},
+    {label:'Xong',primary:true,action:closeDialog}
+  ],{kind:'packing'});
+  const refresh=(ok,selector)=>{const message=game.message;render();showPacking();$(selector)?.focus({preventScroll:true});if(!ok)toast(message);};
+  $('#packing-bag').onchange=e=>refresh(game.equipBag(e.target.value),'#packing-bag');
+  $$('[data-pack-kind]').forEach(input=>input.onchange=()=>refresh(game.packItem(input.dataset.packKind,input.dataset.packId,input.checked),`[data-pack-kind="${input.dataset.packKind}"][data-pack-id="${input.dataset.packId}"]`));
+}
+function showFieldKit(filter='all'){
+  if(!['idle','failed','waiting'].includes(game.phase)){toast('Xử lý lượt cá này rồi hãy đổi đồ trong túi.');return;}
+  showDialog(filter==='baits'?'Đổi mồi mang theo':filter==='line'?'Thay thẻo nhỏ hơn':'Đồ câu mang theo',renderFieldKit(player,game,filter),[
+    {label:'Chuẩn bị lại',action:()=>{if(game.busy)navigate('prepare');else{closeDialog();navigate('prepare');}}},
+    {label:'Tiếp tục câu',primary:true,action:closeDialog}
+  ],{kind:'field-kit'});
+  $$('[data-field-kind]').forEach(button=>button.onclick=()=>{
+    if(game.phase==='waiting')game.retrieve();
+    const changedRod=button.dataset.fieldKind==='rod';
+    if(game.equip(button.dataset.fieldKind,button.dataset.fieldId)){
+      closeDialog();if(changedRod)render();else updateFishing();toast(game.message);
+    }else{const message=game.message;showFieldKit(filter);toast(message);}
+  });
+}
+function showSpotChoices(){
+  showDialog('Đổi vị trí câu',`<p class="hint-note">Chọn góc bờ khác sẽ thu lượt hiện tại. Hoặc thu cần rồi chọn một điểm mới trên mặt nước.</p><div class="field-kit-list">${game.map.spots.map((spot,i)=>`<button data-advice-spot="${i}" ${i===game.spot?'disabled':''}><span><strong>${esc(spot.name)}</strong><small>Sâu ${spot.depth.toFixed(1)} m</small></span><em>${i===game.spot?'Đang câu':'Đến đây'}</em></button>`).join('')}</div>`,[
+    {label:'Chọn điểm khác trên mặt nước',action:()=>{game.retrieve();closeDialog();toast('Chọn một điểm mới trên mặt nước rồi thả câu.');}},
+    {label:'Tiếp tục chờ',primary:true,action:closeDialog}
+  ],{kind:'spots'});
+  $$('[data-advice-spot]').forEach(button=>button.onclick=()=>{
+    game.retrieve();if(game.selectSpot(+button.dataset.adviceSpot)){closeDialog();render();}
+  });
+}
+function showQuietAdvice(){
+  if(game.phase!=='waiting')return;
+  showDialog('Cá chưa cắn',`<p>${esc(NO_BITE_HINT)}</p><p class="hint-note">Mồi vẫn dưới nước. Bạn có thể tiếp tục chờ; chỉ thu cần khi chọn đổi vị trí, đổi đồ hoặc về nhà.</p>`,[
+    {label:'Đổi vị trí',action:showSpotChoices},
+    {label:'Đổi mồi',action:()=>showFieldKit('baits')},
+    {label:'Thẻo nhỏ hơn',action:()=>showFieldKit('line')},
+    {label:'Về chơi với vợ',action:()=>{game.retrieve();closeDialog();navigate('home');}},
+    {label:'Tiếp tục chờ',primary:true,action:()=>{game.dismissQuietHint();closeDialog();}}
+  ],{kind:'quiet'});
+}
 $('#dialog').addEventListener('close',()=>{dialogPointerStarts.clear();game.paused=dialogPaused||document.hidden;if(screen==='fishing')updateFishing();syncAtmosphere();if(previousFocus?.isConnected)previousFocus.focus();});
 // A held fishing gesture can end after the catch dialog appears. Only a fresh
 // pointer gesture that starts in this dialog may activate or dismiss it.
@@ -288,7 +340,7 @@ function showPause(){
   bindAudioOptions('pause');
   updateFishing();announce('Buổi câu đã tạm dừng.');
 }
-function showHelp(){showDialog('Một buổi câu, năm nhịp',`<ol class="help-steps"><li><b>Chuẩn bị trước khi đi câu.</b> Chọn map, góc bờ, cần và mồi rồi bấm Bắt đầu đi câu. Bản đồ có ${MAPS.length} vùng; sổ cá ghi cách tìm ${FISH.length} loài.</li><li><b>Thả câu.</b> Chờ cá đến mồi. Lure phải bật thu mồi; mồi giả dùng lại, mồi tự nhiên mất một phần mỗi lượt.</li><li><b>Giật đúng tín hiệu.</b> Câu phao: chờ chìm rõ. Câu đáy/lure: chờ đầu cần cong, dây căng. Giữ vùng tay phải để đóng lưỡi; tay trái bám theo dấu cá. Nhịp cơ bản 2,8 giây; lưỡi tốt tăng thời gian.</li><li><b>Dẫn trong vùng xanh.</b> Tay phải kéo lên để tăng lực, hạ xuống khi cá bứt. Tay trái phải di chuyển theo dấu cá; lệch quá lâu sẽ mất cá. Tiến độ đạt 100% sẽ tự vớt cá. Dây tăng sức tải, máy tăng tốc dẫn, phao giảm lực nước, vợt giúp vớt sớm.</li><li><b>Cá lên bờ.</b> Cất cá vào rọ/xô/thùng hoặc phóng sinh. Mở rọ cá sau buổi câu để bán, phóng sinh hoặc mang cá về nịnh vợ. Xu và sổ cá lưu tự động. Tạm dừng → Chuẩn bị lại để đổi điểm câu, bộ cần hoặc mua thêm đồ.</li></ol><p class="hint-note">Cảm ứng: giữ hai vùng bằng hai ngón độc lập. Máy tính: chuột bám cá + giữ Space, phím ↑ ↓ chỉnh lực; hoặc W A S D bám cá + chuột giữ cần. P / Esc tạm dừng. Mắc đáy: bám điểm gỡ và giữ lực cần 15–35% trong vài giây.</p>`,[{label:screen==='fishing'?'Tiếp tục câu':'Chuẩn bị đi câu',primary:true,action:()=>{closeDialog();if(screen!=='fishing')navigate('prepare');}}]);}
+function showHelp(){showDialog('Một buổi câu, năm nhịp',`<ol class="help-steps"><li><b>Chuẩn bị trước khi đi câu.</b> Chọn map, góc bờ, cần và mồi, rồi soạn túi trước khi bấm Bắt đầu đi câu. Túi vải mặc định mang 1 cần, 2 loại mồi và 5 phụ kiện; chợ có túi lớn hơn. Bản đồ có ${MAPS.length} vùng; sổ cá ghi cách tìm ${FISH.length} loài.</li><li><b>Thả câu.</b> Chờ cá đến mồi. Lure phải bật thu mồi; mồi giả dùng lại, mồi tự nhiên mất một phần mỗi lượt. Cá chưa cắn thì mồi vẫn dưới nước; gợi ý giúp đổi vị trí, mồi, thẻo hoặc về nhà. Mở Thông tin buổi câu để đổi đồ đã mang trong túi.</li><li><b>Giật đúng tín hiệu.</b> Câu phao: chờ chìm rõ. Câu đáy/lure: chờ đầu cần cong, dây căng. Giữ vùng tay phải để đóng lưỡi; tay trái bám theo dấu cá. Nhịp cơ bản 2,8 giây; lưỡi tốt tăng thời gian.</li><li><b>Dẫn trong vùng xanh.</b> Tay phải kéo lên để tăng lực, hạ xuống khi cá bứt. Tay trái phải di chuyển theo dấu cá; lệch quá lâu sẽ mất cá. Tiến độ đạt 100% sẽ tự vớt cá. Dây tăng sức tải, máy tăng tốc dẫn, phao giảm lực nước, vợt giúp vớt sớm.</li><li><b>Cá lên bờ.</b> Cất cá vào rọ/xô/thùng hoặc phóng sinh. Mở rọ cá sau buổi câu để bán, phóng sinh hoặc mang cá về nịnh vợ. Xu và sổ cá lưu tự động. Tạm dừng → Chuẩn bị lại để đổi điểm câu, bộ cần hoặc mua thêm đồ.</li></ol><p class="hint-note">Cảm ứng: giữ hai vùng bằng hai ngón độc lập. Máy tính: chuột bám cá + giữ Space, phím ↑ ↓ chỉnh lực; hoặc W A S D bám cá + chuột giữ cần. P / Esc tạm dừng. Mắc đáy: bám điểm gỡ và giữ lực cần 15–35% trong vài giây.</p>`,[{label:screen==='fishing'?'Tiếp tục câu':'Chuẩn bị đi câu',primary:true,action:()=>{closeDialog();if(screen!=='fishing')navigate('prepare');}}]);}
 function containerSelect(id){return `<label class="container-label" for="${id}">Cất cá trong</label><select id="${id}">${CONTAINERS.map(c=>`<option value="${c.id}" ${c.id===player.container?'selected':''}>${c.name}</option>`).join('')}</select>`;}
 function showCatch(){
   const c=player.pending;if(!c)return;const def=getFish(c.fishId),id=c.id,container=getContainer(player.container),full=player.keptFish.length>=MAX_KEPT_FISH;
@@ -319,8 +371,8 @@ function bindAudioOptions(prefix){
   for(const key of ['music','effects']){const input=$('#'+prefix+'-'+key);input.oninput=e=>{player.settings[key]=+e.target.value/100;$('#'+prefix+'-'+key+'-value').value=e.target.value+'%';unlockAudio();audio.applySettings();persist();};if(key==='effects')input.onchange=()=>audio.cue('splash');}
 }
 function showFishingInfo(){
-  showDialog('Bên bờ '+game.map.name,`<div class="fishing-info"><p><strong>${game.spotData.name}</strong> · Sâu ${game.spotData.depth.toFixed(1)} m</p><p>${game.rod.name} · ${game.rod.label}<br>${getBait(player.bait).name} · ${baitCount()}</p><label class="checkline"><input id="pin-signal" type="checkbox" ${pinSignal?'checked':''}>Luôn hiện cận cảnh tín hiệu</label><p class="hint-note">Cận cảnh tự hiện khi cá thăm mồi. Hai vùng tay hiện khi cần giật và dẫn cá.</p><button id="info-keepnet" ${game.busy&&!player.pending?'disabled':''}>${icon('fish')} ${getContainer(player.container).name} · ${player.keptFish.length} con</button></div>${audioOptionsHTML('info')}`,[{label:'Cách chơi',action:showHelp},{label:'Tiếp tục câu',primary:true,action:closeDialog}],{kind:'info'});
-  $('#pin-signal').onchange=e=>{pinSignal=e.target.checked;updateFishing();};$('#info-keepnet').onclick=()=>showKeepnet();bindAudioOptions('info');
+  showDialog('Bên bờ '+game.map.name,`<div class="fishing-info"><p><strong>${game.spotData.name}</strong> · Sâu ${game.spotData.depth.toFixed(1)} m</p><p>${game.rod.name} · ${game.rod.label}<br>${getBait(player.bait).name} · ${baitCount()}</p><label class="checkline"><input id="pin-signal" type="checkbox" ${pinSignal?'checked':''}>Luôn hiện cận cảnh tín hiệu</label><p class="hint-note">Cận cảnh tự hiện khi cá thăm mồi. Hai vùng tay hiện khi cần giật và dẫn cá.</p><button id="info-bag" ${['idle','failed','waiting'].includes(game.phase)?'':'disabled'}>${icon('bag')} ${getBag(player.bag).name} · Đổi đồ mang theo</button><button id="info-keepnet" ${game.busy&&!player.pending?'disabled':''}>${icon('fish')} ${getContainer(player.container).name} · ${player.keptFish.length} con</button></div>${audioOptionsHTML('info')}`,[{label:'Cách chơi',action:showHelp},{label:'Tiếp tục câu',primary:true,action:closeDialog}],{kind:'info'});
+  $('#pin-signal').onchange=e=>{pinSignal=e.target.checked;updateFishing();};$('#info-keepnet').onclick=()=>showKeepnet();$('#info-bag').onclick=()=>showFieldKit();bindAudioOptions('info');
 }
 function showLesson(id){
   const l=LESSONS.find(l=>l.id===id);showDialog(l.name,`<p>${l.question}</p><div class="quiz-options">${l.options.map((o,i)=>`<button data-answer="${i}">${o}</button>`).join('')}</div><div id="quiz-feedback" class="quiz-feedback" aria-live="polite"></div>`);
@@ -393,5 +445,5 @@ function paint(){
 function frame(now){const dt=lastFrame?Math.min(.1,(now-lastFrame)/1000):0;lastFrame=now;if(screen==='fishing'&&sceneReady){hands.step(dt);game.step(dt);if(!game.paused){const load=rodLoad({phase:game.phase,force:game.force,tension:game.tension,weight:game.hooked?.weight,power:game.rod.power,strength:game.behavior?.strength});rodFlex+=(load-rodFlex)*(1-Math.exp(-dt*9));}}else rodFlex=0;if(now-lastUpdate>100){if(screen==='fishing')updateFishing();lastUpdate=now;}paint();requestAnimationFrame(frame);}
 $('#brand-icon').innerHTML=icon('fish');$('#profile-avatar').innerHTML=avatarArt();$('#coin-icon').innerHTML=icon('coin');$('#settings').innerHTML=icon('settings');
 $('#game-nav').innerHTML=NAV_ITEMS.map(([id,symbol,label])=>`<a href="#${id}" data-screen="${id}"><span class="dock-icon">${icon(symbol)}</span><span>${label}</span></a>`).join('');
-screen=renderers[location.hash.slice(1)]?location.hash.slice(1):'home';setHash(screen);render();if(screen==='fishing')setFishingOrientation(true);persist();requestAnimationFrame(frame);
+screen=renderers[location.hash.slice(1)]?location.hash.slice(1):'home';game.tripActive=screen==='fishing';setHash(screen);render();if(screen==='fishing')setFishingOrientation(true);persist();requestAnimationFrame(frame);
 if(player.pending)showCatch();

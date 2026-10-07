@@ -2,9 +2,11 @@ import {pointInPolygon} from './scene-geometry.js';
 import {catchRemark,getContainer,MAX_KEPT_FISH} from './catch-fate.js';
 import {fishBehavior,snagChance,castHabitat} from './water-world.js';
 import {fishFightProfile} from './fight-physics.js';
-import {FISH,MAPS,RODS,BAITS,ACCESSORIES,LESSONS,getMap,getRod,getBait,getFish,usesFloat,usesReel,acceptsBait,loadoutStats} from './content.js';
+import {FISH,MAPS,RODS,BAITS,BAGS,ACCESSORIES,LESSONS,getMap,getRod,getBait,getFish,getBag,usesFloat,usesReel,acceptsBait,loadoutStats} from './content.js';
+import {packingError,packingChange,packingForLoadout} from './fishing-bag.js';
 export const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 export const FIGHT_ZONE=Object.freeze({min:30,max:76,red:90});
+export const NO_BITE_HINT='Cá chưa cắn. Có thể vị trí hoặc mồi chưa hợp, hay hôm nay cá ít hoạt động. Thử đổi vị trí, đổi mồi, dùng thẻo nhỏ hơn hoặc về chơi với vợ.';
 export function seededRandom(seed){let n=seed>>>0;return()=>{n+=0x6D2B79F5;let t=Math.imul(n^(n>>>15),1|n);t^=t+Math.imul(t^(t>>>7),61|t);return((t^(t>>>14))>>>0)/4294967296;};}
 export function floatMarks(player){if(!usesFloat(getRod(player.rod)))return 0;return clamp(Math.round((loadoutStats(player).capacity-player.rig.lead-.06-getBait(player.bait).mass)/.045),0,8);}
 export function balancedLead(player){return +clamp(loadoutStats(player).capacity-.06-getBait(player.bait).mass-4*.045,.4,3.5).toFixed(2);}
@@ -17,13 +19,30 @@ export function rigError(p){
   return '';
 }
 export class FishingGame{
-  constructor(player,{seed=Date.now(),onChange=()=>{}}={}){this.player=player;this.random=seededRandom(seed);this.onChange=onChange;this.phase=player.pending?'landed':'idle';this.time=0;this.elapsed=0;this.paused=false;this.pulling=false;this.retrieving=false;this.deadlineReached=false;this.message='Chọn điểm câu. Bắt đầu bằng giun và cần tre.';this.spot=0;this.castId=0;this.castTarget=null;this.castHabitat=null;this.castFlight=null;this.force=0;this.tracking=false;this.aim={x:.5,y:.5};this.fishPosition={x:.5,y:.5};this.controlRandom=seededRandom(seed^0xAC51);this.environmentRandom=seededRandom(seed^0xE872);this.hooked=null;this.target=null;this.fish=[];this.populate();}
+  constructor(player,{seed=Date.now(),onChange=()=>{}}={}){this.player=player;this.random=seededRandom(seed);this.onChange=onChange;this.phase=player.pending?'landed':'idle';this.time=0;this.elapsed=0;this.paused=false;this.pulling=false;this.retrieving=false;this.deadlineReached=false;this.tripActive=false;this.quietHint=false;this.quietHintOffered=false;this.message='Chọn điểm câu. Bắt đầu bằng giun và cần tre.';this.spot=0;this.castId=0;this.castTarget=null;this.castHabitat=null;this.castFlight=null;this.force=0;this.tracking=false;this.aim={x:.5,y:.5};this.fishPosition={x:.5,y:.5};this.controlRandom=seededRandom(seed^0xAC51);this.environmentRandom=seededRandom(seed^0xE872);this.hooked=null;this.target=null;this.fish=[];this.populate();}
   changed(){this.onChange(this);}
   get map(){return getMap(this.player.map);}
   get rod(){return getRod(this.player.rod);}
   get stats(){return loadoutStats(this.player);}
   get spotData(){return this.map.spots[this.spot];}
   get busy(){return !['idle','failed'].includes(this.phase);}
+  tripError(){return packingError(this.player)||rigError(this.player)||(!this.player.baits[this.player.bait]?'Mồi đang chọn đã hết. Chọn mồi còn trong túi trước khi đi.':'');}
+  startTrip(){
+    const error=this.tripError();if(this.busy||error){this.message=error||'Xử lý lượt câu trước khi ra bờ.';this.changed();return false;}
+    this.tripActive=true;this.changed();return true;
+  }
+  endTrip(){this.tripActive=false;}
+  equipBag(id){
+    if(this.busy||this.tripActive){this.message='Soạn túi tại nhà hoặc ở bước chuẩn bị trước khi đi.';return false;}
+    if(!this.player.bags.includes(id)||!BAGS.some(b=>b.id===id))return false;
+    const error=packingError(this.player,this.player.packing,id);if(error){this.message=error;return false;}
+    this.player.bag=id;this.message='Đã chọn '+getBag(id).name.toLocaleLowerCase('vi')+'.';this.changed();return true;
+  }
+  packItem(kind,id,include){
+    if(this.busy||this.tripActive){this.message='Soạn túi tại nhà hoặc ở bước chuẩn bị trước khi đi.';return false;}
+    const {packing,error}=packingChange(this.player,kind,id,include);if(error){this.message=error;return false;}
+    this.player.packing=packing;this.message=include?'Đã xếp thêm đồ vào túi.':'Đã để món này ở nhà.';this.changed();return true;
+  }
   populate(){
     const species=FISH.filter(f=>f.maps.includes(this.player.map));
     this.fish=[];for(let s=0;s<this.map.spots.length;s++)for(let j=0;j<species.length*2;j++){
@@ -36,23 +55,31 @@ export class FishingGame{
   selectMap(id){if(this.busy||!this.player.maps.includes(id))return false;this.player.map=id;this.spot=0;this.resetCastTarget();this.phase='idle';this.target=null;this.hooked=null;this.pulling=false;this.retrieving=false;this.signal='quiet';this.player.rig.depth=this.spotData.depth;this.populate();this.message=`Đã đến ${this.map.name}. Chọn mồi và điểm câu.`;this.changed();return true;}
   selectSpot(i){if(this.busy||!this.map.spots[i])return false;this.spot=i;this.resetCastTarget();this.player.rig.depth=this.spotData.depth;this.message=`${this.spotData.name}: sâu ${this.spotData.depth.toFixed(1)} m. Chỉnh tầng mồi nếu tìm cá giữa nước.`;this.changed();return true;}
   equip(kind,id){
-    if(this.busy)return false;
-    const p=this.player;
+    if(this.busy){this.message='Thu cần hoặc xử lý lượt câu trước khi đổi đồ.';return false;}
+    const p=this.player,next={...p,baits:{...p.baits},equipment:{...p.equipment},rig:{...p.rig}};
+    const packedKind=kind==='rod'?'rods':kind==='bait'?'baits':'accessories';
+    if(this.tripActive&&!p.packing[packedKind].includes(id)){this.message='Món này đang để ở nhà. Chỉ dùng được đồ đã mang trong túi.';return false;}
     if(kind==='rod'){
       const rod=RODS.find(r=>r.id===id);if(!rod||!p.rods.includes(id))return false;
-      const bait=getBait(p.bait);p.rod=id;
-      if(!acceptsBait(rod,bait))p.bait=rod.tech==='lure'?'lure':'worm';
-      if(rod.tech==='lure')p.baits.lure=1;
-      if(usesFloat(rod))p.rig.lead=balancedLead(p);
-      this.message=`Đã lắp ${rod.name}.`;
+      next.rod=id;if(rod.tech==='lure'&&!this.tripActive)next.baits.lure=1;
+      if(!acceptsBait(rod,getBait(p.bait))||(this.tripActive&&!p.baits[p.bait])){
+        const available=BAITS.filter(b=>acceptsBait(rod,b)&&next.baits[b.id]>0&&(!this.tripActive||p.packing.baits.includes(b.id)));
+        if(this.tripActive&&!available.length){this.message='Chưa mang mồi phù hợp với cần này. Soạn lại túi trước buổi câu.';return false;}
+        next.bait=available[0]?.id||(rod.tech==='lure'?'lure':'worm');
+      }
     }else if(kind==='bait'){
-      const bait=BAITS.find(b=>b.id===id);if(!bait||!acceptsBait(this.rod,bait)||(bait.reusable&&!(p.baits[id]>0)))return false;
-      p.bait=id;if(usesFloat(this.rod))p.rig.lead=balancedLead(p);this.message=`Đã lắp ${bait.name.toLocaleLowerCase('vi')}.`;
+      const bait=BAITS.find(b=>b.id===id);if(!bait||!acceptsBait(this.rod,bait)||((bait.reusable||this.tripActive)&&!(p.baits[id]>0)))return false;
+      next.bait=id;
     }else{
       const item=ACCESSORIES.find(a=>a.id===id&&a.slot===kind);
       if(!item||!p.accessories?.includes(id)||(kind==='reel'&&!usesReel(this.rod))||(kind==='float'&&!usesFloat(this.rod)))return false;
-      p.equipment[kind]=id;if(kind==='float')p.rig.lead=balancedLead(p);this.message=`Đã trang bị ${item.name.toLocaleLowerCase('vi')}.`;
+      next.equipment[kind]=id;
     }
+    next.packing=this.tripActive?{...p.packing,baits:p.packing.baits.filter(b=>next.baits[b]>0||b===next.bait)}:packingForLoadout(p,next);
+    const error=packingError(next);if(error){this.message=error;return false;}
+    if(usesFloat(getRod(next.rod))&&['rod','bait','float'].includes(kind))next.rig.lead=balancedLead(next);
+    Object.assign(p,{rod:next.rod,bait:next.bait,baits:next.baits,equipment:next.equipment,packing:next.packing,rig:next.rig});
+    this.message=kind==='rod'?`Đã lắp ${this.rod.name}.`:kind==='bait'?`Đã lắp ${getBait(id).name.toLocaleLowerCase('vi')}.`:`Đã trang bị ${ACCESSORIES.find(a=>a.id===id).name.toLocaleLowerCase('vi')}.`;
     this.changed();return true;
   }
   setRig(part,value){
@@ -71,10 +98,10 @@ export class FishingGame{
   }
   cast(){
     if(this.busy||this.paused||this.deadlineReached)return false;
-    const error=rigError(this.player);if(error){this.message=error;this.changed();return false;}
+    const error=(this.tripActive?packingError(this.player):'')||rigError(this.player);if(error){this.message=error;this.changed();return false;}
     if(!getBait(this.player.bait).reusable&&!(this.player.baits[this.player.bait]>0)){this.message='Hết mồi. Đào giun ở bàn đồ hoặc mua mồi tại cửa hàng.';this.changed();return false;}
     if(!getBait(this.player.bait).reusable)this.player.baits[this.player.bait]--;
-    this.player.casts++;this.castId++;this.phase='casting';this.wait=0;this.stageTime=0;this.target=null;this.hooked=null;this.retrieving=false;this.releaseHands();this.snagProgress=0;this.snagTriggered=false;
+    this.player.casts++;this.castId++;this.phase='casting';this.wait=0;this.stageTime=0;this.target=null;this.hooked=null;this.retrieving=false;this.quietHint=false;this.quietHintOffered=false;this.releaseHands();this.snagProgress=0;this.snagTriggered=false;
     this.castHabitat=castHabitat(this.spotData,this.castTarget||this.defaultCastPoint);
     this.snagScheduled=this.environmentRandom()<snagChance(this.map,this.spot,this.player.rig.depth,this.rod.tech,this.castHabitat);this.snagAt=.85+this.environmentRandom()*.85;
     this.baitPoint={...(this.castTarget||this.defaultCastPoint)};this.castFlight={t:0,duration:.72,start:{x:.16,y:.72},end:{...this.baitPoint}};this.signal='quiet';this.message='Đang vung cần…';this.changed();return true;
@@ -120,17 +147,17 @@ export class FishingGame{
     if(this.phase==='waiting'&&this.snagScheduled&&!this.snagTriggered&&this.wait>=this.snagAt){this.beginSnag();return;}
     if(this.phase==='waiting'){
       this.signal=(Math.sin(this.time*1.8)>.96)?'wind':'quiet';
+      if(this.wait>35&&!this.quietHintOffered){this.quietHint=true;this.quietHintOffered=true;this.message=NO_BITE_HINT;this.changed();}
       if(this.rod.tech==='lure'&&!this.retrieving)return;
       if(this.wait>1.8&&!this.target){
         const candidates=this.fish.filter(f=>this.eligible(f));
         this.target=this.pickTarget(candidates);
       }
       if(this.target){
-        const t=this.target,dx=this.baitPoint.x-t.x,dy=this.baitPoint.y-t.y,dist=Math.hypot(dx,dy),speed=.013+t.temper*.009;
+        const t=this.target,dx=this.baitPoint.x-t.x,dy=this.baitPoint.y-t.y,dist=Math.hypot(dx,dy),speed=(.013+t.temper*.009)*this.stats.baitApproach;
         if(dist>.005){t.x+=dx/dist*Math.min(dist,speed*dt);t.y+=dy/dist*Math.min(dist,speed*dt);}
-        else{this.phase='nibble';this.stageTime=0;this.signal='nibble';this.message=this.player.settings.assist?(usesFloat(this.rod)?'Cá đang thăm mồi. Chờ phao chìm rõ.':'Cá đang thăm mồi. Chờ đầu cần cong rõ.'):'Có chuyển động nhẹ dưới mồi.';this.changed();}
+        else{this.phase='nibble';this.quietHint=false;this.stageTime=0;this.signal='nibble';this.message=this.player.settings.assist?(usesFloat(this.rod)?'Cá đang thăm mồi. Chờ phao chìm rõ.':'Cá đang thăm mồi. Chờ đầu cần cong rõ.'):'Có chuyển động nhẹ dưới mồi.';this.changed();}
       }
-      if(this.wait>35){this.fail('Chưa có cá hợp mồi ở tầng này. Đổi mồi, độ sâu hoặc điểm câu.');}
     }else if(this.phase==='nibble'){
       this.signal='nibble';
       if(this.stageTime>1.1+this.target.temper*1.2){this.phase='bite';this.stageTime=0;this.signal='bite';this.message=this.player.settings.assist?'Cá đã ngậm mồi — giật cần ngay!':usesFloat(this.rod)?'Phao chìm rõ, dây dịch chuyển.':'Đầu cần cong rõ, dây kéo căng.';this.changed();}
@@ -208,8 +235,9 @@ export class FishingGame{
     if(this.snagProgress>=1){this.phase='waiting';this.signal='quiet';this.wait=0;this.stageTime=0;this.releaseHands();this.message='Đã gỡ khỏi đáy. Mồi còn nguyên trong lượt; tiếp tục chờ cá.';this.changed();}
   }
   toggleRetrieve(){if(['casting','waiting'].includes(this.phase)&&this.rod.tech==='lure')this.retrieving=!this.retrieving;}
-  retrieve(){if(this.phase==='snag'){this.fail('Đã bỏ lượt mắc đáy. Không mất thêm mồi hay đồ nghề.');return;}if(['casting','waiting','nibble','bite'].includes(this.phase)){this.releaseHands();this.castFlight=null;this.phase='idle';this.target=null;this.retrieving=false;this.signal='quiet';this.message=getBait(this.player.bait).reusable?'Đã thu cần. Mồi giả vẫn còn trong túi, có thể thả lại.':'Đã thu cần. Mồi của lượt trước đã dùng; có thể đổi điểm và thả lại.';this.changed();}}
-  fail(message){this.releaseHands();this.castFlight=null;this.phase='failed';this.signal='quiet';this.pulling=false;this.retrieving=false;this.target=null;this.message=message;this.changed();}
+  dismissQuietHint(){if(!this.quietHint)return false;this.quietHint=false;this.message='Mồi vẫn dưới nước. Cứ chờ thêm, cá có thể vào sau.';this.changed();return true;}
+  retrieve(){if(this.phase==='snag'){this.fail('Đã bỏ lượt mắc đáy. Không mất thêm mồi hay đồ nghề.');return;}if(['casting','waiting','nibble','bite'].includes(this.phase)){this.releaseHands();this.castFlight=null;this.phase='idle';this.target=null;this.retrieving=false;this.quietHint=false;this.signal='quiet';this.message=getBait(this.player.bait).reusable?'Đã thu cần. Mồi giả vẫn còn trong túi, có thể thả lại.':'Đã thu cần. Mồi của lượt trước đã dùng; có thể đổi điểm và thả lại.';this.changed();}}
+  fail(message){this.releaseHands();this.castFlight=null;this.phase='failed';this.signal='quiet';this.pulling=false;this.retrieving=false;this.quietHint=false;this.target=null;this.message=message;this.changed();}
   land(){
     const f=this.hooked;f.caught=true;const def=getFish(f.fishId),p=this.player;
     p.serial++;p.pending={id:`catch-${p.serial}`,fishId:f.fishId,weight:f.weight,value:Math.round(def.price*f.weight),mapId:p.map};
@@ -238,15 +266,16 @@ export class FishingGame{
     const p=this.player,n=p.keptFish.length,value=p.keptFish.reduce((sum,c)=>sum+c.value,0);
     p.coins+=value;p.sold+=n;p.keptFish=[];this.message=`Đã bán ${n} con cá. Xu vào ví, rọng lại nhẹ, tay lại ngứa.`;this.changed();return true;
   }
-  digWorms(){if(this.busy)return false;this.player.baits.worm=Math.min(60,this.player.baits.worm+6);this.message='Đã đào thêm 6 phần giun (tối đa 60). Không tốn xu.';this.changed();return true;}
+  digWorms(){if(this.busy||this.tripActive)return false;this.player.baits.worm=Math.min(60,this.player.baits.worm+6);this.message='Đã đào thêm 6 phần giun (tối đa 60). Không tốn xu.';this.changed();return true;}
   buy(kind,id){
-    if(this.busy)return false;const p=this.player;
+    if(this.busy||this.tripActive)return false;const p=this.player;
     if(kind==='rod'){const r=RODS.find(r=>r.id===id);if(!r||p.rods.includes(id)||p.coins<r.price)return false;p.coins-=r.price;p.rods.push(id);if(r.tech==='lure')p.baits.lure=1;this.message=`Đã mua ${r.name}. Lắp tại bàn đồ.`;}
     else if(kind==='map'){const m=MAPS.find(m=>m.id===id);if(!m||p.maps.includes(id)||p.coins<m.price)return false;p.coins-=m.price;p.maps.push(id);this.message=`Đã mở ${m.name}, dùng lại không tốn phí chuyến.`;}
     else if(kind==='bait'){const b=BAITS.find(b=>b.id===id),count=p.baits[id]||0;if(!b||b.price===0||p.coins<b.price||(b.reusable&&count>0)||count+b.amount>100000)return false;p.coins-=b.price;p.baits[id]=count+b.amount;this.message=`Đã mua ${b.reusable?'mồi dùng lại':b.amount+' phần'} ${b.name.toLocaleLowerCase('vi')}.`;}
     else if(kind==='accessory'){const a=ACCESSORIES.find(a=>a.id===id);if(!a||p.accessories.includes(id)||p.coins<a.price)return false;p.coins-=a.price;p.accessories.push(id);this.message=`Đã mua ${a.name}. Lắp tại bàn đồ.`;}
+    else if(kind==='bag'){const bag=BAGS.find(b=>b.id===id);if(!bag||p.bags.includes(id)||p.coins<bag.price)return false;p.coins-=bag.price;p.bags.push(id);this.message=`Đã mua ${bag.name}. Chọn và soạn túi ở bước chuẩn bị.`;}
     else return false;this.changed();return true;
   }
   answerLesson(id,index){const l=LESSONS.find(l=>l.id===id);if(!l||index!==l.answer)return false;if(!this.player.lessons.includes(id)){this.player.lessons.push(id);this.player.coins+=2500;this.message='Hoàn thành bài học. Thưởng 2.500 xu lần đầu.';this.changed();}return true;}
-  newSession(){if(this.busy||this.player.pending)return false;this.elapsed=0;this.deadlineReached=false;this.phase='idle';this.paused=false;this.releaseHands();this.retrieving=false;this.hooked=null;this.target=null;this.resetCastTarget();this.populate();this.message='Một buổi câu mới. Chúc bạn gặp cá đẹp.';this.changed();return true;}
+  newSession(){if(this.busy||this.player.pending)return false;this.elapsed=0;this.deadlineReached=false;this.phase='idle';this.paused=false;this.releaseHands();this.retrieving=false;this.quietHint=false;this.quietHintOffered=false;this.hooked=null;this.target=null;this.resetCastTarget();this.populate();this.message='Một buổi câu mới. Chúc bạn gặp cá đẹp.';this.changed();return true;}
 }

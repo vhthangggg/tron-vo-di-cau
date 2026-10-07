@@ -1,4 +1,5 @@
-import {FISH, MAPS, RODS, BAITS, ACCESSORIES, ACCESSORY_SLOTS, LESSONS, getRod, getBait, acceptsBait} from './content.js';
+import {FISH, MAPS, RODS, BAITS, BAGS, ACCESSORIES, ACCESSORY_SLOTS, LESSONS, getRod, getBait, acceptsBait} from './content.js';
+import {normalizePacking} from './fishing-bag.js';
 import {CONTAINERS,MAX_KEPT_FISH} from './catch-fate.js';
 // Additive migration: the existing key and version preserve every v0.1 player's progress.
 export const SAVE_KEY='tron-vo-di-cau.v01';
@@ -6,7 +7,8 @@ const validInt=(v,min=0,max=1e9)=>Number.isSafeInteger(v)&&v>=min&&v<=max;
 const array=v=>Array.isArray(v)?v:[];
 export function newPlayer(){
   const base=ACCESSORIES.filter(a=>a.price===0);
-  return {version:1,coins:12000,baits:{...Object.fromEntries(BAITS.map(b=>[b.id,0])),worm:18,dough:6,corn:6},rods:['bamboo'],maps:['AO'],accessories:base.map(a=>a.id),equipment:Object.fromEntries(base.map(a=>[a.slot,a.id])),rod:'bamboo',bait:'worm',map:'AO',rig:{depth:MAPS[0].spots[0].depth,lead:1.08},catches:0,released:0,sold:0,gifted:0,container:'keepnet',keptFish:[],casts:0,collection:{},lessons:[],pending:null,serial:0,settings:{assist:true,sound:true,music:.45,effects:.7,deadline:0}};
+  const player={version:1,coins:12000,baits:{...Object.fromEntries(BAITS.map(b=>[b.id,0])),worm:18,dough:6,corn:6},rods:['bamboo'],maps:['AO'],accessories:base.map(a=>a.id),equipment:Object.fromEntries(base.map(a=>[a.slot,a.id])),bags:['cloth'],bag:'cloth',rod:'bamboo',bait:'worm',map:'AO',rig:{depth:MAPS[0].spots[0].depth,lead:1.08},catches:0,released:0,sold:0,gifted:0,container:'keepnet',keptFish:[],casts:0,collection:{},lessons:[],pending:null,serial:0,settings:{assist:true,sound:true,music:.45,effects:.7,deadline:0}};
+  player.packing=normalizePacking(player);return player;
 }
 export function validateSave(raw){
   if(!raw||raw.version!==1||!validInt(raw.coins)||!validInt(raw.catches)||!validInt(raw.serial)) throw Error('Save không hợp lệ');
@@ -22,6 +24,8 @@ export function validateSave(raw){
   if(p.rods.some(id=>getRod(id).tech==='lure'))p.baits.lure=1;
   const rod=getRod(p.rod),bait=getBait(raw.bait);
   p.bait=BAITS.some(b=>b.id===raw.bait)&&acceptsBait(rod,bait)&&(!bait.reusable||p.baits[bait.id]>0)?bait.id:rod.tech==='lure'?'lure':'worm';
+  p.bags=[...new Set(['cloth',...array(raw.bags).filter(id=>BAGS.some(b=>b.id===id))])];
+  p.bag=p.bags.includes(raw.bag)?raw.bag:'cloth';p.packing=normalizePacking(p,raw.packing);
   if(Number.isFinite(raw.rig?.depth)&&raw.rig.depth>=.4&&raw.rig.depth<=18)p.rig.depth=raw.rig.depth;
   // Ao Lang's old starter depth predates its two shallow POV spots.
   if(p.map==='AO'&&raw.rig?.depth===1.8)p.rig.depth=MAPS[0].spots[0].depth;
