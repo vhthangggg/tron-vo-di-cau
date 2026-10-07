@@ -183,3 +183,39 @@ body[data-screen=fishing] #strike[aria-pressed=true] .force-top,body[data-screen
 @keyframes hotspotPulse{0%{transform:scale(.65);opacity:1}100%{transform:scale(1.35);opacity:0}}
 .scene-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.map-hotspot::after{animation:none}}
+
+/* Fishing is a 16:9 landscape-only play surface on mobile.
+   Menus / prepare remain portrait. Native orientation lock is requested in app.js;
+   this rotated fallback covers browsers that reject Orientation Lock. */
+@media (max-width:700px) and (orientation:portrait){
+ body[data-screen=fishing]{overflow:hidden;background:#102b22}
+ body[data-screen=fishing] .app-header,
+ body[data-screen=fishing] #game-nav{display:none!important}
+ body[data-screen=fishing] #main{
+   position:fixed;left:50%;top:50%;
+   width:100dvh;height:100dvw;
+   transform:translate(-50%,-50%) rotate(90deg);
+   transform-origin:center;
+   overflow:hidden;padding:0;margin:0;z-index:50;
+ }
+ body[data-screen=fishing] .fishing-layout,
+ body[data-screen=fishing] .scene{width:100%;height:100%;min-height:100%;max-height:none}
+ body[data-screen=fishing] .scene-bg,
+ body[data-screen=fishing] #water{width:100%;height:100%}
+ body[data-screen=fishing] .hand-panel{width:clamp(132px,20vw,190px);bottom:calc(12px + env(safe-area-inset-right))}
+ body[data-screen=fishing] .left-hand{left:calc(14px + env(safe-area-inset-top))}
+ body[data-screen=fishing] .right-hand{right:calc(14px + env(safe-area-inset-bottom))}
+ body[data-screen=fishing] .track-pad,
+ body[data-screen=fishing] .rod-pad{height:clamp(102px,32dvw,155px);border-radius:13px}
+ body[data-screen=fishing] .hand-panel p,
+ body[data-screen=fishing] .dual-instruction{display:none}
+ body[data-screen=fishing] .hand-heading{flex-direction:column;align-items:flex-start;gap:3px;margin-bottom:6px}
+ body[data-screen=fishing] .hand-heading span{font-size:9px}
+ body[data-screen=fishing] .hand-heading strong{font-size:11px}
+ body[data-screen=fishing] .scene-bottom{width:calc(100% - clamp(320px,45vw,440px));bottom:16px;gap:5px}
+ body[data-screen=fishing] .scene-caption{top:86px;left:18px;max-width:55%;font-size:9px}
+ body[data-screen=fishing] .scene-caption .focus-bait{display:none}
+ body[data-screen=fishing] .float-zoom{top:77px;width:58px}
+ body[data-screen=fishing] .float-zoom svg{height:54px;width:42px}
+ body[data-screen=fishing] .phase-track{display:none}
+}
