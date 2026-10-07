@@ -172,3 +172,14 @@ body[data-screen=fishing] .scene[data-phase=snag] .fight{border-color:#e6b576}
 }
 body[data-screen=fishing] #strike[aria-pressed=true]{color:#173f30;background:linear-gradient(#ead29b,#cbb479)}
 body[data-screen=fishing] #strike[aria-pressed=true] .force-top,body[data-screen=fishing] #strike[aria-pressed=true] .force-bottom{color:#32563d}
+
+/* Ao Lang overview selector and Veo POV background */
+.ao-lang-overview{position:relative;overflow:hidden;border-radius:18px;margin:12px 0 16px;aspect-ratio:2/3;background:#173f38}
+.ao-lang-overview>img{display:block;width:100%;height:100%;object-fit:cover}
+.map-hotspot{position:absolute;width:30px;height:30px;border:3px solid #fff;border-radius:50%;background:#c75b38;box-shadow:0 3px 14px #0008;transform:translate(-50%,-50%);padding:0;z-index:2}
+.map-hotspot::after{content:"";position:absolute;inset:-9px;border:2px solid #fff8;border-radius:50%;animation:hotspotPulse 1.8s ease-out infinite}
+.map-hotspot span{position:absolute;left:50%;top:36px;transform:translateX(-50%);white-space:nowrap;background:#183d37e8;color:#fff;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}
+.map-hotspot.ben-cau-tre{left:43%;top:86%}.map-hotspot.mui-dat{left:67%;top:39%}
+@keyframes hotspotPulse{0%{transform:scale(.65);opacity:1}100%{transform:scale(1.35);opacity:0}}
+.scene-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.map-hotspot::after{animation:none}}
