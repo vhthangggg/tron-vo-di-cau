@@ -1,4 +1,4 @@
-import {fishBehavior,snagChance} from './water-world.js';
+import {fishBehavior,snagChance,castHabitat} from './water-world.js';
 import {FISH,MAPS,RODS,BAITS,ACCESSORIES,LESSONS,getMap,getRod,getBait,getFish,usesFloat,usesReel,acceptsBait,loadoutStats} from './content.js';
 export const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 export const FIGHT_ZONE=Object.freeze({min:30,max:76,red:90});
@@ -14,7 +14,7 @@ export function rigError(p){
   return '';
 }
 export class FishingGame{
-  constructor(player,{seed=Date.now(),onChange=()=>{}}={}){this.player=player;this.random=seededRandom(seed);this.onChange=onChange;this.phase=player.pending?'landed':'idle';this.time=0;this.elapsed=0;this.paused=false;this.pulling=false;this.retrieving=false;this.deadlineReached=false;this.message='Chọn điểm câu. Bắt đầu bằng giun và cần tre.';this.spot=0;this.castId=0;this.castTarget=null;this.force=0;this.tracking=false;this.aim={x:.5,y:.5};this.fishPosition={x:.5,y:.5};this.controlRandom=seededRandom(seed^0xAC51);this.environmentRandom=seededRandom(seed^0xE872);this.hooked=null;this.target=null;this.fish=[];this.populate();}
+  constructor(player,{seed=Date.now(),onChange=()=>{}}={}){this.player=player;this.random=seededRandom(seed);this.onChange=onChange;this.phase=player.pending?'landed':'idle';this.time=0;this.elapsed=0;this.paused=false;this.pulling=false;this.retrieving=false;this.deadlineReached=false;this.message='Chọn điểm câu. Bắt đầu bằng giun và cần tre.';this.spot=0;this.castId=0;this.castTarget=null;this.castHabitat=null;this.force=0;this.tracking=false;this.aim={x:.5,y:.5};this.fishPosition={x:.5,y:.5};this.controlRandom=seededRandom(seed^0xAC51);this.environmentRandom=seededRandom(seed^0xE872);this.hooked=null;this.target=null;this.fish=[];this.populate();}
   changed(){this.onChange(this);}
   get map(){return getMap(this.player.map);}
   get rod(){return getRod(this.player.rod);}
@@ -61,7 +61,7 @@ export class FishingGame{
   balance(){if(this.busy||!usesFloat(this.rod))return false;this.player.rig.lead=balancedLead(this.player);this.message='Phao đã cân về 4 vạch.';this.changed();return true;}
   setCastTarget(x,y){
     if(this.busy||this.deadlineReached||!Number.isFinite(x)||!Number.isFinite(y))return false;
-    this.castTarget={x:clamp(x,0,1),y:clamp(y,0,1)};this.message='Đã chọn điểm thả. Chạm Thả câu để vung cần.';this.changed();return true;
+    this.castTarget={x:clamp(x,0,1),y:clamp(y,0,1)};this.castHabitat=castHabitat(this.spotData,this.castTarget);const h=this.castHabitat;this.message=h.cover>.45?'Sát bèo/cỏ: rô, trê dễ vào hơn nhưng dễ mắc.':h.far>.68?'Nước xa và sâu hơn: cơ hội gặp cá lớn tăng.':h.near>.72?'Sát bờ: nhiều cá nhỏ, dễ tiếp cận.':'Nước thoáng: hợp chép, trắm và cá đi ăn ngoài.';this.changed();return true;
   }
   cast(){
     if(this.busy||this.deadlineReached)return false;
@@ -69,10 +69,27 @@ export class FishingGame{
     if(!getBait(this.player.bait).reusable&&!(this.player.baits[this.player.bait]>0)){this.message='Hết mồi. Đào giun ở bàn đồ hoặc mua mồi tại cửa hàng.';this.changed();return false;}
     if(!getBait(this.player.bait).reusable)this.player.baits[this.player.bait]--;
     this.player.casts++;this.castId++;this.phase='waiting';this.wait=0;this.stageTime=0;this.target=null;this.hooked=null;this.retrieving=false;this.releaseHands();this.snagProgress=0;this.snagTriggered=false;
-    this.snagScheduled=this.environmentRandom()<snagChance(this.map,this.spot,this.player.rig.depth,this.rod.tech);this.snagAt=.85+this.environmentRandom()*.85;
+    this.castHabitat=castHabitat(this.spotData,this.castTarget||{x:this.spotData.x,y:this.spotData.y});
+    this.snagScheduled=this.environmentRandom()<snagChance(this.map,this.spot,this.player.rig.depth,this.rod.tech,this.castHabitat);this.snagAt=.85+this.environmentRandom()*.85;
     this.baitPoint=this.castTarget?{...this.castTarget}:{x:this.spotData.x,y:this.spotData.y};this.signal='quiet';this.message=this.rod.tech==='lure'?'Mồi đã xuống nước. Bật thu mồi để cá chú ý.':usesFloat(this.rod)?'Mồi đã xuống nước. Quan sát phao; rung nhẹ chưa phải lúc giật.':'Mồi đã xuống đáy. Chờ đầu cần cong rõ rồi giật.';this.changed();return true;
   }
+  habitatAffinity(def,f){
+    const h=this.castHabitat||castHabitat(this.spotData,this.baitPoint),id=def.id;
+    let score=1;
+    if(['fish_03','fish_05','fish_13','fish_14','fish_27'].includes(id))score*=1+h.cover*2.2;
+    if(['fish_01','fish_07','fish_10','fish_31','fish_32'].includes(id))score*=1+h.open*1.55+h.far*.35;
+    const weightNorm=clamp((f.weight-def.min)/Math.max(.01,def.max-def.min),0,1);
+    score*=.55+(1-Math.abs(weightNorm-h.size))*.9;
+    if(h.near>.65&&weightNorm>.55)score*=.38;
+    if(h.far>.65&&weightNorm>.6)score*=1.65;
+    return score;
+  }
   eligible(f){const def=getFish(f.fishId);return !f.caught&&f.spot===this.spot&&f.suspicion<.6&&def.baits.includes(this.player.bait)&&def.tech.includes(this.rod.tech)&& (this.rod.tech==='lure'||Math.abs(f.depth-this.player.rig.depth)<.65);}
+  pickTarget(candidates){
+    const weighted=candidates.map(f=>({f,w:this.habitatAffinity(getFish(f.fishId),f)/(Math.hypot(f.x-this.baitPoint.x,f.y-this.baitPoint.y)+.07)}));
+    const total=weighted.reduce((n,v)=>n+v.w,0);let roll=this.random()*total;
+    for(const v of weighted){roll-=v.w;if(roll<=0)return v.f;}return weighted[0]?.f||null;
+  }
   step(dt){
     if(this.paused||this.deadlineReached)return;
     dt=clamp(dt,0,.1);this.time+=dt;this.elapsed+=dt;
@@ -90,8 +107,7 @@ export class FishingGame{
       if(this.rod.tech==='lure'&&!this.retrieving)return;
       if(this.wait>1.8&&!this.target){
         const candidates=this.fish.filter(f=>this.eligible(f));
-        candidates.sort((a,b)=>(Math.hypot(a.x-this.baitPoint.x,a.y-this.baitPoint.y)+a.temper*.04)-(Math.hypot(b.x-this.baitPoint.x,b.y-this.baitPoint.y)+b.temper*.04));
-        this.target=candidates[0]||null;
+        this.target=this.pickTarget(candidates);
       }
       if(this.target){
         const t=this.target,dx=this.baitPoint.x-t.x,dy=this.baitPoint.y-t.y,dist=Math.hypot(dx,dy),speed=.013+t.temper*.009;
