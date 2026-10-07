@@ -218,10 +218,9 @@ export class FishingGame{
   }
   resolveCatch(id,decision){
     const p=this.player,c=p.pending;
-    if(!c||c.id!==id||!['sell','release','gift','keep'].includes(decision))return false;
-    if(decision==='keep'&&p.keptFish.length>=MAX_KEPT_FISH){this.message=getContainer(p.container).name+' đã đầy. Bán bớt cá hoặc chọn mang về / phóng sinh.';return false;}
+    if(!c||c.id!==id||!['sell','release','keep'].includes(decision))return false;
+    if(decision==='keep'&&p.keptFish.length>=MAX_KEPT_FISH){this.message=getContainer(p.container).name+' đã đầy. Bán bớt cá hoặc chọn phóng sinh.';return false;}
     if(decision==='sell'){p.coins+=c.value;p.sold++;}
-    else if(decision==='gift')p.gifted++;
     else if(decision==='keep')p.keptFish.push({...c});
     else p.released++;
     p.pending=null;this.phase='idle';this.hooked=null;this.target=null;this.signal='quiet';

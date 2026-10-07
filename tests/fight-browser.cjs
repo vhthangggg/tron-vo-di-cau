@@ -75,7 +75,7 @@ async function bow(page){return page.evaluate(()=>{
   assert.equal(await page.locator('.scene').getAttribute('data-phase'),'landed');assert(elapsed<max,label+' took '+elapsed);
   assert(heard,label+' has the correct loaded-rod sound');assert(await page.evaluate(()=>window.__fightAudio.fightVoice===null));
   await page.waitForFunction(()=>![...window.__fightAudio.voices].some(v=>v.source.loop));
-  assert.equal(await page.locator('[data-catch-decision]').count(),3);
+  assert.equal(await page.locator('[data-catch-decision]').count(),2);
   const pending=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).pending);assert.equal(pending.fishId,fishId);assert.equal(pending.weight,weight);
   await page.locator('[data-catch-decision=release]').click();assert.equal(await page.locator('.scene').getAttribute('data-phase'),'idle');
   assert.deepEqual(errors,[]);checks.push({check:label+' two-touch fight, correct sound and catch resolve',seconds:+elapsed.toFixed(1)});await context.close();

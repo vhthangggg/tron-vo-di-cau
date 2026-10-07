@@ -10,14 +10,22 @@ import {loadSceneVideo} from '../src/scene-loader.js';
 const fish=id=>({id:'catch-'+id,fishId:'fish_01',weight:.6,value:120,mapId:'AO'});
 function pending(){const p=newPlayer();p.pending=fish(1);p.catches=1;p.serial=1;p.collection.fish_01={count:1,best:.6};return p;}
 
-test('Gift, keep and release are distinct, persistent and cannot resolve twice',()=>{
-  for(const choice of ['gift','keep','release']){
+test('Catch choices store or release fish, and cannot resolve twice',()=>{
+  for(const choice of ['keep','release']){
     const p=pending(),g=new FishingGame(p),coins=p.coins;
+    assert.equal(g.resolveCatch('catch-1','gift'),false);
     assert(g.resolveCatch('catch-1',choice));assert.equal(g.resolveCatch('catch-1',choice),false);
     assert.equal(p.coins,coins);assert.equal(p.catches,1);assert.equal(p.collection.fish_01.count,1);
-    assert.equal(p.gifted,choice==='gift'?1:0);assert.equal(p.released,choice==='release'?1:0);assert.equal(p.keptFish.length,choice==='keep'?1:0);
+    assert.equal(p.gifted,0);assert.equal(p.released,choice==='release'?1:0);assert.equal(p.keptFish.length,choice==='keep'?1:0);
     assert.deepEqual(validateSave(JSON.parse(JSON.stringify(p))),p);assert.match(catchRemark(fish(1),choice),/.+/);
   }
+});
+test('A fish must be stored before it can be gifted from the keepnet',()=>{
+  const p=pending(),g=new FishingGame(p);
+  assert.equal(g.resolveKeptCatch('catch-1','gift'),false);assert.equal(g.resolveCatch('catch-1','gift'),false);assert.equal(p.gifted,0);
+  assert(g.resolveCatch('catch-1','keep'));assert.equal(p.keptFish.length,1);
+  assert(g.resolveKeptCatch('catch-1','gift'));assert.equal(g.resolveKeptCatch('catch-1','gift'),false);
+  assert.equal(p.pending,null);assert.equal(p.keptFish.length,0);assert.equal(p.gifted,1);
 });
 test('Stored fish sell exactly once; bulk sale and active-cast guards preserve the wallet',()=>{
   const p=pending(),g=new FishingGame(p);assert(g.resolveCatch('catch-1','keep'));
@@ -29,7 +37,8 @@ test('Stored fish sell exactly once; bulk sale and active-cast guards preserve t
 test('A full container retains the pending catch for another choice',()=>{
   const p=pending(),g=new FishingGame(p);p.keptFish=Array.from({length:MAX_KEPT_FISH},(_,i)=>fish(i+2));
   assert.equal(g.resolveCatch('catch-1','keep'),false);assert.equal(p.pending.id,'catch-1');assert.equal(p.keptFish.length,MAX_KEPT_FISH);
-  assert(g.resolveCatch('catch-1','gift'));assert.equal(p.gifted,1);
+  assert.equal(g.resolveCatch('catch-1','gift'),false);assert.equal(p.pending.id,'catch-1');
+  assert(g.resolveCatch('catch-1','release'));assert.equal(p.gifted,0);assert.equal(p.released,1);
 });
 test('Old saves gain audio/container defaults; invalid and duplicated kept records are ignored',()=>{
   const raw=pending();delete raw.keptFish;delete raw.container;delete raw.gifted;raw.settings={sound:false,assist:true,deadline:0};
