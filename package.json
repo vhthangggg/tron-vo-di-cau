@@ -11,7 +11,8 @@
     "build": "node scripts/build.mjs",
     "test:browser:expansion": "node tests/expansion-browser.cjs",
     "test:browser:hold": "node tests/hold-browser.cjs",
-    "test:browser:two-hands": "node tests/two-hands-browser.cjs"
+    "test:browser:two-hands": "node tests/two-hands-browser.cjs",
+    "test:browser:spots": "node tests/spots-browser.cjs"
   },
   "engines": {
     "node": ">=22"

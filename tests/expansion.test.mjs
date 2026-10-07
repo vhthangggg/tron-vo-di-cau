@@ -12,7 +12,7 @@ const bite=g=>{assert.ok(g.cast());if(g.rod.tech==='lure')g.toggleRetrieve();tic
 test('All 10 maps have unique packaged landscape art and valid playable content',async()=>{
  assert.equal(MAPS.length,10);assert.equal(FISH.length,50);assert.equal(RODS.length,12);assert.equal(BAITS.length,15);assert.equal(ACCESSORIES.length,20);
  assert.equal(new Set(MAPS.map(m=>m.background)).size,10);
- for(const m of MAPS){const file=new URL('../'+m.background,import.meta.url);assert((await stat(file)).size>10000);const bytes=await readFile(file);assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.equal(m.spots.length,3);assert(FISH.some(f=>f.maps.includes(m.id)));assert(m.spots.every(s=>s.depth<=m.maxDepth));}
+ for(const m of MAPS){const file=new URL('../'+m.background,import.meta.url);assert((await stat(file)).size>10000);const bytes=await readFile(file);assert.ok(bytes.toString('ascii',8,12)==='WEBP'||bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),'Valid PNG/WebP landscape');assert.equal(m.spots.length,m.id==='AO'?2:3);assert(FISH.some(f=>f.maps.includes(m.id)));assert(m.spots.every(s=>s.depth<=m.maxDepth));}
  for(const f of FISH){assert(f.maps.every(id=>MAPS.some(m=>m.id===id)),f.id);assert(f.baits.every(id=>BAITS.some(b=>b.id===id)),f.id);assert(f.tech.every(t=>TECHNIQUES[t]),f.id);assert(f.max>=f.min);}
 });
 
@@ -66,7 +66,7 @@ test('Every species is reachable with matching bait, technique and depth, and ca
   const p=fullPlayer();p.map=def.maps[0];const rod=RODS.filter(r=>def.tech.includes(r.tech)).sort((a,b)=>b.power-a.power)[0];
   p.rod=rod.id;p.bait=def.baits.find(id=>acceptsBait(rod,BAITS.find(b=>b.id===id)));assert.ok(p.bait,def.id+' bait');
   p.equipment.line='braid';p.equipment.hook='hook_pro';p.equipment.net='net_pro';if(TECHNIQUES[rod.tech].reel)p.equipment.reel='reel6000';if(usesFloat(rod))p.equipment.float='float_sea';p.rig.lead=balancedLead(p);
-  const g=new FishingGame(p,{seed:123});g.selectSpot(2);const target=g.fish.find(f=>f.fishId===def.id&&f.spot===2);assert.ok(target,def.id+' exists');p.rig.depth=target.depth;
+  const g=new FishingGame(p,{seed:123});const spotIndex=g.map.spots.length-1;g.selectSpot(spotIndex);const target=g.fish.find(f=>f.fishId===def.id&&f.spot===spotIndex);assert.ok(target,def.id+' exists');p.rig.depth=target.depth;
   // A deterministic isolated-population fixture validates each catalog entry through the real simulation.
   g.fish=[target];target.weight=def.max;assert.ok(g.eligible(target),def.id+' reachable');bite(g);assert.equal(g.target.id,target.id);assert.ok(g.holdRod());
   tickUntil(g,()=>{guideFish(g);return g.phase==='landed';},120);

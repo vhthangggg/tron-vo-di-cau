@@ -5,7 +5,7 @@ const validInt=(v,min=0,max=1e9)=>Number.isSafeInteger(v)&&v>=min&&v<=max;
 const array=v=>Array.isArray(v)?v:[];
 export function newPlayer(){
   const base=ACCESSORIES.filter(a=>a.price===0);
-  return {version:1,coins:12000,baits:{...Object.fromEntries(BAITS.map(b=>[b.id,0])),worm:18,dough:6,corn:6},rods:['bamboo'],maps:['AO'],accessories:base.map(a=>a.id),equipment:Object.fromEntries(base.map(a=>[a.slot,a.id])),rod:'bamboo',bait:'worm',map:'AO',rig:{depth:1.8,lead:1.08},catches:0,released:0,sold:0,casts:0,collection:{},lessons:[],pending:null,serial:0,settings:{assist:true,sound:true,deadline:0}};
+  return {version:1,coins:12000,baits:{...Object.fromEntries(BAITS.map(b=>[b.id,0])),worm:18,dough:6,corn:6},rods:['bamboo'],maps:['AO'],accessories:base.map(a=>a.id),equipment:Object.fromEntries(base.map(a=>[a.slot,a.id])),rod:'bamboo',bait:'worm',map:'AO',rig:{depth:MAPS[0].spots[0].depth,lead:1.08},catches:0,released:0,sold:0,casts:0,collection:{},lessons:[],pending:null,serial:0,settings:{assist:true,sound:true,deadline:0}};
 }
 export function validateSave(raw){
   if(!raw||raw.version!==1||!validInt(raw.coins)||!validInt(raw.catches)||!validInt(raw.serial)) throw Error('Save không hợp lệ');
@@ -22,6 +22,8 @@ export function validateSave(raw){
   const rod=getRod(p.rod),bait=getBait(raw.bait);
   p.bait=BAITS.some(b=>b.id===raw.bait)&&acceptsBait(rod,bait)&&(!bait.reusable||p.baits[bait.id]>0)?bait.id:rod.tech==='lure'?'lure':'worm';
   if(Number.isFinite(raw.rig?.depth)&&raw.rig.depth>=.4&&raw.rig.depth<=18)p.rig.depth=raw.rig.depth;
+  // Ao Lang's old starter depth predates its two shallow POV spots.
+  if(p.map==='AO'&&raw.rig?.depth===1.8)p.rig.depth=MAPS[0].spots[0].depth;
   if(Number.isFinite(raw.rig?.lead)&&raw.rig.lead>=.4&&raw.rig.lead<=3.5)p.rig.lead=raw.rig.lead;
   for(const f of FISH){const c=raw.collection?.[f.id];if(c&&validInt(c.count,1,100000)&&Number.isFinite(c.best)&&c.best>0&&c.best<=50)p.collection[f.id]={count:c.count,best:c.best};}
   p.lessons=[...new Set(array(raw.lessons).filter(id=>LESSONS.some(l=>l.id===id)))];

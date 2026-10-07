@@ -188,7 +188,7 @@ body[data-screen=fishing] #strike[aria-pressed=true] .force-top,body[data-screen
    Menus / prepare remain portrait. Native orientation lock is requested in app.js;
    this rotated fallback covers browsers that reject Orientation Lock. */
 @media (max-width:700px) and (orientation:portrait){
- body[data-screen=fishing]{overflow:hidden;background:#102b22}
+ body[data-screen=fishing]{--fishing-rotation:90;overflow:hidden;background:#102b22}
  body[data-screen=fishing] .app-header,
  body[data-screen=fishing] #game-nav{display:none!important}
  body[data-screen=fishing] #main{
@@ -196,7 +196,7 @@ body[data-screen=fishing] #strike[aria-pressed=true] .force-top,body[data-screen
    width:100dvh;height:100dvw;
    transform:translate(-50%,-50%) rotate(90deg);
    transform-origin:center;
-   overflow:hidden;padding:0;margin:0;z-index:50;
+   overflow:hidden;padding:0;margin:0;z-index:50;min-height:0;
  }
  body[data-screen=fishing] .fishing-layout,
  body[data-screen=fishing] .scene{width:100%;height:100%;min-height:100%;max-height:none}
@@ -218,6 +218,17 @@ body[data-screen=fishing] #strike[aria-pressed=true] .force-top,body[data-screen
  body[data-screen=fishing] .float-zoom{top:77px;width:58px}
  body[data-screen=fishing] .float-zoom svg{height:54px;width:42px}
  body[data-screen=fishing] .phase-track{display:none}
+ body[data-screen=fishing] .location-hud{left:150px;top:12px;max-width:calc(100% - 420px)}
+ body[data-screen=fishing] .location-hud h1{font-size:25px;margin:0}
+ body[data-screen=fishing] .location-hud p:last-child{display:none}
+ body[data-screen=fishing] .session-hud{top:13px;right:140px}
+ body[data-screen=fishing] .scene:is([data-phase=idle],[data-phase=failed],[data-phase=landed]) .scene-bottom{bottom:16px}
+ body[data-screen=fishing] .status-box{min-height:42px;padding:8px 12px}
+ body[data-screen=fishing] .status-box #status-title{font-size:12px;margin:0}
+ body[data-screen=fishing] .status-box #status-copy{display:none}
+ body[data-screen=fishing] .water-controls button{min-height:44px;padding:8px}
+ body[data-screen=fishing] .is-fighting .fight{padding:10px 12px}
+ body[data-screen=fishing] .fight #fight-hint{font-size:10px;min-height:0;margin:6px 0}
 }
 
 /* Invisible water hit-area: player taps the visible water, never a fixed cast point. */
@@ -233,7 +244,7 @@ body[data-screen=fishing] .scene.has-cast-target::after{
 @media(prefers-reduced-motion:reduce){body[data-screen=fishing] .scene.has-cast-target::after{animation:none}}
 
 /* Physical float/bait marker anchored to the exact normalized cast coordinate. */
-.world-float{--float-scale:1;--float-dip:0;position:absolute;z-index:2;left:50%;top:50%;width:32px;height:48px;transform:translate(-50%,-72%) scale(var(--float-scale));transform-origin:50% 100%;pointer-events:none;filter:drop-shadow(0 2px 2px #102b2266)}
+.world-float{--float-scale:1;--float-dip:0;position:absolute;z-index:2;left:50%;top:50%;width:32px;height:48px;transform:translate(-50%,-100%) scale(var(--float-scale));transform-origin:50% 100%;pointer-events:none;filter:drop-shadow(0 2px 2px #102b2266)}
 .world-float .float-stem{position:absolute;left:15px;bottom:10px;width:2px;height:29px;border-radius:2px;background:linear-gradient(to bottom,#fff6c8 0 26%,#d94d36 27% 59%,#f0d36c 60%);transform:translateY(calc(var(--float-dip)*12px))}
 .world-float .float-body{position:absolute;left:11px;bottom:5px;width:10px;height:17px;border-radius:50% 50% 44% 44%;background:linear-gradient(to bottom,#e65a39 0 44%,#f3df8b 45% 70%,#304b35 71%);transform:translateY(calc(var(--float-dip)*12px))}
 .world-float .float-ripple{position:absolute;left:2px;bottom:1px;width:28px;height:9px;border:1.5px solid #eef4d7aa;border-radius:50%;opacity:.65;animation:worldRipple 2.2s ease-out infinite}

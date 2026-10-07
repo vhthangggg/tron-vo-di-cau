@@ -1,3 +1,4 @@
+import {elementPoint,coverFrame,imageToScene,sceneToImage,pointInPolygon} from './scene-geometry.js';
 import {twoHands} from './two-hands.js';
 import {paintWater} from './water-world.js';
 import {MAPS,FISH,RODS,BAITS,LESSONS,getMap,getRod,getBait,getFish,usesFloat,usesReel} from './content.js';
@@ -64,10 +65,10 @@ const renderers={home:homeHTML,prepare:prepareHTML,fishing:fishingHTML,rig:rigHT
 function render(){clearRodHold();sceneObserver?.disconnect();canvas=null;context=null;document.body.dataset.screen=screen;$('#main').innerHTML=renderers[screen]();$$('a[data-screen]').forEach(a=>{if(a.dataset.screen===screen)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});updateWallet();bindScreen();if(screen==='fishing'){canvas=$('#water');context=canvas.getContext('2d');sceneObserver=new ResizeObserver(resizeCanvas);sceneObserver.observe($('.scene'));resizeCanvas();updateFishing();paint();$('#main').focus({preventScroll:true});}}
 async function setFishingOrientation(active){
   document.body.classList.toggle('fishing-landscape',active);
-  if(!screen.orientation?.lock)return;
+  if(!window.screen.orientation?.lock)return;
   try{
-    if(active)await screen.orientation.lock('landscape');
-    else screen.orientation.unlock();
+    if(active)await window.screen.orientation.lock('landscape');
+    else window.screen.orientation.unlock();
   }catch{/* Một số mobile browser chỉ cho khóa hướng khi fullscreen/PWA. CSS vẫn giữ layout ngang. */}
 }
 function changeScreen(next){
@@ -80,7 +81,7 @@ function changeScreen(next){
 }
 function navigate(next){
   if(!renderers[next])next='home';if(next===screen)return;
-  if(['waiting','nibble','bite','fight','snag'].includes(game.phase)){
+  if(['casting','waiting','nibble','bite','fight','snag'].includes(game.phase)){
     setHash(screen);
     showDialog('Thu cần trước khi rời bờ?',`<p>Buổi câu đang diễn ra. Thu cần sẽ kết thúc lượt này; mồi đã dùng không được hoàn lại.</p>`,[{label:'Ở lại bờ',action:closeDialog},{label:'Thu cần & đi',primary:true,action:()=>{game.fail('Đã thu cần để rời bờ.');closeDialog();changeScreen(next);}}]);return;
   }
@@ -99,14 +100,7 @@ function showMaps(){
   showDialog('Khám phá những bờ nước',renderMapAtlas(player),[],{kind:'atlas'});
   $$('[data-atlas-map]').forEach(button=>button.onclick=()=>{const id=button.dataset.atlasMap;closeDialog();travel(id);});
 }
-function pointInPolygon(x,y,poly){
-  let inside=false;
-  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
-    const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];
-    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;
-  }
-  return inside;
-}
+function sceneFrame(w,h){return game.spotData.video?coverFrame(w,h):{x:0,y:0,width:w,height:h};}
 function bindWaterCast(){
   const scene=$('.scene'),zone=game.spotData.waterZone;
   if(!scene||!zone?.length)return;
@@ -114,12 +108,11 @@ function bindWaterCast(){
   scene.onpointerup=e=>{
     if(e.pointerType==='mouse'&&e.button!==0)return;
     if(e.target.closest('button,.hand-panel,.scene-bottom,.scene-tools,.focus-back,.float-zoom,.session-hud'))return;
-    if(!['idle','failed','landed'].includes(game.phase)||player.pending)return;
-    const r=scene.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+    if(!['idle','failed','landed'].includes(game.phase)||player.pending||game.paused||$('#dialog').open)return;
+    const p=elementPoint(scene,e),w=scene.clientWidth,h=scene.clientHeight;
+    const {x,y}=sceneToImage({x:p.x*w,y:p.y*h},sceneFrame(w,h));
     if(!pointInPolygon(x,y,zone)){toast('Chọn một điểm trên mặt nước thoáng để thả câu.');return;}
-    game.setCastTarget(x,y);
-    scene.style.setProperty('--cast-x',(x*100)+'%');scene.style.setProperty('--cast-y',(y*100)+'%');
-    scene.classList.add('has-cast-target');updateFishing();
+    if(game.setCastTarget(x,y))updateFishing();
   };
 }
 function bindScreen(){
@@ -168,12 +161,12 @@ function updateRig(){const error=rigError(player);$('#depth-out').textContent=pl
 function clock(v){return `${String(Math.floor(v/60)).padStart(2,'0')}:${String(Math.floor(v%60)).padStart(2,'0')}`;}
 function updateFishing(){
   if(!$('#cast'))return;
-  const phase=game.phase,lure=game.rod.tech==='lure',float=usesFloat(game.rod),active=['casting','waiting','nibble','bite'].includes(phase),fight=phase==='fight',snag=phase==='snag',duel=fight||snag;
+  const phase=game.phase,lure=game.rod.tech==='lure',float=usesFloat(game.rod),active=['waiting','nibble','bite'].includes(phase),casting=phase==='casting',fight=phase==='fight',snag=phase==='snag',duel=fight||snag;
   const names={idle:'Sẵn sàng',casting:'Đang vung cần',waiting:lure?'Mồi đang dưới nước':'Chờ cá tìm mồi',nibble:'Cá đang thăm mồi',bite:'Đúng nhịp — giữ tay phải!',fight:game.surge?'Cá bứt — hạ lực cần':'Bám cá · Giữ lực',snag:'Mắc đáy — giữ nhẹ để gỡ',landed:'Cá đã lên bờ',failed:'Thử lại một nhịp mới'};
   $('#status-title').textContent=game.paused?'Buổi câu tạm dừng':game.deadlineReached?'Đến giờ về nhà':(!player.settings.assist&&['nibble','bite'].includes(phase)?'Quan sát tín hiệu':names[phase]);
   $('#status-copy').textContent=game.message;
   $('#cast').disabled=(!['idle','failed','landed'].includes(phase)||game.paused||game.deadlineReached);
-  $('#cast-label').textContent=player.pending?'Xem cá vừa câu':'Thả câu';$('#cast').hidden=active||duel;
+  $('#cast-label').textContent=player.pending?'Xem cá vừa câu':'Thả câu';$('#cast').hidden=casting||active||duel;
   $('#strike').disabled=(!active&&!duel)||game.paused||game.deadlineReached;$('#strike').setAttribute('aria-pressed',String(game.pulling));
   $('#track-pad').disabled=(!active&&!duel)||game.paused||game.deadlineReached;$('#track-pad').setAttribute('aria-pressed',String(game.tracking));
   $('#rod-label').textContent=snag?'Giữ nhẹ 15–35%':fight?(game.pulling?'Giữ · chỉnh lực':'Giữ để dẫn'):'Giữ để giật';
@@ -184,7 +177,7 @@ function updateFishing(){
   $('#aim-reticle').style.left=game.aim.x*100+'%';$('#aim-reticle').style.top=game.aim.y*100+'%';$('#aim-reticle').hidden=!game.tracking;
   $('#track-pad').dataset.locked=String(game.tracking&&game.accuracy>.4);
   $('#retrieve').hidden=fight;$('#ease').hidden=true;$('#ease').disabled=game.paused;
-  $('#retrieve').disabled=(!active&&!snag)||game.paused;
+  $('#retrieve').disabled=(!casting&&!active&&!snag)||game.paused;
   $('#retrieve-label').textContent=snag?'Bỏ lượt mắc đáy':lure&&phase==='waiting'?(game.retrieving?'Dừng thu mồi':'Bật thu mồi'):'Thu cần';$('#retrieve').setAttribute('aria-pressed',String(lure&&game.retrieving));
   $('#bank-count').textContent=baitCount();$('#pause').setAttribute('aria-pressed',String(game.paused));$('#fight').hidden=!duel;
   $('.scene').classList.toggle('is-fighting',duel);$('.scene').dataset.phase=phase;$('.scene').dataset.assist=String(player.settings.assist);
@@ -198,15 +191,18 @@ function updateFishing(){
     $('#fight-title').textContent=snag?'MẮC ĐÁY':game.surge?'CÁ BỨT!':progress>=85?'GẦN LÊN BỜ!':'BÁM CÁ · GIỮ LỰC';
     $('#fight-hint').textContent=snag?'Bám điểm gỡ · Lực cần 15–35%':game.offTarget>3?'Sắp mất cá! Tay trái bám lại dấu cá.':!game.tracking?'Tay trái: giữ và bám theo cá':game.surge?'Cá bứt mạnh — hạ tay phải, tiếp tục bám cá.':tension>FIGHT_ZONE.max?'Hạ tay phải để giảm căng dây.':!game.pulling?'Tay phải: giữ cần, tránh dây chùng':game.accuracy<.4?'Tay trái đang lệch — bám dấu cá.':game.behavior.label+' · Giữ dây trong vùng xanh';
   }
+  const scene=$('.scene'),w=scene.clientWidth,h=scene.clientHeight,frame=sceneFrame(w,h);
+  scene.classList.toggle('has-cast-target',!!game.castTarget&&!game.busy);
+  if(game.castTarget){const p=imageToScene(game.castTarget,frame);scene.style.setProperty('--cast-x',p.x+'px');scene.style.setProperty('--cast-y',p.y+'px');}
   const worldFloat=$('#world-float'),bp=game.baitPoint||game.castTarget;
   if(worldFloat){
-    const show=!!bp&&['waiting','nibble','bite','fight','snag'].includes(phase);
+    const show=!!game.spotData.video&&float&&!!bp&&['waiting','nibble','bite'].includes(phase);
     worldFloat.hidden=!show;
     if(show){
       const habitat=game.castHabitat||{far:0};
       const perspective=.56+(1-(habitat.far||0))*.58;
       const biteDip=phase==='bite'?.24:phase==='nibble'?.08:0;
-      worldFloat.style.left=(bp.x*100)+'%';worldFloat.style.top=(bp.y*100)+'%';
+      const p=imageToScene(bp,frame);worldFloat.style.left=p.x+'px';worldFloat.style.top=p.y+'px';
       worldFloat.style.setProperty('--float-scale',perspective.toFixed(3));
       worldFloat.style.setProperty('--float-dip',biteDip);
       worldFloat.dataset.signal=phase==='bite'?'bite':phase==='nibble'?'nibble':game.signal==='wind'?'wind':'quiet';
@@ -280,15 +276,15 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)suspendFish
 addEventListener('blur',suspendFishing);
 addEventListener('pagehide',persist);
 
-function resizeCanvas(){if(!canvas)return;const box=canvas.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);context.setTransform(dpr,0,0,dpr,0,0);paint();}
+function resizeCanvas(){if(!canvas)return;const box={width:canvas.clientWidth,height:canvas.clientHeight},dpr=Math.min(2,devicePixelRatio||1);canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);context.setTransform(dpr,0,0,dpr,0,0);paint();}
 addEventListener('resize',()=>{clearRodHold();resizeCanvas();});
 addEventListener('orientationchange',suspendFishing);
 function paint(){
-  if(!context||!canvas)return;const box=canvas.getBoundingClientRect(),w=box.width,h=box.height,c=context,t=reduced.matches?0:game.time;c.clearRect(0,0,w,h);
+  if(!context||!canvas)return;const w=canvas.clientWidth,h=canvas.clientHeight,c=context,t=reduced.matches?0:game.time;c.clearRect(0,0,w,h);
   if(!game.spotData.video)paintWater(c,w,h,game,$('.scene-bg'),reduced.matches);
   const spot=game.spotData;
   if(game.phase==='casting'&&game.castFlight){
-    const f=game.castFlight,p=Math.min(1,f.t),sx=f.start.x*w,sy=f.start.y*h,ex=f.end.x*w,ey=f.end.y*h;
+    const f=game.castFlight,p=Math.min(1,f.t),sx=f.start.x*w,sy=f.start.y*h,end=imageToScene(f.end,sceneFrame(w,h)),ex=end.x,ey=end.y;
     const x=sx+(ex-sx)*p,y=sy+(ey-sy)*p-Math.sin(Math.PI*p)*h*(.20+Math.abs(ex-sx)/w*.08);
     const far=game.castHabitat?.far||0,scale=(1-p)*1.05+p*(.56+(1-far)*.58);
     c.save();c.translate(x,y);c.scale(scale,scale);c.fillStyle='#e65a39';c.beginPath();c.ellipse(0,0,5,9,0,0,Math.PI*2);c.fill();c.strokeStyle='#fff6c8';c.lineWidth=2;c.beginPath();c.moveTo(0,-17);c.lineTo(0,2);c.stroke();c.restore();
@@ -296,8 +292,8 @@ function paint(){
     if(p>.86){const q=(p-.86)/.14;c.save();c.globalAlpha=1-q;c.strokeStyle='#fffbd0';c.lineWidth=1.5;c.beginPath();c.ellipse(ex,ey,8+q*25,2.5+q*8,0,0,Math.PI*2);c.stroke();for(let i=0;i<5;i++){const ang=-Math.PI*.85+i*Math.PI*.17,rr=8+q*18;c.beginPath();c.arc(ex+Math.cos(ang)*rr,ey+Math.sin(ang)*rr,1.5,0,Math.PI*2);c.fillStyle='#fffbd0';c.fill();}c.restore();}
   }
   // Chỉ đánh dấu góc bờ đã chọn ở màn Chuẩn bị.
-  if(!game.busy){c.beginPath();c.ellipse(spot.x*w,spot.y*h,23,8,0,0,Math.PI*2);c.strokeStyle='#FFFCF5';c.lineWidth=2.5;c.stroke();}
-  const px=spot.x*w,py=spot.y*h;
+  if(!game.busy&&!spot.video){c.beginPath();c.ellipse(spot.x*w,spot.y*h,23,8,0,0,Math.PI*2);c.strokeStyle='#FFFCF5';c.lineWidth=2.5;c.stroke();}
+  const anchor=imageToScene(game.baitPoint||game.castTarget||game.defaultCastPoint,sceneFrame(w,h)),px=anchor.x,py=anchor.y;
   let fishX=px,fishY=py;
   if(['fight','snag'].includes(game.phase)){
     const marker=$('#fish-target');if(marker){marker.style.left=game.fishPosition.x*100+'%';marker.style.top=game.fishPosition.y*100+'%';}
@@ -314,7 +310,7 @@ function paint(){
   c.strokeStyle='#F4EDCF';c.lineWidth=5;c.beginPath();c.moveTo(w*.04,h*.98);c.quadraticCurveTo(w*.09,h*.66,rodTip.x,rodTip.y);c.stroke();c.strokeStyle='#6F6E43';c.lineWidth=1.4;c.stroke();
   if(active){c.strokeStyle='#FFFCF5CF';c.lineWidth=1;c.beginPath();c.moveTo(rodTip.x,rodTip.y);c.quadraticCurveTo((rodTip.x+endX)/2,rodTip.y+h*.04,endX,endY);c.stroke();
     const ripple=game.phase==='bite'||game.phase==='fight'?13:8;c.beginPath();c.ellipse(endX,endY,ripple+(Math.sin(t*4)+1)*4,3+(Math.sin(t*4)+1)*1.5,0,0,Math.PI*2);c.strokeStyle='#FFFCF599';c.lineWidth=1;c.stroke();
-    if(usesFloat(game.rod)&&game.phase!=='fight'){
+    if(usesFloat(game.rod)&&!spot.video&&game.phase!=='fight'){
       const dip=game.phase==='bite'?13:game.phase==='nibble'?Math.sin(t*9)*3:game.signal==='wind'?Math.sin(t*3)*2:0;
       c.save();c.beginPath();c.rect(0,0,w,endY);c.clip();const tip=endY-floatMarks(player)*3+dip;for(let i=0;i<8;i++){c.fillStyle=i%2?'#F6DE77':'#B44727';c.fillRect(endX-2,tip+i*3,4,3);}c.restore();
     }else if(game.rod.tech==='lure'&&game.phase!=='fight'){c.fillStyle='#D18B42';c.beginPath();c.ellipse(endX,endY+3,7,2,-.5,0,Math.PI*2);c.fill();}
@@ -324,5 +320,5 @@ function paint(){
 function frame(now){const dt=lastFrame?Math.min(.1,(now-lastFrame)/1000):0;lastFrame=now;if(screen==='fishing'){hands.step(dt);game.step(dt);}if(now-lastUpdate>100){if(screen==='fishing')updateFishing();lastUpdate=now;}paint();requestAnimationFrame(frame);}
 $('#brand-icon').innerHTML=icon('fish');$('#profile-avatar').innerHTML=avatarArt();$('#coin-icon').innerHTML=icon('coin');$('#settings').innerHTML=icon('settings');
 $('#game-nav').innerHTML=NAV_ITEMS.map(([id,symbol,label])=>`<a href="#${id}" data-screen="${id}"><span class="dock-icon">${icon(symbol)}</span><span>${label}</span></a>`).join('');
-screen=renderers[location.hash.slice(1)]?location.hash.slice(1):'home';setHash(screen);render();persist();requestAnimationFrame(frame);
+screen=renderers[location.hash.slice(1)]?location.hash.slice(1):'home';setHash(screen);render();if(screen==='fishing')setFishingOrientation(true);persist();requestAnimationFrame(frame);
 if(player.pending)showCatch();

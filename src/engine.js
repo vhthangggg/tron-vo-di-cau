@@ -1,3 +1,4 @@
+import {pointInPolygon} from './scene-geometry.js';
 import {fishBehavior,snagChance,castHabitat} from './water-world.js';
 import {FISH,MAPS,RODS,BAITS,ACCESSORIES,LESSONS,getMap,getRod,getBait,getFish,usesFloat,usesReel,acceptsBait,loadoutStats} from './content.js';
 export const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
@@ -23,15 +24,15 @@ export class FishingGame{
   get busy(){return !['idle','failed'].includes(this.phase);}
   populate(){
     const species=FISH.filter(f=>f.maps.includes(this.player.map));
-    this.fish=[];for(let s=0;s<3;s++)for(let j=0;j<species.length*2;j++){
+    this.fish=[];for(let s=0;s<this.map.spots.length;s++)for(let j=0;j<species.length*2;j++){
       const def=species[j%species.length],spot=this.map.spots[s];
       const max=Math.min(def.max,s===0?Math.max(def.min+.15,.8):def.max);
       const depth=def.depth==='bottom'?spot.depth:def.depth==='surface'?.4:spot.depth*(def.depth==='cover'?.7:.55);
       this.fish.push({id:`${this.player.map}-${s}-${j}-${this.castId}`,fishId:def.id,spot:s,x:clamp(spot.x+(this.random()-.5)*.2,.08,.92),y:clamp(spot.y+(this.random()-.5)*.09,.48,.82),weight:+(def.min+this.random()*(max-def.min)).toFixed(2),depth,temper:this.random(),angle:this.random()*Math.PI*2,suspicion:0,caught:false});
     }
   }
-  selectMap(id){if(this.busy||!this.player.maps.includes(id))return false;this.player.map=id;this.spot=0;this.phase='idle';this.target=null;this.hooked=null;this.pulling=false;this.retrieving=false;this.signal='quiet';this.player.rig.depth=this.spotData.depth;this.populate();this.message=`Đã đến ${this.map.name}. Chọn mồi và điểm câu.`;this.changed();return true;}
-  selectSpot(i){if(this.busy||!this.map.spots[i])return false;this.spot=i;this.player.rig.depth=this.spotData.depth;this.message=`${this.spotData.name}: sâu ${this.spotData.depth.toFixed(1)} m. Chỉnh tầng mồi nếu tìm cá giữa nước.`;this.changed();return true;}
+  selectMap(id){if(this.busy||!this.player.maps.includes(id))return false;this.player.map=id;this.spot=0;this.resetCastTarget();this.phase='idle';this.target=null;this.hooked=null;this.pulling=false;this.retrieving=false;this.signal='quiet';this.player.rig.depth=this.spotData.depth;this.populate();this.message=`Đã đến ${this.map.name}. Chọn mồi và điểm câu.`;this.changed();return true;}
+  selectSpot(i){if(this.busy||!this.map.spots[i])return false;this.spot=i;this.resetCastTarget();this.player.rig.depth=this.spotData.depth;this.message=`${this.spotData.name}: sâu ${this.spotData.depth.toFixed(1)} m. Chỉnh tầng mồi nếu tìm cá giữa nước.`;this.changed();return true;}
   equip(kind,id){
     if(this.busy)return false;
     const p=this.player;
@@ -59,19 +60,22 @@ export class FishingGame{
     this.player.rig[part]=value;this.changed();return true;
   }
   balance(){if(this.busy||!usesFloat(this.rod))return false;this.player.rig.lead=balancedLead(this.player);this.message='Phao đã cân về 4 vạch.';this.changed();return true;}
+  resetCastTarget(){this.castTarget=null;this.castHabitat=null;this.baitPoint=null;this.castFlight=null;}
+  get defaultCastPoint(){return this.spotData.video?{x:.5,y:.65}:{x:this.spotData.x,y:this.spotData.y};}
   setCastTarget(x,y){
-    if(this.busy||this.deadlineReached||!Number.isFinite(x)||!Number.isFinite(y))return false;
+    if(this.busy||this.paused||this.deadlineReached||!Number.isFinite(x)||!Number.isFinite(y))return false;
+    if(this.spotData.waterZone&&!pointInPolygon(x,y,this.spotData.waterZone))return false;
     this.castTarget={x:clamp(x,0,1),y:clamp(y,0,1)};this.castHabitat=castHabitat(this.spotData,this.castTarget);const h=this.castHabitat;this.message=h.cover>.45?'Sát bèo/cỏ: rô, trê dễ vào hơn nhưng dễ mắc.':h.far>.68?'Nước xa và sâu hơn: cơ hội gặp cá lớn tăng.':h.near>.72?'Sát bờ: nhiều cá nhỏ, dễ tiếp cận.':'Nước thoáng: hợp chép, trắm và cá đi ăn ngoài.';this.changed();return true;
   }
   cast(){
-    if(this.busy||this.deadlineReached)return false;
+    if(this.busy||this.paused||this.deadlineReached)return false;
     const error=rigError(this.player);if(error){this.message=error;this.changed();return false;}
     if(!getBait(this.player.bait).reusable&&!(this.player.baits[this.player.bait]>0)){this.message='Hết mồi. Đào giun ở bàn đồ hoặc mua mồi tại cửa hàng.';this.changed();return false;}
     if(!getBait(this.player.bait).reusable)this.player.baits[this.player.bait]--;
     this.player.casts++;this.castId++;this.phase='casting';this.wait=0;this.stageTime=0;this.target=null;this.hooked=null;this.retrieving=false;this.releaseHands();this.snagProgress=0;this.snagTriggered=false;
-    this.castHabitat=castHabitat(this.spotData,this.castTarget||{x:this.spotData.x,y:this.spotData.y});
+    this.castHabitat=castHabitat(this.spotData,this.castTarget||this.defaultCastPoint);
     this.snagScheduled=this.environmentRandom()<snagChance(this.map,this.spot,this.player.rig.depth,this.rod.tech,this.castHabitat);this.snagAt=.85+this.environmentRandom()*.85;
-    this.baitPoint=this.castTarget?{...this.castTarget}:{x:this.spotData.x,y:this.spotData.y};this.castFlight={t:0,duration:.72,start:{x:.16,y:.72},end:{...this.baitPoint}};this.signal='quiet';this.message='Đang vung cần…';this.changed();return true;
+    this.baitPoint={...(this.castTarget||this.defaultCastPoint)};this.castFlight={t:0,duration:.72,start:{x:.16,y:.72},end:{...this.baitPoint}};this.signal='quiet';this.message='Đang vung cần…';this.changed();return true;
   }
   habitatAffinity(def,f){
     const h=this.castHabitat||castHabitat(this.spotData,this.baitPoint),id=def.id;
@@ -93,7 +97,7 @@ export class FishingGame{
   step(dt){
     if(this.paused||this.deadlineReached)return;
     dt=clamp(dt,0,.1);this.time+=dt;this.elapsed+=dt;
-    if(this.player.settings.deadline&&this.elapsed>=this.player.settings.deadline){this.deadlineReached=true;this.releaseHands();if(['waiting','nibble','bite','fight','snag'].includes(this.phase)){this.phase='failed';this.target=null;this.signal='quiet';}this.message='Đến giờ về nhà. Kết thúc buổi câu hoặc bắt đầu một buổi mới.';this.changed();return;}
+    if(this.player.settings.deadline&&this.elapsed>=this.player.settings.deadline){this.deadlineReached=true;this.releaseHands();if(['casting','waiting','nibble','bite','fight','snag'].includes(this.phase)){this.phase='failed';this.target=null;this.castFlight=null;this.signal='quiet';}this.message='Đến giờ về nhà. Kết thúc buổi câu hoặc bắt đầu một buổi mới.';this.changed();return;}
     for(const f of this.fish){if(f.caught)continue;f.suspicion=Math.max(0,f.suspicion-dt*.025);if(f!==this.target){f.angle+=(this.random()-.5)*dt;f.x=clamp(f.x+Math.cos(f.angle)*dt*.004,.08,.92);f.y=clamp(f.y+Math.sin(f.angle)*dt*.002,.47,.82);}}
     if(this.phase==='casting')this.stepCastFlight(dt);
     if(['waiting','nibble','bite'].includes(this.phase))this.stepBait(dt);
@@ -201,9 +205,9 @@ export class FishingGame{
     else this.snagProgress=Math.max(0,this.snagProgress-dt*.1);
     if(this.snagProgress>=1){this.phase='waiting';this.signal='quiet';this.wait=0;this.stageTime=0;this.releaseHands();this.message='Đã gỡ khỏi đáy. Mồi còn nguyên trong lượt; tiếp tục chờ cá.';this.changed();}
   }
-  toggleRetrieve(){if(this.phase==='waiting'&&this.rod.tech==='lure')this.retrieving=!this.retrieving;}
-  retrieve(){if(this.phase==='snag'){this.fail('Đã bỏ lượt mắc đáy. Không mất thêm mồi hay đồ nghề.');return;}if(['waiting','nibble','bite'].includes(this.phase)){this.phase='idle';this.target=null;this.retrieving=false;this.signal='quiet';this.message=getBait(this.player.bait).reusable?'Đã thu cần. Mồi giả vẫn còn trong túi, có thể thả lại.':'Đã thu cần. Mồi của lượt trước đã dùng; có thể đổi điểm và thả lại.';this.changed();}}
-  fail(message){this.releaseHands();this.phase='failed';this.signal='quiet';this.pulling=false;this.retrieving=false;this.target=null;this.message=message;this.changed();}
+  toggleRetrieve(){if(['casting','waiting'].includes(this.phase)&&this.rod.tech==='lure')this.retrieving=!this.retrieving;}
+  retrieve(){if(this.phase==='snag'){this.fail('Đã bỏ lượt mắc đáy. Không mất thêm mồi hay đồ nghề.');return;}if(['casting','waiting','nibble','bite'].includes(this.phase)){this.releaseHands();this.castFlight=null;this.phase='idle';this.target=null;this.retrieving=false;this.signal='quiet';this.message=getBait(this.player.bait).reusable?'Đã thu cần. Mồi giả vẫn còn trong túi, có thể thả lại.':'Đã thu cần. Mồi của lượt trước đã dùng; có thể đổi điểm và thả lại.';this.changed();}}
+  fail(message){this.releaseHands();this.castFlight=null;this.phase='failed';this.signal='quiet';this.pulling=false;this.retrieving=false;this.target=null;this.message=message;this.changed();}
   land(){
     const f=this.hooked;f.caught=true;const def=getFish(f.fishId),p=this.player;
     p.serial++;p.pending={id:`catch-${p.serial}`,fishId:f.fishId,weight:f.weight,value:Math.round(def.price*f.weight),mapId:p.map};
@@ -221,5 +225,5 @@ export class FishingGame{
     else return false;this.changed();return true;
   }
   answerLesson(id,index){const l=LESSONS.find(l=>l.id===id);if(!l||index!==l.answer)return false;if(!this.player.lessons.includes(id)){this.player.lessons.push(id);this.player.coins+=2500;this.message='Hoàn thành bài học. Thưởng 2.500 xu lần đầu.';this.changed();}return true;}
-  newSession(){if(this.busy||this.player.pending)return false;this.elapsed=0;this.deadlineReached=false;this.phase='idle';this.paused=false;this.releaseHands();this.retrieving=false;this.hooked=null;this.target=null;this.populate();this.message='Một buổi câu mới. Chúc bạn gặp cá đẹp.';this.changed();return true;}
+  newSession(){if(this.busy||this.player.pending)return false;this.elapsed=0;this.deadlineReached=false;this.phase='idle';this.paused=false;this.releaseHands();this.retrieving=false;this.hooked=null;this.target=null;this.resetCastTarget();this.populate();this.message='Một buổi câu mới. Chúc bạn gặp cá đẹp.';this.changed();return true;}
 }

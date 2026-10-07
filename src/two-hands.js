@@ -1,3 +1,4 @@
+import {elementPoint} from './scene-geometry.js';
 // Each hand owns an independent pointer. A secondary touch is deliberately accepted.
 export function twoHands(game,{canUse,onUpdate}){
   const pointers=new Map(),keys=new Set();
@@ -21,8 +22,8 @@ export function twoHands(game,{canUse,onUpdate}){
     for(const [id,p] of old)if(p.element.hasPointerCapture(id))p.element.releasePointerCapture(id);
   }
   function position(element,e){
-    const r=element.getBoundingClientRect();
-    return {x:Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),y:Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))};
+    const p=elementPoint(element,e);
+    return {x:Math.max(0,Math.min(1,p.x)),y:Math.max(0,Math.min(1,p.y))};
   }
   function bindHand(element,hand){
     element.onpointerdown=e=>{
