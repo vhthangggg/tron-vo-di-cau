@@ -40,7 +40,7 @@ async function guide(page,cdp,until){
     assert.equal(await page.locator('#main').evaluate(e=>getComputedStyle(e).transform),'none');
     for(const spot of [0,1]){
       await page.locator('.prepare-spot-list [data-spot="'+spot+'"]').click();await page.locator('#start-fishing').click();
-      await page.waitForFunction(()=>document.querySelector('video').readyState>=2);
+      await page.waitForFunction(()=>document.querySelector('.scene')?.dataset.loading==='ready'&&document.querySelector('video').readyState>=2);
       const video=await page.locator('video').evaluate(v=>({width:v.videoWidth,height:v.videoHeight,error:v.error,paused:v.paused}));
       assert.equal(video.error,null);assert(video.width/video.height>1.7);assert.equal(video.paused,false);
       assert.equal(await phase(page),'idle');

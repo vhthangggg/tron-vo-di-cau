@@ -1,4 +1,5 @@
 import {pointInPolygon} from './scene-geometry.js';
+import {catchRemark,getContainer,MAX_KEPT_FISH} from './catch-fate.js';
 import {fishBehavior,snagChance,castHabitat} from './water-world.js';
 import {FISH,MAPS,RODS,BAITS,ACCESSORIES,LESSONS,getMap,getRod,getBait,getFish,usesFloat,usesReel,acceptsBait,loadoutStats} from './content.js';
 export const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
@@ -214,7 +215,29 @@ export class FishingGame{
     p.catches++;const c=p.collection[f.fishId]||{count:0,best:0};p.collection[f.fishId]={count:c.count+1,best:Math.max(c.best,f.weight)};
     this.phase='landed';this.releaseHands();this.message=`Đã đưa ${def.name.toLocaleLowerCase('vi')} lên bờ.`;this.changed();
   }
-  resolveCatch(id,decision){const p=this.player,c=p.pending;if(!c||c.id!==id||!['sell','release'].includes(decision))return false;if(decision==='sell'){p.coins+=c.value;p.sold++;}else p.released++;p.pending=null;this.phase='idle';this.hooked=null;this.target=null;this.signal='quiet';this.message=decision==='sell'?'Đã bán cá. Xu đã vào ví.':'Đã thả cá. Thành tích vẫn được ghi trong sổ.';this.changed();return true;}
+  resolveCatch(id,decision){
+    const p=this.player,c=p.pending;
+    if(!c||c.id!==id||!['sell','release','gift','keep'].includes(decision))return false;
+    if(decision==='keep'&&p.keptFish.length>=MAX_KEPT_FISH){this.message=getContainer(p.container).name+' đã đầy. Bán bớt cá hoặc chọn mang về / phóng sinh.';return false;}
+    if(decision==='sell'){p.coins+=c.value;p.sold++;}
+    else if(decision==='gift')p.gifted++;
+    else if(decision==='keep')p.keptFish.push({...c});
+    else p.released++;
+    p.pending=null;this.phase='idle';this.hooked=null;this.target=null;this.signal='quiet';
+    this.message=catchRemark(c,decision,p.container);this.changed();return true;
+  }
+  resolveKeptCatch(id,decision){
+    if(!['idle','failed','landed'].includes(this.phase)||!['sell','release','gift'].includes(decision))return false;
+    const p=this.player,index=p.keptFish.findIndex(c=>c.id===id);if(index<0)return false;
+    const [c]=p.keptFish.splice(index,1);
+    if(decision==='sell'){p.coins+=c.value;p.sold++;}else if(decision==='gift')p.gifted++;else p.released++;
+    this.message=catchRemark(c,decision,p.container);this.changed();return true;
+  }
+  sellKeptFish(){
+    if(!['idle','failed','landed'].includes(this.phase)||!this.player.keptFish.length)return false;
+    const p=this.player,n=p.keptFish.length,value=p.keptFish.reduce((sum,c)=>sum+c.value,0);
+    p.coins+=value;p.sold+=n;p.keptFish=[];this.message=`Đã bán ${n} con cá. Xu vào ví, rọng lại nhẹ, tay lại ngứa.`;this.changed();return true;
+  }
   digWorms(){if(this.busy)return false;this.player.baits.worm=Math.min(60,this.player.baits.worm+6);this.message='Đã đào thêm 6 phần giun (tối đa 60). Không tốn xu.';this.changed();return true;}
   buy(kind,id){
     if(this.busy)return false;const p=this.player;

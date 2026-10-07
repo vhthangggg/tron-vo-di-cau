@@ -1,4 +1,7 @@
 import {elementPoint,coverFrame,imageToScene,sceneToImage,pointInPolygon} from './scene-geometry.js';
+import {GameAudio,audioTheme} from './game-audio.js';
+import {loadSceneVideo} from './scene-loader.js';
+import {CONTAINERS,getContainer,catchTeaser,MAX_KEPT_FISH} from './catch-fate.js';
 import {twoHands} from './two-hands.js';
 import {paintWater} from './water-world.js';
 import {MAPS,FISH,RODS,BAITS,LESSONS,getMap,getRod,getBait,getFish,usesFloat,usesReel} from './content.js';
@@ -12,11 +15,12 @@ const money=v=>new Intl.NumberFormat('vi-VN').format(v);
 const kg=v=>new Intl.NumberFormat('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v);
 let storage;try{storage=window.localStorage;}catch{storage={getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}};}
 const loaded=loadPlayer(storage);let player=loaded.player,saveWarning=loaded.warning;
-let screen='home',canvas=null,context=null,sceneObserver=null,toastTimer,previousFocus,dialogPaused=false,audioContext=null,lastPhase='idle',lastFrame=0,lastUpdate=0;
+let screen='home',canvas=null,context=null,sceneObserver=null,toastTimer,previousFocus,dialogPaused=false,lastPhase='idle',lastFrame=0,lastUpdate=0,sceneReady=true,sceneLoader=null,pinSignal=false;
+const audio=new GameAudio({getSettings:()=>player.settings});
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 let game=new FishingGame(player,{onChange:gameChanged});
 const dialogPointerStarts=new Set();
-const hands=twoHands(game,{canUse:()=>screen==='fishing'&&!game.paused&&!$('#dialog').open&&!game.deadlineReached,onUpdate:()=>{unlockAudio();updateFishing();}});
+const hands=twoHands(game,{canUse:()=>screen==='fishing'&&sceneReady&&!game.paused&&!$('#dialog').open&&!game.deadlineReached,onUpdate:()=>{unlockAudio();updateFishing();}});
 function clearRodHold(){hands.clear();}
 
 function persist(){if(!savePlayer(storage,player))saveWarning='Trình duyệt đang chặn lưu. Tiến độ chỉ giữ trong phiên này.';}
@@ -26,7 +30,12 @@ function gameChanged(){
   if(['landed','failed','idle'].includes(game.phase))clearRodHold();
   persist();updateWallet();
   if(screen==='fishing')updateFishing();
-  if(game.phase!==lastPhase){if(game.phase==='bite')beep('bite');if(game.phase==='fight')beep('hook');if(game.phase==='landed'){beep('win');showCatch();}if(game.phase==='failed')beep('fail');lastPhase=game.phase;}
+  if(game.phase!==lastPhase){
+    const previous=lastPhase;lastPhase=game.phase;
+    const cue={casting:'cast',nibble:'nibble',bite:'bite',fight:'hook',snag:'snag',landed:'win',failed:'fail'}[game.phase];
+    if(cue)audio.cue(cue);if(previous==='casting'&&game.phase==='waiting')audio.cue('splash');
+    if(game.phase==='landed')showCatch();
+  }
   announce(game.message);
 }
 function updateWallet(){
@@ -36,13 +45,17 @@ function updateWallet(){
   $('#rank-progress').max=rank.max;$('#rank-progress').value=rank.complete?rank.max:rank.count;
   $('#rank-progress').setAttribute('aria-valuetext',rank.name+', '+rank.label);
 }
-function beep(kind){
-  if(!player.settings.sound)return;
-  try{if(!audioContext)return;const tones=kind==='win'?[523,659,784]:kind==='bite'?[880,880]:kind==='hook'?[440,660]:[220];
-    tones.forEach((frequency,i)=>{const t=audioContext.currentTime+i*.13,o=audioContext.createOscillator(),g=audioContext.createGain();o.type='sine';o.frequency.value=frequency;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.045,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+.11);o.connect(g);g.connect(audioContext.destination);o.start(t);o.stop(t+.12);});
-  }catch{/* Không có âm thanh vẫn chơi được. */}
+function unlockAudio(){if(player.settings.sound)audio.unlock();}
+function syncAtmosphere(){
+  audio.setScene(screen==='home'?'home':['prepare','fishing'].includes(screen)?player.map:'home');
+  audio.setHidden(document.hidden);audio.setPaused(screen==='fishing'&&(!sceneReady||game.paused));
+  const video=$('.scene-video');if(video&&sceneReady){if(game.paused||document.hidden)video.pause();else if(video.paused)video.play().catch(()=>{});}
 }
-function unlockAudio(){if(!player.settings.sound)return;try{audioContext ||= new (window.AudioContext||window.webkitAudioContext)();if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});}catch{}}
+function setSound(enabled){
+  player.settings.sound=enabled;unlockAudio();audio.applySettings();persist();
+  if($('#sound-toggle')){$('#sound-toggle').setAttribute('aria-pressed',String(enabled));$('#sound-toggle').setAttribute('aria-label',enabled?'Tắt âm thanh':'Bật âm thanh');$('#sound-toggle').innerHTML=icon(enabled?'sound':'muted');}
+  announce(enabled?'Đã bật nhạc và hiệu ứng âm thanh.':'Đã tắt âm thanh.');
+}
 
 function homeHTML(){return renderHome(player,game,saveWarning);}
 function prepareHTML(){return renderPrepare(player,game,saveWarning);}
@@ -62,7 +75,29 @@ function filterShop(category){
 }
 
 const renderers={home:homeHTML,prepare:prepareHTML,fishing:fishingHTML,rig:rigHTML,learn:learnHTML,journal:journalHTML,shop:shopHTML};
-function render(){clearRodHold();sceneObserver?.disconnect();canvas=null;context=null;document.body.dataset.screen=screen;$('#main').innerHTML=renderers[screen]();$$('a[data-screen]').forEach(a=>{if(a.dataset.screen===screen)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});updateWallet();bindScreen();if(screen==='fishing'){canvas=$('#water');context=canvas.getContext('2d');sceneObserver=new ResizeObserver(resizeCanvas);sceneObserver.observe($('.scene'));resizeCanvas();updateFishing();paint();$('#main').focus({preventScroll:true});}}
+function render(){
+  clearRodHold();sceneLoader?.cancel();sceneLoader=null;sceneObserver?.disconnect();canvas=null;context=null;
+  sceneReady=screen!=='fishing'||!game.spotData.video;
+  document.body.dataset.screen=screen;$('#main').innerHTML=renderers[screen]();
+  $$('a[data-screen]').forEach(a=>{if(a.dataset.screen===screen)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
+  updateWallet();bindScreen();syncAtmosphere();
+  if(screen==='fishing'){canvas=$('#water');context=canvas.getContext('2d');sceneObserver=new ResizeObserver(resizeCanvas);sceneObserver.observe($('.scene'));resizeCanvas();updateFishing();paint();$('#main').focus({preventScroll:true});if(!sceneReady)beginMapLoad();}
+}
+function beginMapLoad(){
+  sceneLoader?.cancel();const scene=$('.scene'),video=$('.scene-video');if(!video)return;
+  sceneReady=false;scene.dataset.loading='loading';$('#map-loading').hidden=false;$('#map-load-retry').hidden=true;
+  $('#map-load-title').textContent='Đang đến '+game.spotData.name;$('#map-load-copy').textContent='Chờ cảnh bờ nước tải xong. Cá chưa tính giờ đâu!';updateFishing();
+  sceneLoader=loadSceneVideo(video,{
+    onProgress({loaded,total,stage}){
+      if(!scene.isConnected)return;
+      const progress=$('#map-load-progress');
+      if(total)progress.value=stage==='decode'?100:Math.min(99,Math.round(loaded/total*100));else progress.removeAttribute('value');
+      $('#map-load-status').textContent=stage==='decode'?'Cảnh đã tải xong · Đang chuẩn bị vào bờ…':total?`Đang tải cảnh câu · ${Math.min(100,Math.round(loaded/total*100))}%`:'Đang tải cảnh câu…';
+    },
+    onReady(){if(!scene.isConnected)return;sceneReady=true;scene.dataset.loading='ready';$('#map-loading').hidden=true;syncAtmosphere();updateFishing();announce('Đã đến '+game.spotData.name+'. Chọn một điểm trên mặt nước để thả câu.');},
+    onError({reason}){if(!scene.isConnected)return;scene.dataset.loading='error';$('#map-load-title').textContent='Chưa tới được bờ';$('#map-load-copy').textContent=reason==='timeout'?'Đường ra bờ hơi tắc. Kiểm tra mạng rồi thử lại nhé.':'Chưa tải được cảnh câu. Bạn có thể thử lại hoặc chọn điểm khác.';$('#map-load-status').textContent='Buổi câu chưa bắt đầu · Đồng hồ vẫn dừng';$('#map-load-retry').hidden=false;}
+  });
+}
 async function setFishingOrientation(active){
   document.body.classList.toggle('fishing-landscape',active);
   if(!window.screen.orientation?.lock)return;
@@ -107,8 +142,8 @@ function bindWaterCast(){
   scene.classList.add('tap-cast-enabled');
   scene.onpointerup=e=>{
     if(e.pointerType==='mouse'&&e.button!==0)return;
-    if(e.target.closest('button,.hand-panel,.scene-bottom,.scene-tools,.focus-back,.float-zoom,.session-hud'))return;
-    if(!['idle','failed','landed'].includes(game.phase)||player.pending||game.paused||$('#dialog').open)return;
+    if(e.target.closest('button,.hand-panel,.scene-bottom,.fishing-topbar,.float-zoom,.map-loading'))return;
+    if(!sceneReady||!['idle','failed','landed'].includes(game.phase)||player.pending||game.paused||$('#dialog').open)return;
     const p=elementPoint(scene,e),w=scene.clientWidth,h=scene.clientHeight;
     const {x,y}=sceneToImage({x:p.x*w,y:p.y*h},sceneFrame(w,h));
     if(!pointInPolygon(x,y,zone)){toast('Chọn một điểm trên mặt nước thoáng để thả câu.');return;}
@@ -116,6 +151,7 @@ function bindWaterCast(){
   };
 }
 function bindScreen(){
+  $$('[data-open-keepnet]').forEach(button=>button.onclick=()=>showKeepnet());
   $$('[data-open-maps]').forEach(button=>button.onclick=showMaps);
   $$('[data-travel]').forEach(button=>button.onclick=()=>travel(button.dataset.travel));
   $$('[data-stock]').forEach(button=>button.onclick=()=>{const category=button.dataset.stock;navigate('shop');filterShop(category);});
@@ -123,21 +159,23 @@ function bindScreen(){
     $('#home-help').onclick=showHelp;$('#home-mode').onclick=showSettings;
   }
   if(screen==='prepare'){
-    $$('[data-spot]').forEach(button=>button.onclick=()=>{if(game.selectSpot(+button.dataset.spot)){render();$(`[data-spot="${game.spot}"]`).focus();}});
+    $$('[data-spot]').forEach(button=>button.onclick=()=>{if(game.selectSpot(+button.dataset.spot)){audio.cue('ui');const wasMap=button.classList.contains('map-hotspot');render();$(`${wasMap?'.map-hotspot':'.prepare-spot-list button'}[data-spot="${game.spot}"]`).focus({preventScroll:true});}});
     $('#prep-rod').onchange=e=>{if(game.equip('rod',e.target.value)){render();$('#prep-rod').focus();}else render();};
     $('#prep-bait').onchange=e=>{if(game.equip('bait',e.target.value)){render();$('#prep-bait').focus();}else render();};
     $('#start-fishing').onclick=()=>{unlockAudio();if(player.pending){showCatch();return;}navigate('fishing');};
   }
   if(screen==='fishing'){
-    $('#help').onclick=showHelp;
+    $('#help').onclick=showFishingInfo;
+    $('#sound-toggle').onclick=()=>setSound(!player.settings.sound);
     $('#pause').onclick=showPause;
     $('#leave-fishing').onclick=()=>navigate('home');
-    $('#cast').onclick=()=>{unlockAudio();if(player.pending){showCatch();return;}game.cast();$('#main').focus({preventScroll:true});};
+    $('#cast').onclick=()=>{if(!sceneReady)return;unlockAudio();if(player.pending){showCatch();return;}game.cast();$('#main').focus({preventScroll:true});};
     hands.bind();
     bindWaterCast();
-    $('#retrieve').onclick=()=>{if(game.rod.tech==='lure'&&game.phase==='waiting'){game.toggleRetrieve();updateFishing();}else game.retrieve();};
+    $('#retrieve').onclick=()=>{audio.cue('retrieve');if(game.rod.tech==='lure'&&game.phase==='waiting'){game.toggleRetrieve();updateFishing();}else game.retrieve();};
     $('#ease').onclick=()=>{clearRodHold();game.ease();updateFishing();};
-    $('#new-session').onclick=()=>{if(game.newSession())render();};
+    $('#new-session').onclick=()=>{if(game.newSession())updateFishing();};
+    $('#map-load-back').onclick=()=>navigate('prepare');$('#map-load-retry').onclick=beginMapLoad;
   }
   if(screen==='rig'){
     $$('[data-equip]').forEach(button=>button.onclick=()=>{
@@ -165,18 +203,18 @@ function updateFishing(){
   const names={idle:'Sẵn sàng',casting:'Đang vung cần',waiting:lure?'Mồi đang dưới nước':'Chờ cá tìm mồi',nibble:'Cá đang thăm mồi',bite:'Đúng nhịp — giữ tay phải!',fight:game.surge?'Cá bứt — hạ lực cần':'Bám cá · Giữ lực',snag:'Mắc đáy — giữ nhẹ để gỡ',landed:'Cá đã lên bờ',failed:'Thử lại một nhịp mới'};
   $('#status-title').textContent=game.paused?'Buổi câu tạm dừng':game.deadlineReached?'Đến giờ về nhà':(!player.settings.assist&&['nibble','bite'].includes(phase)?'Quan sát tín hiệu':names[phase]);
   $('#status-copy').textContent=game.message;
-  $('#cast').disabled=(!['idle','failed','landed'].includes(phase)||game.paused||game.deadlineReached);
+  $('#cast').disabled=(!sceneReady||!['idle','failed','landed'].includes(phase)||game.paused||game.deadlineReached);
   $('#cast-label').textContent=player.pending?'Xem cá vừa câu':'Thả câu';$('#cast').hidden=casting||active||duel;
   $('#strike').disabled=(!active&&!duel)||game.paused||game.deadlineReached;$('#strike').setAttribute('aria-pressed',String(game.pulling));
   $('#track-pad').disabled=(!active&&!duel)||game.paused||game.deadlineReached;$('#track-pad').setAttribute('aria-pressed',String(game.tracking));
-  $('#rod-label').textContent=snag?'Giữ nhẹ 15–35%':fight?(game.pulling?'Giữ · chỉnh lực':'Giữ để dẫn'):'Giữ để giật';
-  $('#force-value').textContent=Math.round(game.force*100)+'% lực cần';$('#force-fill').style.height=game.force*100+'%';$('#force-knob').style.bottom=`calc(${game.force*100}% - 5px)`;
-  $('#tracking-value').textContent=duel?(game.tracking?Math.round(game.accuracy*100)+'% bám trúng':(snag?'Giữ điểm gỡ':'Giữ & bám dấu cá')):'Bám theo cá';
+  $('#rod-label').textContent=snag?'Giữ nhẹ':fight?(game.pulling?'Chỉnh lực':'Giữ cần'):'Giữ để giật';
+  $('#force-value').textContent=Math.round(game.force*100)+'%';$('#force-fill').style.height=game.force*100+'%';$('#force-knob').style.bottom=`calc(${game.force*100}% - 5px)`;
+  $('#tracking-value').textContent=duel?(game.tracking?Math.round(game.accuracy*100)+'%':(snag?'Bám điểm gỡ':'Bám cá')):'Bám cá';
   if($('#fish-target').dataset.kind!==String(snag)){$('#fish-target').dataset.kind=String(snag);$('#fish-target').innerHTML=icon(snag?'pin':'fish');}
   $('#fish-target').style.left=game.fishPosition.x*100+'%';$('#fish-target').style.top=game.fishPosition.y*100+'%';
   $('#aim-reticle').style.left=game.aim.x*100+'%';$('#aim-reticle').style.top=game.aim.y*100+'%';$('#aim-reticle').hidden=!game.tracking;
   $('#track-pad').dataset.locked=String(game.tracking&&game.accuracy>.4);
-  $('#retrieve').hidden=fight;$('#ease').hidden=true;$('#ease').disabled=game.paused;
+  $('#retrieve').hidden=fight||(!casting&&!active&&!snag);$('#ease').hidden=true;$('#ease').disabled=game.paused;
   $('#retrieve').disabled=(!casting&&!active&&!snag)||game.paused;
   $('#retrieve-label').textContent=snag?'Bỏ lượt mắc đáy':lure&&phase==='waiting'?(game.retrieving?'Dừng thu mồi':'Bật thu mồi'):'Thu cần';$('#retrieve').setAttribute('aria-pressed',String(lure&&game.retrieving));
   $('#bank-count').textContent=baitCount();$('#pause').setAttribute('aria-pressed',String(game.paused));$('#fight').hidden=!duel;
@@ -208,11 +246,12 @@ function updateFishing(){
       worldFloat.dataset.signal=phase==='bite'?'bite':phase==='nibble'?'nibble':game.signal==='wind'?'wind':'quiet';
     }
   }
-  $('#float-zoom').hidden=duel;$('#float-label').textContent=float?(phase==='bite'?'Phao chìm rõ':phase==='nibble'?'Phao rung nhẹ':'Cận cảnh phao'):(phase==='bite'?'Đầu cần cong · Giật!':phase==='nibble'?'Đầu cần rung nhẹ':lure&&game.retrieving?'Đang thu mồi':'Đầu cần thả lỏng');
+  $('#float-zoom').hidden=!sceneReady||duel||!(pinSignal||['nibble','bite'].includes(phase));$('#float-label').textContent=float?(phase==='bite'?'Phao chìm':phase==='nibble'?'Phao rung':'Cận cảnh phao'):(phase==='bite'?'Giật cần!':phase==='nibble'?'Cần rung':lure&&game.retrieving?'Thu mồi':'Đầu cần');
   if(!float){const bend=phase==='bite'?23:phase==='nibble'?(reduced.matches?6:6+Math.sin(game.time*9)*4):0;$('#tip-rod').setAttribute('d',`M12 90Q28 ${55+bend} 78 ${12+bend}`);$('#tip-line').setAttribute('d',`M78 ${12+bend} 88 90`);}
   const n=floatMarks(player),offset=44+(4-n)*8+(phase==='bite'?41:phase==='nibble'?(reduced.matches?4:Math.sin(game.time*9)*5):game.signal==='wind'?(reduced.matches?2:Math.sin(game.time*3)*3):0);
   $('#zoom-float').setAttribute('transform',`translate(0 ${offset})`);$('#session-clock').textContent=clock(player.settings.deadline?Math.max(0,player.settings.deadline-game.elapsed):game.elapsed);
   $('#session-end').hidden=!game.deadlineReached;$('.scene').classList.toggle('is-ended',game.deadlineReached);
+  syncAtmosphere();if(sceneReady)audio.fishing(game);
 }
 
 function showDialog(title,body,actions=[],{canClose=true,kind='standard'}={}){
@@ -220,13 +259,14 @@ function showDialog(title,body,actions=[],{canClose=true,kind='standard'}={}){
   dialogPointerStarts.clear();
   const open=$('#dialog').open;if(!open){previousFocus=document.activeElement;dialogPaused=game.paused;game.paused=true;}
   $('#dialog').dataset.kind=kind;
-  $('#dialog-content').innerHTML=`<div class="dialog-top"><h2 id="dialog-title">${esc(title)}</h2>${canClose?'<button class="close" id="dialog-close" aria-label="Đóng">×</button>':''}</div>${body}<div class="actions">${actions.map((a,i)=>`<button data-dialog-action="${i}" class="${a.primary?'primary':''}">${esc(a.label)}</button>`).join('')}</div>`;
+  $('#dialog-content').innerHTML=`<div class="dialog-top"><h2 id="dialog-title">${esc(title)}</h2>${canClose?'<button class="close" id="dialog-close" aria-label="Đóng">×</button>':''}</div>${body}<div class="actions">${actions.map((a,i)=>`<button data-dialog-action="${i}" ${a.decision?`data-catch-decision="${a.decision}"`:''} class="${a.primary?'primary':''} ${a.copy?'decision-action':''}" ${a.disabled?'disabled':''}>${a.symbol?icon(a.symbol):''}<span class="action-title">${esc(a.label)}</span>${a.copy?`<small class="action-copy">${esc(a.copy)}</small>`:''}</button>`).join('')}</div>`;
   if($('#dialog-close'))$('#dialog-close').onclick=closeDialog;
   $$('[data-dialog-action]').forEach(b=>b.onclick=()=>actions[+b.dataset.dialogAction].action());
   if(!open)$('#dialog').showModal();
+  syncAtmosphere();
 }
 function closeDialog(){$('#dialog').close();}
-$('#dialog').addEventListener('close',()=>{dialogPointerStarts.clear();game.paused=dialogPaused||document.hidden;if(screen==='fishing')updateFishing();if(previousFocus?.isConnected)previousFocus.focus();});
+$('#dialog').addEventListener('close',()=>{dialogPointerStarts.clear();game.paused=dialogPaused||document.hidden;if(screen==='fishing')updateFishing();syncAtmosphere();if(previousFocus?.isConnected)previousFocus.focus();});
 // A held fishing gesture can end after the catch dialog appears. Only a fresh
 // pointer gesture that starts in this dialog may activate or dismiss it.
 $('#dialog').addEventListener('pointerdown',e=>dialogPointerStarts.add(e.pointerId),true);
@@ -239,40 +279,71 @@ $('#dialog').addEventListener('keydown',e=>{if(e.key!=='Tab')return;const focusa
 $('#dialog').addEventListener('click',e=>{if(e.target===$('#dialog')){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog();}});
 function showPause(){
   const resume=()=>{dialogPaused=false;game.paused=document.hidden;previousFocus=$('#main');closeDialog();announce('Tiếp tục buổi câu.');};
-  showDialog('Nghỉ tay một nhịp',`<div class="pause-location">${icon('pin')}<div><strong>${game.map.name}</strong><span>${game.spotData.name} · ${clock(game.elapsed)} bên bờ nước</span></div></div><p class="hint-note">Cá và đồng hồ đang dừng. Bạn có thể tiếp tục câu hoặc thu cần để về chuẩn bị.</p>${!game.busy?'<button id="pause-new-session" class="small">Bắt đầu buổi câu mới</button>':''}<div class="pause-options"><label class="checkline"><input type="checkbox" id="pause-assist" ${player.settings.assist?'checked':''}>Gợi ý đọc tín hiệu</label><label class="checkline"><input type="checkbox" id="pause-sound" ${player.settings.sound?'checked':''}>Âm báo phao & cá</label></div>`,[{label:'Tiếp tục câu',primary:true,action:resume},{label:'Chuẩn bị lại',action:()=>{if(game.busy&&!player.pending)navigate('prepare');else{closeDialog();navigate('prepare');}}},{label:'Về nhà',action:()=>{if(game.busy&&!player.pending)navigate('home');else{closeDialog();navigate('home');}}}],{kind:'pause'});
-  if($('#pause-new-session'))$('#pause-new-session').onclick=()=>{if(game.newSession()){dialogPaused=false;previousFocus=null;closeDialog();render();}};
+  showDialog('Nghỉ tay một nhịp',`<div class="pause-location">${icon('pin')}<div><strong>${game.map.name}</strong><span>${game.spotData.name} · ${clock(game.elapsed)} bên bờ nước</span></div></div><p class="hint-note">Cá và đồng hồ đang dừng. Khi sẵn sàng, mình lại câu tiếp.</p>${!game.busy?'<button id="pause-new-session" class="small">Bắt đầu buổi câu mới</button>':''}<div class="pause-options"><label class="checkline"><input type="checkbox" id="pause-assist" ${player.settings.assist?'checked':''}>Gợi ý đọc tín hiệu</label></div>${audioOptionsHTML('pause')}`,[{label:'Tiếp tục câu',primary:true,action:resume},{label:'Chuẩn bị lại',action:()=>{if(game.busy&&!player.pending)navigate('prepare');else{closeDialog();navigate('prepare');}}},{label:'Về nhà',action:()=>{if(game.busy&&!player.pending)navigate('home');else{closeDialog();navigate('home');}}}],{kind:'pause'});
+  if($('#pause-new-session'))$('#pause-new-session').onclick=()=>{if(game.newSession()){dialogPaused=false;previousFocus=null;closeDialog();updateFishing();}};
   $('#pause-assist').onchange=e=>{player.settings.assist=e.target.checked;persist();updateFishing();};
-  $('#pause-sound').onchange=e=>{player.settings.sound=e.target.checked;unlockAudio();persist();};
+  bindAudioOptions('pause');
   updateFishing();announce('Buổi câu đã tạm dừng.');
 }
-function showHelp(){showDialog('Một buổi câu, năm nhịp',`<ol class="help-steps"><li><b>Chuẩn bị trước khi đi câu.</b> Chọn map, góc bờ, cần và mồi rồi bấm Bắt đầu đi câu. Bản đồ có ${MAPS.length} vùng; sổ cá ghi cách tìm ${FISH.length} loài.</li><li><b>Thả câu.</b> Chờ cá đến mồi. Lure phải bật thu mồi; mồi giả dùng lại, mồi tự nhiên mất một phần mỗi lượt.</li><li><b>Giật đúng tín hiệu.</b> Câu phao: chờ chìm rõ. Câu đáy/lure: chờ đầu cần cong, dây căng. Giữ vùng tay phải để đóng lưỡi; tay trái bám theo dấu cá. Nhịp cơ bản 2,8 giây; lưỡi tốt tăng thời gian.</li><li><b>Dẫn trong vùng xanh.</b> Tay phải kéo lên để tăng lực, hạ xuống khi cá bứt. Tay trái phải di chuyển theo dấu cá; lệch quá lâu sẽ mất cá. Tiến độ đạt 100% sẽ tự vớt cá. Dây tăng sức tải, máy tăng tốc dẫn, phao giảm lực nước, vợt giúp vớt sớm.</li><li><b>Bán hoặc thả.</b> Xu và sổ cá lưu tự động. Tạm dừng → Chuẩn bị lại để đổi điểm câu, bộ cần hoặc mua thêm đồ.</li></ol><p class="hint-note">Cảm ứng: giữ hai vùng bằng hai ngón độc lập. Máy tính: chuột bám cá + giữ Space, phím ↑ ↓ chỉnh lực; hoặc W A S D bám cá + chuột giữ cần. P / Esc tạm dừng. Mắc đáy: bám điểm gỡ và giữ lực cần 15–35% trong vài giây.</p>`,[{label:screen==='fishing'?'Tiếp tục câu':'Chuẩn bị đi câu',primary:true,action:()=>{closeDialog();if(screen!=='fishing')navigate('prepare');}}]);}
+function showHelp(){showDialog('Một buổi câu, năm nhịp',`<ol class="help-steps"><li><b>Chuẩn bị trước khi đi câu.</b> Chọn map, góc bờ, cần và mồi rồi bấm Bắt đầu đi câu. Bản đồ có ${MAPS.length} vùng; sổ cá ghi cách tìm ${FISH.length} loài.</li><li><b>Thả câu.</b> Chờ cá đến mồi. Lure phải bật thu mồi; mồi giả dùng lại, mồi tự nhiên mất một phần mỗi lượt.</li><li><b>Giật đúng tín hiệu.</b> Câu phao: chờ chìm rõ. Câu đáy/lure: chờ đầu cần cong, dây căng. Giữ vùng tay phải để đóng lưỡi; tay trái bám theo dấu cá. Nhịp cơ bản 2,8 giây; lưỡi tốt tăng thời gian.</li><li><b>Dẫn trong vùng xanh.</b> Tay phải kéo lên để tăng lực, hạ xuống khi cá bứt. Tay trái phải di chuyển theo dấu cá; lệch quá lâu sẽ mất cá. Tiến độ đạt 100% sẽ tự vớt cá. Dây tăng sức tải, máy tăng tốc dẫn, phao giảm lực nước, vợt giúp vớt sớm.</li><li><b>Cá lên bờ.</b> Mang về nịnh vợ, cất trong rọng/xô/thùng hoặc phóng sinh. Cá cất lại có thể bán sau. Xu và sổ cá lưu tự động. Tạm dừng → Chuẩn bị lại để đổi điểm câu, bộ cần hoặc mua thêm đồ.</li></ol><p class="hint-note">Cảm ứng: giữ hai vùng bằng hai ngón độc lập. Máy tính: chuột bám cá + giữ Space, phím ↑ ↓ chỉnh lực; hoặc W A S D bám cá + chuột giữ cần. P / Esc tạm dừng. Mắc đáy: bám điểm gỡ và giữ lực cần 15–35% trong vài giây.</p>`,[{label:screen==='fishing'?'Tiếp tục câu':'Chuẩn bị đi câu',primary:true,action:()=>{closeDialog();if(screen!=='fishing')navigate('prepare');}}]);}
+function containerSelect(id){return `<label class="container-label" for="${id}">Cất cá trong</label><select id="${id}">${CONTAINERS.map(c=>`<option value="${c.id}" ${c.id===player.container?'selected':''}>${c.name}</option>`).join('')}</select>`;}
 function showCatch(){
-  const c=player.pending;if(!c)return;const def=getFish(c.fishId),id=c.id;
-  showDialog('CÁ LÊN BỜ!',`<p class="catch-banner">${icon('trophy')} ĐÃ GHI VÀO BỘ SƯU TẬP</p><div class="fish-hero">${fishArt(def,true)}</div><h3>${def.name}</h3><p class="muted smalltext">${getMap(c.mapId).name} · Đã ghi vào sổ cá</p><div class="catch-meta"><div><strong>${kg(c.weight)} kg</strong><small>Khối lượng trong game</small></div><div><strong>${money(c.value)} xu</strong><small>Giá bán</small></div></div><p class="hint-note">Thả cá vẫn giữ thành tích. Chọn một lần, rồi tiếp tục buổi câu.</p>`,[{label:'Thả về ao',action:()=>finishCatch(id,'release')},{label:'Bán '+money(c.value)+' xu',primary:true,action:()=>finishCatch(id,'sell')}],{kind:'catch'});
+  const c=player.pending;if(!c)return;const def=getFish(c.fishId),id=c.id,container=getContainer(player.container),full=player.keptFish.length>=MAX_KEPT_FISH;
+  showDialog('Cá lên bờ!',`<div class="catch-summary"><div class="fish-hero">${fishArt(def)}</div><div><p class="catch-banner">${icon('check')} Đã ghi vào sổ cá</p><h3>${def.name}</h3><p>${kg(c.weight)} kg <span>· ${getMap(c.mapId).name}</span></p></div></div><div class="catch-container">${containerSelect('catch-container')}<button class="small" id="catch-open-keepnet">${player.keptFish.length}/${MAX_KEPT_FISH} con ${icon('arrow')}</button></div><p class="catch-note">${full?'Đồ đựng đã đầy. Bán bớt cá hoặc chọn mang về / phóng sinh.':'Chọn cách nào cũng giữ thành tích. Cá cất lại có thể bán sau.'}</p>`,[
+    {label:'Mang về nịnh vợ',decision:'gift',symbol:'home',copy:catchTeaser(c,'gift'),action:()=>finishCatch(id,'gift')},
+    {label:'Thả vào '+container.short,decision:'keep',symbol:'bag',copy:catchTeaser(c,'keep',player.container),disabled:full,primary:true,action:()=>finishCatch(id,'keep')},
+    {label:'Phóng sinh',decision:'release',symbol:'leaf',copy:catchTeaser(c,'release'),action:()=>finishCatch(id,'release')}
+  ],{kind:'catch'});
+  $('#catch-container').onchange=e=>{player.container=e.target.value;persist();const button=$('[data-catch-decision=keep]');button.querySelector('.action-title').textContent='Thả vào '+getContainer(player.container).short;button.querySelector('.action-copy').textContent=catchTeaser(c,'keep',player.container);};
+  $('#catch-open-keepnet').onclick=()=>showKeepnet(true);
 }
-function finishCatch(id,decision){if(game.resolveCatch(id,decision)){closeDialog();render();toast(game.message);}}
+function refreshCatchUI(){if(screen==='fishing')updateFishing();else render();}
+function finishCatch(id,decision){if(game.resolveCatch(id,decision)){audio.cue(decision);closeDialog();refreshCatchUI();toast(game.message);}else toast(game.message);}
+function showKeepnet(backToCatch=false){
+  if(game.busy&&!player.pending){toast('Thu cần rồi mình xem cá trong rọng nhé.');return;}
+  const container=getContainer(player.container),value=player.keptFish.reduce((sum,c)=>sum+c.value,0);
+  showDialog(container.name,`<div class="keepnet-heading"><span>${player.keptFish.length} con · ${money(value)} xu</span><span>${player.gifted} con đã mang về nhà</span></div><div class="catch-container">${containerSelect('keepnet-container')}</div>${player.keptFish.length?`<div class="keepnet-list">${player.keptFish.map(c=>{const f=getFish(c.fishId);return `<article class="keepnet-fish"><span class="keepnet-art">${fishArt(f)}</span><div><strong>${f.name}</strong><small>${kg(c.weight)} kg · ${getMap(c.mapId).name}</small></div><div class="keepnet-fish-actions"><button data-kept="${c.id}" data-fate="sell" aria-label="Bán ${f.name}, ${money(c.value)} xu">${icon('coin')} ${money(c.value)} xu</button><button data-kept="${c.id}" data-fate="gift" aria-label="Mang ${f.name} về nhà">${icon('home')}</button><button data-kept="${c.id}" data-fate="release" aria-label="Phóng sinh ${f.name}">${icon('leaf')}</button></div></article>`;}).join('')}</div>`:'<p class="keepnet-empty">Chưa có cá trong '+container.short+'. Đừng lo, cá ngoài ao vẫn đang họp chờ bạn.</p>'}`,[
+    ...(player.keptFish.length?[{label:'Bán cả '+container.short+' · '+money(value)+' xu',action:()=>{if(game.sellKeptFish()){audio.cue('sell');refreshCatchUI();showKeepnet(backToCatch);toast(game.message);}}}]:[]),
+    {label:backToCatch?'Quay lại chọn cách xử lý cá':'Xong',primary:true,action:()=>{if(backToCatch)showCatch();else{closeDialog();refreshCatchUI();}}}
+  ],{kind:'keepnet'});
+  $('#keepnet-container').onchange=e=>{player.container=e.target.value;persist();showKeepnet(backToCatch);};
+  $$('[data-kept]').forEach(b=>b.onclick=()=>{if(game.resolveKeptCatch(b.dataset.kept,b.dataset.fate)){audio.cue(b.dataset.fate);refreshCatchUI();showKeepnet(backToCatch);toast(game.message);}});
+}
+function audioOptionsHTML(prefix){
+  return `<fieldset class="audio-options"><legend>Âm thanh</legend><label class="checkline"><input id="${prefix}-sound" type="checkbox" ${player.settings.sound?'checked':''}>Nhạc nền & hiệu ứng</label>${[['music','Nhạc chill'],['effects','Hiệu ứng câu cá']].map(([key,label])=>`<div class="audio-volume"><label for="${prefix}-${key}">${label}</label><output id="${prefix}-${key}-value">${Math.round(player.settings[key]*100)}%</output><input id="${prefix}-${key}" type="range" min="0" max="100" step="5" value="${Math.round(player.settings[key]*100)}"></div>`).join('')}<p class="hint-note">${audioTheme(screen==='home'?'home':player.map).title} · Nhạc đổi theo vùng câu.</p></fieldset>`;
+}
+function bindAudioOptions(prefix){
+  $('#'+prefix+'-sound').onchange=e=>setSound(e.target.checked);
+  for(const key of ['music','effects']){const input=$('#'+prefix+'-'+key);input.oninput=e=>{player.settings[key]=+e.target.value/100;$('#'+prefix+'-'+key+'-value').value=e.target.value+'%';unlockAudio();audio.applySettings();persist();};if(key==='effects')input.onchange=()=>audio.cue('splash');}
+}
+function showFishingInfo(){
+  showDialog('Bên bờ '+game.map.name,`<div class="fishing-info"><p><strong>${game.spotData.name}</strong> · Sâu ${game.spotData.depth.toFixed(1)} m</p><p>${game.rod.name} · ${game.rod.label}<br>${getBait(player.bait).name} · ${baitCount()}</p><label class="checkline"><input id="pin-signal" type="checkbox" ${pinSignal?'checked':''}>Luôn hiện cận cảnh tín hiệu</label><p class="hint-note">Cận cảnh tự hiện khi cá thăm mồi. Hai vùng tay hiện khi cần giật và dẫn cá.</p><button id="info-keepnet" ${game.busy&&!player.pending?'disabled':''}>${icon('fish')} ${getContainer(player.container).name} · ${player.keptFish.length} con</button></div>${audioOptionsHTML('info')}`,[{label:'Cách chơi',action:showHelp},{label:'Tiếp tục câu',primary:true,action:closeDialog}],{kind:'info'});
+  $('#pin-signal').onchange=e=>{pinSignal=e.target.checked;updateFishing();};$('#info-keepnet').onclick=()=>showKeepnet();bindAudioOptions('info');
+}
 function showLesson(id){
   const l=LESSONS.find(l=>l.id===id);showDialog(l.name,`<p>${l.question}</p><div class="quiz-options">${l.options.map((o,i)=>`<button data-answer="${i}">${o}</button>`).join('')}</div><div id="quiz-feedback" class="quiz-feedback" aria-live="polite"></div>`);
   $$('[data-answer]').forEach(b=>b.onclick=()=>{const first=!player.lessons.includes(id),correct=game.answerLesson(id,+b.dataset.answer);if(correct){$('#quiz-feedback').className='quiz-feedback good';$('#quiz-feedback').textContent=l.explain+(first?' Hoàn thành, nhận 2.500 xu.':' Bài đã hoàn thành trước đó.');$$('[data-answer]').forEach(x=>x.disabled=true);const done=document.createElement('button');done.className='primary';done.textContent='Ghi vào sổ';done.onclick=()=>{closeDialog();render();};$('#dialog-content .actions').append(done);}else{$('#quiz-feedback').className='quiz-feedback bad';$('#quiz-feedback').textContent='Chưa đúng nhịp. Thử một lựa chọn khác.';}});
 }
 function showSettings(){
-  showDialog('Tùy chọn bên bờ ao',`<div class="settingline"><label for="sound">Âm báo phao & cá</label><input id="sound" type="checkbox" ${player.settings.sound?'checked':''}></div><div class="settingline"><label for="setting-assist">Gợi ý đọc tín hiệu</label><input id="setting-assist" type="checkbox" ${player.settings.assist?'checked':''}></div><label for="deadline">Giờ về nhà (tùy chọn)</label><select id="deadline"><option value="0" ${!player.settings.deadline?'selected':''}>Thư thả · Không giới hạn</option><option value="180" ${player.settings.deadline===180?'selected':''}>Một buổi 3 phút</option><option value="300" ${player.settings.deadline===300?'selected':''}>Một buổi 5 phút</option></select><p class="hint-note" style="margin-top:12px">Đồng hồ chạy khi chơi; dừng lúc tạm dừng, mở hộp thoại hoặc rời tab. Áp dụng ngay cho buổi hiện tại.</p><div class="rule"></div><p class="smalltext muted">Bản web v0.2 · Tiến độ lưu trên trình duyệt này. Xuất bản lưu để giữ một bản riêng. Cấp cần thủ tăng theo tổng cá đã câu: 5, 15, 30 và 60 con.</p>`,[{label:'Xuất bản lưu',action:exportSave},{label:'Xong',primary:true,action:closeDialog}]);
-  $('#sound').onchange=e=>{player.settings.sound=e.target.checked;unlockAudio();persist();};$('#setting-assist').onchange=e=>{player.settings.assist=e.target.checked;persist();};$('#deadline').onchange=e=>{player.settings.deadline=+e.target.value;persist();if(screen==='fishing')updateFishing();};
+  showDialog('Tùy chọn bên bờ ao',`${audioOptionsHTML('global')}<div class="settingline"><label for="setting-assist">Gợi ý đọc tín hiệu</label><input id="setting-assist" type="checkbox" ${player.settings.assist?'checked':''}></div><label for="deadline">Giờ về nhà (tùy chọn)</label><select id="deadline"><option value="0" ${!player.settings.deadline?'selected':''}>Thư thả · Không giới hạn</option><option value="180" ${player.settings.deadline===180?'selected':''}>Một buổi 3 phút</option><option value="300" ${player.settings.deadline===300?'selected':''}>Một buổi 5 phút</option></select><p class="hint-note" style="margin-top:12px">Đồng hồ chạy khi chơi; dừng lúc tạm dừng, mở hộp thoại hoặc rời tab. Áp dụng ngay cho buổi hiện tại.</p><div class="rule"></div><p class="smalltext muted">Bản web v0.2 · Tiến độ lưu trên trình duyệt này. Xuất bản lưu để giữ một bản riêng. Cấp cần thủ tăng theo tổng cá đã câu: 5, 15, 30 và 60 con.</p>`,[{label:'Xuất bản lưu',action:exportSave},{label:'Xong',primary:true,action:closeDialog}]);
+  bindAudioOptions('global');$('#setting-assist').onchange=e=>{player.settings.assist=e.target.checked;persist();};$('#deadline').onchange=e=>{player.settings.deadline=+e.target.value;persist();if(screen==='fishing')updateFishing();};
 }
 function exportSave(){const blob=new Blob([JSON.stringify(player,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='tron-vo-di-cau-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Đã xuất bản lưu JSON.');}
 $('#settings').onclick=showSettings;
 document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;e.preventDefault();if(a.classList.contains('skip')){$('#main').focus();return;}navigate(a.getAttribute('href').slice(1));});
 addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
 document.addEventListener('keydown',e=>{
-  if(screen!=='fishing'||$('#dialog').open||/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))return;
+  if(screen!=='fishing'||!sceneReady||$('#dialog').open||/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))return;
   if((e.code==='KeyP'||e.code==='Escape')&&!e.repeat){e.preventDefault();showPause();return;}
   if(hands.keydown(e))return;
   if(e.code==='Space'&&!e.repeat&&!/^(BUTTON|A)$/.test(e.target.tagName)){
     e.preventDefault();unlockAudio();if(['idle','failed'].includes(game.phase))game.cast();else if(player.pending)showCatch();
   }
 });
-function suspendFishing(){clearRodHold();if(screen==='fishing'){game.paused=true;updateFishing();}persist();}
-document.addEventListener('visibilitychange',()=>{if(document.hidden)suspendFishing();});
+function suspendFishing(){clearRodHold();if(screen==='fishing'){game.paused=true;updateFishing();}syncAtmosphere();persist();}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)suspendFishing();else syncAtmosphere();});
+document.addEventListener('pointerdown',unlockAudio,{capture:true});
+document.addEventListener('keydown',unlockAudio,{capture:true});
 addEventListener('blur',suspendFishing);
 addEventListener('pagehide',persist);
 
@@ -317,7 +388,7 @@ function paint(){
   }
   if(game.paused&&!$('#dialog').open){c.fillStyle='#183D3730';c.fillRect(0,0,w,h);c.fillStyle='#FFFCF5';c.fillRect(w/2-94,h/2-25,188,50);c.font='14px Viet';c.textAlign='center';c.fillStyle='#183D37';c.fillText('Buổi câu tạm dừng',w/2,h/2+5);}
 }
-function frame(now){const dt=lastFrame?Math.min(.1,(now-lastFrame)/1000):0;lastFrame=now;if(screen==='fishing'){hands.step(dt);game.step(dt);}if(now-lastUpdate>100){if(screen==='fishing')updateFishing();lastUpdate=now;}paint();requestAnimationFrame(frame);}
+function frame(now){const dt=lastFrame?Math.min(.1,(now-lastFrame)/1000):0;lastFrame=now;if(screen==='fishing'&&sceneReady){hands.step(dt);game.step(dt);}if(now-lastUpdate>100){if(screen==='fishing')updateFishing();lastUpdate=now;}paint();requestAnimationFrame(frame);}
 $('#brand-icon').innerHTML=icon('fish');$('#profile-avatar').innerHTML=avatarArt();$('#coin-icon').innerHTML=icon('coin');$('#settings').innerHTML=icon('settings');
 $('#game-nav').innerHTML=NAV_ITEMS.map(([id,symbol,label])=>`<a href="#${id}" data-screen="${id}"><span class="dock-icon">${icon(symbol)}</span><span>${label}</span></a>`).join('');
 screen=renderers[location.hash.slice(1)]?location.hash.slice(1):'home';setHash(screen);render();if(screen==='fishing')setFishingOrientation(true);persist();requestAnimationFrame(frame);

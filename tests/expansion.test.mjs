@@ -18,7 +18,8 @@ test('All 10 maps have unique packaged landscape art and valid playable content'
 
 test('Old v0.1 save migrates without losing money, owned gear, catch or pending sale',()=>{
  const old={version:1,coins:43210,baits:{worm:7,dough:5,corn:1,cloudbait:4},rods:['bamboo','spinning'],maps:['AO','HO'],rod:'spinning',bait:'lure',map:'HO',rig:{depth:2.6,lead:1.08},catches:8,released:3,sold:4,casts:25,collection:{fish_04:{count:2,best:1.92}},lessons:['signal'],serial:8,pending:{id:'catch-8',fishId:'fish_04',weight:1.92,value:92160,mapId:'HO'},settings:{assist:false,sound:false,deadline:300}};
- const p=validateSave(old);for(const key of ['coins','catches','released','sold','casts','rod','map','collection','lessons','pending','settings'])assert.deepEqual(p[key],old[key]);
+ const p=validateSave(old);for(const key of ['coins','catches','released','sold','casts','rod','map','collection','lessons','pending'])assert.deepEqual(p[key],old[key]);
+ assert.deepEqual(p.settings,{...old.settings,music:.45,effects:.7});assert.equal(p.gifted,0);assert.deepEqual(p.keptFish,[]);
  assert.equal(p.baits.lure,1);assert.equal(p.baits.shrimp,0);assert.equal(p.accessories.length,5);assert.equal(p.equipment.line,'line_basic');
  const g=new FishingGame(p);assert.ok(g.resolveCatch('catch-8','sell'));assert.equal(p.coins,old.coins+92160);assert.equal(g.resolveCatch('catch-8','sell'),false);
 });
