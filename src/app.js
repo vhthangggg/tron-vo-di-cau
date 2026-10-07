@@ -62,7 +62,22 @@ function filterShop(category){
 
 const renderers={home:homeHTML,prepare:prepareHTML,fishing:fishingHTML,rig:rigHTML,learn:learnHTML,journal:journalHTML,shop:shopHTML};
 function render(){clearRodHold();sceneObserver?.disconnect();canvas=null;context=null;document.body.dataset.screen=screen;$('#main').innerHTML=renderers[screen]();$$('a[data-screen]').forEach(a=>{if(a.dataset.screen===screen)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});updateWallet();bindScreen();if(screen==='fishing'){canvas=$('#water');context=canvas.getContext('2d');sceneObserver=new ResizeObserver(resizeCanvas);sceneObserver.observe($('.scene'));resizeCanvas();updateFishing();paint();$('#main').focus({preventScroll:true});}}
-function changeScreen(next){screen=next;setHash(next);if(next==='fishing')game.paused=document.hidden;render();window.scrollTo(0,0);$('#main').focus({preventScroll:true});}
+async function setFishingOrientation(active){
+  document.body.classList.toggle('fishing-landscape',active);
+  if(!screen.orientation?.lock)return;
+  try{
+    if(active)await screen.orientation.lock('landscape');
+    else screen.orientation.unlock();
+  }catch{/* Một số mobile browser chỉ cho khóa hướng khi fullscreen/PWA. CSS vẫn giữ layout ngang. */}
+}
+function changeScreen(next){
+  const wasFishing=screen==='fishing';
+  screen=next;setHash(next);
+  if(next==='fishing')game.paused=document.hidden;
+  render();window.scrollTo(0,0);$('#main').focus({preventScroll:true});
+  if(next==='fishing')setFishingOrientation(true);
+  else if(wasFishing)setFishingOrientation(false);
+}
 function navigate(next){
   if(!renderers[next])next='home';if(next===screen)return;
   if(['waiting','nibble','bite','fight','snag'].includes(game.phase)){
