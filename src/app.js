@@ -168,8 +168,8 @@ function updateRig(){const error=rigError(player);$('#depth-out').textContent=pl
 function clock(v){return `${String(Math.floor(v/60)).padStart(2,'0')}:${String(Math.floor(v%60)).padStart(2,'0')}`;}
 function updateFishing(){
   if(!$('#cast'))return;
-  const phase=game.phase,lure=game.rod.tech==='lure',float=usesFloat(game.rod),active=['waiting','nibble','bite'].includes(phase),fight=phase==='fight',snag=phase==='snag',duel=fight||snag;
-  const names={idle:'Sẵn sàng',waiting:lure?'Mồi đang dưới nước':'Chờ cá tìm mồi',nibble:'Cá đang thăm mồi',bite:'Đúng nhịp — giữ tay phải!',fight:game.surge?'Cá bứt — hạ lực cần':'Bám cá · Giữ lực',snag:'Mắc đáy — giữ nhẹ để gỡ',landed:'Cá đã lên bờ',failed:'Thử lại một nhịp mới'};
+  const phase=game.phase,lure=game.rod.tech==='lure',float=usesFloat(game.rod),active=['casting','waiting','nibble','bite'].includes(phase),fight=phase==='fight',snag=phase==='snag',duel=fight||snag;
+  const names={idle:'Sẵn sàng',casting:'Đang vung cần',waiting:lure?'Mồi đang dưới nước':'Chờ cá tìm mồi',nibble:'Cá đang thăm mồi',bite:'Đúng nhịp — giữ tay phải!',fight:game.surge?'Cá bứt — hạ lực cần':'Bám cá · Giữ lực',snag:'Mắc đáy — giữ nhẹ để gỡ',landed:'Cá đã lên bờ',failed:'Thử lại một nhịp mới'};
   $('#status-title').textContent=game.paused?'Buổi câu tạm dừng':game.deadlineReached?'Đến giờ về nhà':(!player.settings.assist&&['nibble','bite'].includes(phase)?'Quan sát tín hiệu':names[phase]);
   $('#status-copy').textContent=game.message;
   $('#cast').disabled=(!['idle','failed','landed'].includes(phase)||game.paused||game.deadlineReached);
@@ -188,7 +188,7 @@ function updateFishing(){
   $('#retrieve-label').textContent=snag?'Bỏ lượt mắc đáy':lure&&phase==='waiting'?(game.retrieving?'Dừng thu mồi':'Bật thu mồi'):'Thu cần';$('#retrieve').setAttribute('aria-pressed',String(lure&&game.retrieving));
   $('#bank-count').textContent=baitCount();$('#pause').setAttribute('aria-pressed',String(game.paused));$('#fight').hidden=!duel;
   $('.scene').classList.toggle('is-fighting',duel);$('.scene').dataset.phase=phase;$('.scene').dataset.assist=String(player.settings.assist);
-  const stage=(!player.settings.assist&&phase==='bite')?1:({idle:0,waiting:1,nibble:1,bite:2,fight:3,snag:1,landed:4,failed:0}[phase]);
+  const stage=(!player.settings.assist&&phase==='bite')?1:({idle:0,casting:0,waiting:1,nibble:1,bite:2,fight:3,snag:1,landed:4,failed:0}[phase]);
   $$('[data-phase-step]').forEach(el=>{el.classList.toggle('current',+el.dataset.phaseStep===stage);el.classList.toggle('done',+el.dataset.phaseStep<stage);});
   if(duel){
     const tension=Math.round(game.tension),progress=snag?Math.min(100,Math.round(game.snagProgress*100)):Math.min(100,Math.round((100-game.energy)/(100-game.stats.landAt)*100));
@@ -287,6 +287,14 @@ function paint(){
   if(!context||!canvas)return;const box=canvas.getBoundingClientRect(),w=box.width,h=box.height,c=context,t=reduced.matches?0:game.time;c.clearRect(0,0,w,h);
   if(!game.spotData.video)paintWater(c,w,h,game,$('.scene-bg'),reduced.matches);
   const spot=game.spotData;
+  if(game.phase==='casting'&&game.castFlight){
+    const f=game.castFlight,p=Math.min(1,f.t),sx=f.start.x*w,sy=f.start.y*h,ex=f.end.x*w,ey=f.end.y*h;
+    const x=sx+(ex-sx)*p,y=sy+(ey-sy)*p-Math.sin(Math.PI*p)*h*(.20+Math.abs(ex-sx)/w*.08);
+    const far=game.castHabitat?.far||0,scale=(1-p)*1.05+p*(.56+(1-far)*.58);
+    c.save();c.translate(x,y);c.scale(scale,scale);c.fillStyle='#e65a39';c.beginPath();c.ellipse(0,0,5,9,0,0,Math.PI*2);c.fill();c.strokeStyle='#fff6c8';c.lineWidth=2;c.beginPath();c.moveTo(0,-17);c.lineTo(0,2);c.stroke();c.restore();
+    const rodTipX=w*.20,rodTipY=h*.46;c.strokeStyle='#FFFCF5B8';c.lineWidth=1;c.beginPath();c.moveTo(rodTipX,rodTipY);c.quadraticCurveTo((rodTipX+x)/2,Math.min(rodTipY,y)-h*.08,x,y);c.stroke();
+    if(p>.86){const q=(p-.86)/.14;c.save();c.globalAlpha=1-q;c.strokeStyle='#fffbd0';c.lineWidth=1.5;c.beginPath();c.ellipse(ex,ey,8+q*25,2.5+q*8,0,0,Math.PI*2);c.stroke();for(let i=0;i<5;i++){const ang=-Math.PI*.85+i*Math.PI*.17,rr=8+q*18;c.beginPath();c.arc(ex+Math.cos(ang)*rr,ey+Math.sin(ang)*rr,1.5,0,Math.PI*2);c.fillStyle='#fffbd0';c.fill();}c.restore();}
+  }
   // Chỉ đánh dấu góc bờ đã chọn ở màn Chuẩn bị.
   if(!game.busy){c.beginPath();c.ellipse(spot.x*w,spot.y*h,23,8,0,0,Math.PI*2);c.strokeStyle='#FFFCF5';c.lineWidth=2.5;c.stroke();}
   const px=spot.x*w,py=spot.y*h;
