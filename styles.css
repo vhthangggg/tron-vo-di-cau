@@ -231,3 +231,17 @@ body[data-screen=fishing] .scene.has-cast-target::after{
 }
 @keyframes castTargetPulse{50%{transform:translate(-50%,-50%) scale(1.18);opacity:.65}}
 @media(prefers-reduced-motion:reduce){body[data-screen=fishing] .scene.has-cast-target::after{animation:none}}
+
+/* Physical float/bait marker anchored to the exact normalized cast coordinate. */
+.world-float{--float-scale:1;--float-dip:0;position:absolute;z-index:2;left:50%;top:50%;width:32px;height:48px;transform:translate(-50%,-72%) scale(var(--float-scale));transform-origin:50% 100%;pointer-events:none;filter:drop-shadow(0 2px 2px #102b2266)}
+.world-float .float-stem{position:absolute;left:15px;bottom:10px;width:2px;height:29px;border-radius:2px;background:linear-gradient(to bottom,#fff6c8 0 26%,#d94d36 27% 59%,#f0d36c 60%);transform:translateY(calc(var(--float-dip)*12px))}
+.world-float .float-body{position:absolute;left:11px;bottom:5px;width:10px;height:17px;border-radius:50% 50% 44% 44%;background:linear-gradient(to bottom,#e65a39 0 44%,#f3df8b 45% 70%,#304b35 71%);transform:translateY(calc(var(--float-dip)*12px))}
+.world-float .float-ripple{position:absolute;left:2px;bottom:1px;width:28px;height:9px;border:1.5px solid #eef4d7aa;border-radius:50%;opacity:.65;animation:worldRipple 2.2s ease-out infinite}
+.world-float .bait-shadow{position:absolute;left:13px;bottom:-5px;width:7px;height:4px;border-radius:50%;background:#253c2f88;filter:blur(1px)}
+.world-float[data-signal=nibble]{animation:worldNibble .32s ease-in-out infinite alternate}
+.world-float[data-signal=bite]{animation:worldBite .28s ease-in-out infinite}
+.world-float[data-signal=wind] .float-ripple{animation-duration:1.25s}
+@keyframes worldRipple{0%{transform:scale(.55);opacity:.72}100%{transform:scale(1.45);opacity:0}}
+@keyframes worldNibble{to{margin-top:3px;rotate:2deg}}
+@keyframes worldBite{0%,100%{margin-top:0}50%{margin-top:10px}}
+@media(prefers-reduced-motion:reduce){.world-float,.world-float .float-ripple{animation:none!important}}
