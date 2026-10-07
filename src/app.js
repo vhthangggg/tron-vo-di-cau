@@ -4,6 +4,7 @@ import {loadSceneVideo} from './scene-loader.js';
 import {CONTAINERS,getContainer,catchTeaser,MAX_KEPT_FISH} from './catch-fate.js';
 import {twoHands} from './two-hands.js';
 import {paintWater} from './water-world.js';
+import {rodLoad,rodGeometry,paintRod} from './fight-physics.js';
 import {MAPS,FISH,RODS,BAITS,LESSONS,getMap,getRod,getBait,getFish,usesFloat,usesReel} from './content.js';
 import {FishingGame,floatMarks,rigError,clamp,FIGHT_ZONE} from './engine.js';
 import {loadPlayer,savePlayer} from './save.js';
@@ -16,6 +17,7 @@ const kg=v=>new Intl.NumberFormat('vi-VN',{minimumFractionDigits:2,maximumFracti
 let storage;try{storage=window.localStorage;}catch{storage={getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}};}
 const loaded=loadPlayer(storage);let player=loaded.player,saveWarning=loaded.warning;
 let screen='home',canvas=null,context=null,sceneObserver=null,toastTimer,previousFocus,dialogPaused=false,lastPhase='idle',lastFrame=0,lastUpdate=0,sceneReady=true,sceneLoader=null,pinSignal=false;
+let rodFlex=0;
 const audio=new GameAudio({getSettings:()=>player.settings});
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 let game=new FishingGame(player,{onChange:gameChanged});
@@ -377,9 +379,9 @@ function paint(){
   const endX=['fight','snag'].includes(game.phase)?fishX:px,endY=['fight','snag'].includes(game.phase)?fishY:py;
   const active=['waiting','nibble','bite','fight','snag'].includes(game.phase);
   const biteBend=!usesFloat(game.rod)?(game.phase==='bite'?h*.035:game.phase==='nibble'?Math.sin(t*9)*h*.008:0):0;
-  const rodTip={x:w*.20+game.force*w*.09,y:h*(.46-game.force*.17)+biteBend};
-  c.strokeStyle='#F4EDCF';c.lineWidth=5;c.beginPath();c.moveTo(w*.04,h*.98);c.quadraticCurveTo(w*.09,h*.66,rodTip.x,rodTip.y);c.stroke();c.strokeStyle='#6F6E43';c.lineWidth=1.4;c.stroke();
-  if(active){c.strokeStyle='#FFFCF5CF';c.lineWidth=1;c.beginPath();c.moveTo(rodTip.x,rodTip.y);c.quadraticCurveTo((rodTip.x+endX)/2,rodTip.y+h*.04,endX,endY);c.stroke();
+  const rod=rodGeometry(w,h,{force:game.force,bend:rodFlex,end:{x:endX,y:endY},bite:biteBend}),rodTip=rod.tip;
+  paintRod(c,rod,h);
+  if(active){c.strokeStyle='#FFFCF5CF';c.lineWidth=1;c.beginPath();c.moveTo(rodTip.x,rodTip.y);c.quadraticCurveTo((rodTip.x+endX)/2,rodTip.y+(game.phase==='fight'||game.phase==='snag'?h*.015:h*.04),endX,endY);c.stroke();
     const ripple=game.phase==='bite'||game.phase==='fight'?13:8;c.beginPath();c.ellipse(endX,endY,ripple+(Math.sin(t*4)+1)*4,3+(Math.sin(t*4)+1)*1.5,0,0,Math.PI*2);c.strokeStyle='#FFFCF599';c.lineWidth=1;c.stroke();
     if(usesFloat(game.rod)&&!spot.video&&game.phase!=='fight'){
       const dip=game.phase==='bite'?13:game.phase==='nibble'?Math.sin(t*9)*3:game.signal==='wind'?Math.sin(t*3)*2:0;
@@ -388,7 +390,7 @@ function paint(){
   }
   if(game.paused&&!$('#dialog').open){c.fillStyle='#183D3730';c.fillRect(0,0,w,h);c.fillStyle='#FFFCF5';c.fillRect(w/2-94,h/2-25,188,50);c.font='14px Viet';c.textAlign='center';c.fillStyle='#183D37';c.fillText('Buổi câu tạm dừng',w/2,h/2+5);}
 }
-function frame(now){const dt=lastFrame?Math.min(.1,(now-lastFrame)/1000):0;lastFrame=now;if(screen==='fishing'&&sceneReady){hands.step(dt);game.step(dt);}if(now-lastUpdate>100){if(screen==='fishing')updateFishing();lastUpdate=now;}paint();requestAnimationFrame(frame);}
+function frame(now){const dt=lastFrame?Math.min(.1,(now-lastFrame)/1000):0;lastFrame=now;if(screen==='fishing'&&sceneReady){hands.step(dt);game.step(dt);if(!game.paused){const load=rodLoad({phase:game.phase,force:game.force,tension:game.tension,weight:game.hooked?.weight,power:game.rod.power,strength:game.behavior?.strength});rodFlex+=(load-rodFlex)*(1-Math.exp(-dt*9));}}else rodFlex=0;if(now-lastUpdate>100){if(screen==='fishing')updateFishing();lastUpdate=now;}paint();requestAnimationFrame(frame);}
 $('#brand-icon').innerHTML=icon('fish');$('#profile-avatar').innerHTML=avatarArt();$('#coin-icon').innerHTML=icon('coin');$('#settings').innerHTML=icon('settings');
 $('#game-nav').innerHTML=NAV_ITEMS.map(([id,symbol,label])=>`<a href="#${id}" data-screen="${id}"><span class="dock-icon">${icon(symbol)}</span><span>${label}</span></a>`).join('');
 screen=renderers[location.hash.slice(1)]?location.hash.slice(1):'home';setHash(screen);render();if(screen==='fishing')setFishingOrientation(true);persist();requestAnimationFrame(frame);

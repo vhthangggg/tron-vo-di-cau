@@ -1,6 +1,7 @@
 import {pointInPolygon} from './scene-geometry.js';
 import {catchRemark,getContainer,MAX_KEPT_FISH} from './catch-fate.js';
 import {fishBehavior,snagChance,castHabitat} from './water-world.js';
+import {fishFightProfile} from './fight-physics.js';
 import {FISH,MAPS,RODS,BAITS,ACCESSORIES,LESSONS,getMap,getRod,getBait,getFish,usesFloat,usesReel,acceptsBait,loadoutStats} from './content.js';
 export const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 export const FIGHT_ZONE=Object.freeze({min:30,max:76,red:90});
@@ -145,8 +146,8 @@ export class FishingGame{
   }
   stepFight(dt){
     this.fightTime+=dt;
-    const b=this.behavior;
-    if(this.fightTime>=this.nextSurge){this.surgeUntil=this.fightTime+.8+this.controlRandom()*.7;this.nextSurge=this.surgeUntil+b.rest+this.controlRandom()*1.8;}
+    const b=this.behavior,profile=fishFightProfile(getFish(this.hooked.fishId),this.hooked.weight,this.stats.power);
+    if(this.fightTime>=this.nextSurge){this.surgeUntil=this.fightTime+.45+(.55+this.controlRandom()*.7)*profile.burstScale;this.nextSurge=this.surgeUntil+b.rest+(1-Math.min(1,profile.burstScale))*2+this.controlRandom()*1.8;}
     this.surge=this.fightTime<this.surgeUntil;
     if(this.fightTime>=this.turnAt){
       this.waypoint={x:.12+this.controlRandom()*.76,y:.12+this.controlRandom()*.76};
@@ -160,7 +161,7 @@ export class FishingGame{
     this.updateAccuracy();
     this.offTarget=this.accuracy<.28?this.offTarget+dt:Math.max(0,this.offTarget-dt*2);
     const stats=this.stats,ratio=this.hooked.weight/stats.power;
-    const target=8+this.force*76+Math.min(23,ratio*14)+this.map.current*10*(1-stats.stability)+(this.surge?b.burst*(.55+this.force):0)+(this.tracking?(1-this.accuracy)*15:9);
+    const target=8+this.force*76+Math.min(23,ratio*14)+this.map.current*10*(1-stats.stability)+(this.surge?b.burst*profile.burstScale*(.55+this.force):0)+(this.tracking?(1-this.accuracy)*15:9);
     this.tension=clamp(this.tension+(target-this.tension)*Math.min(1,dt*3.5),0,100);
     this.overload=this.tension>FIGHT_ZONE.red?this.overload+dt:Math.max(0,this.overload-dt*2);
     this.slack=this.tension<16?this.slack+dt:Math.max(0,this.slack-dt);
@@ -168,7 +169,7 @@ export class FishingGame{
     if(this.slack>stats.slackGrace+1){this.hooked.suspicion=.7;this.fail('Tuột lưỡi: thả chùng quá lâu. Giữ một ít lực ở tay phải.');return;}
     if(this.offTarget>6){this.hooked.suspicion=.7;this.fail('Cá thoát: tay trái rời cá quá lâu. Bám theo dấu cá đang chạy.');return;}
     const controlled=this.pulling&&this.tracking&&this.accuracy>.4&&this.force>.15&&this.tension>=FIGHT_ZONE.min&&this.tension<=FIGHT_ZONE.max;
-    if(controlled)this.energy=Math.max(0,this.energy-dt*(4.6*stats.drain*(.45+this.accuracy*.55)/(1+ratio*.2)));
+    if(controlled)this.energy=Math.max(0,this.energy-dt*(100/profile.endurance*stats.drain*(.45+this.accuracy*.55)));
     else this.energy=Math.min(100,this.energy+dt*1.1);
     if(this.energy<=stats.landAt)this.land();
   }
