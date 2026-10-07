@@ -12,9 +12,18 @@ const WORLDS = {
   GHE: {flow:1, drift:-1, tint:'#def5ee', foliage:'grass', risk:[.13,.28,.34], water:[[.14,.36],[1,.31],[1,1],[.34,1],[.17,.76]]}
 };
 export const waterWorld = id => WORLDS[id] || WORLDS.AO;
-export function snagChance(map,spot,depth,tech){
-  const bottom=depth>=map.spots[spot].depth-.3;
-  return waterWorld(map.id).risk[spot]*(tech==='lure'?.55:bottom?1:.12);
+export function castHabitat(spot,point){
+  const h=spot.habitat;if(!h||!point)return {cover:0,open:1,near:0,far:0,depth:spot.depth,size:.5,snag:1};
+  const cover=Math.max(0,...(h.cover||[]).map(([x,y,r])=>Math.max(0,1-Math.hypot(point.x-x,point.y-y)/r)));
+  const open=Math.max(0,1-Math.hypot(point.x-(h.open?.[0]??.5),point.y-(h.open?.[1]??.5))/.48)*(1-cover*.75);
+  const span=Math.max(.1,h.bankY-h.farY),far=clamp01((h.bankY-point.y)/span),near=1-far;
+  const depth=spot.depth*(.55+far*.75)*(1-cover*.12);
+  return {cover,open,near,far,depth,size:clamp01(.18+far*.72-cover*.12),snag:1+cover*2.7+near*.35};
+}
+const clamp01=v=>Math.max(0,Math.min(1,v));
+export function snagChance(map,spot,depth,tech,habitat){
+  const bottom=depth>=map.spots[spot].depth-.3,local=habitat?.snag||1;
+  return Math.min(.65,waterWorld(map.id).risk[spot]*(tech==='lure'?.55:bottom?1:.12)*local);
 }
 export function fishBehavior(fish){
   const base={carp:[.13,17,2.9],catfish:[.12,23,3.5],long:[.22,22,2.2],round:[.17,15,2.6],knife:[.21,18,2.3],grouper:[.19,26,2.8]}[fish.shape] || [.16,20,2.8];

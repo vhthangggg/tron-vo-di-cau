@@ -5,7 +5,7 @@ const root=resolve(import.meta.dirname,'..');
 const arg=(name,fallback)=>{const i=process.argv.indexOf(name);return i<0?fallback:process.argv[i+1];};
 const port=Number(arg('--port','5173'));
 const base='/'+arg('--base','').replace(/^\/+|\/+$/g,'');
-const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.webp':'image/webp','.woff':'font/woff','.md':'text/plain; charset=utf-8','.txt':'text/plain; charset=utf-8'};
+const mime={'.mp4':'video/mp4','.png':'image/png','.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.webp':'image/webp','.woff':'font/woff','.md':'text/plain; charset=utf-8','.txt':'text/plain; charset=utf-8'};
 createServer(async(req,res)=>{
   try{
     let path=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
