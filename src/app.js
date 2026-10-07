@@ -198,6 +198,20 @@ function updateFishing(){
     $('#fight-title').textContent=snag?'MẮC ĐÁY':game.surge?'CÁ BỨT!':progress>=85?'GẦN LÊN BỜ!':'BÁM CÁ · GIỮ LỰC';
     $('#fight-hint').textContent=snag?'Bám điểm gỡ · Lực cần 15–35%':game.offTarget>3?'Sắp mất cá! Tay trái bám lại dấu cá.':!game.tracking?'Tay trái: giữ và bám theo cá':game.surge?'Cá bứt mạnh — hạ tay phải, tiếp tục bám cá.':tension>FIGHT_ZONE.max?'Hạ tay phải để giảm căng dây.':!game.pulling?'Tay phải: giữ cần, tránh dây chùng':game.accuracy<.4?'Tay trái đang lệch — bám dấu cá.':game.behavior.label+' · Giữ dây trong vùng xanh';
   }
+  const worldFloat=$('#world-float'),bp=game.baitPoint||game.castTarget;
+  if(worldFloat){
+    const show=!!bp&&['waiting','nibble','bite','fight','snag'].includes(phase);
+    worldFloat.hidden=!show;
+    if(show){
+      const habitat=game.castHabitat||{far:0};
+      const perspective=.56+(1-(habitat.far||0))*.58;
+      const biteDip=phase==='bite'?.24:phase==='nibble'?.08:0;
+      worldFloat.style.left=(bp.x*100)+'%';worldFloat.style.top=(bp.y*100)+'%';
+      worldFloat.style.setProperty('--float-scale',perspective.toFixed(3));
+      worldFloat.style.setProperty('--float-dip',biteDip);
+      worldFloat.dataset.signal=phase==='bite'?'bite':phase==='nibble'?'nibble':game.signal==='wind'?'wind':'quiet';
+    }
+  }
   $('#float-zoom').hidden=duel;$('#float-label').textContent=float?(phase==='bite'?'Phao chìm rõ':phase==='nibble'?'Phao rung nhẹ':'Cận cảnh phao'):(phase==='bite'?'Đầu cần cong · Giật!':phase==='nibble'?'Đầu cần rung nhẹ':lure&&game.retrieving?'Đang thu mồi':'Đầu cần thả lỏng');
   if(!float){const bend=phase==='bite'?23:phase==='nibble'?(reduced.matches?6:6+Math.sin(game.time*9)*4):0;$('#tip-rod').setAttribute('d',`M12 90Q28 ${55+bend} 78 ${12+bend}`);$('#tip-line').setAttribute('d',`M78 ${12+bend} 88 90`);}
   const n=floatMarks(player),offset=44+(4-n)*8+(phase==='bite'?41:phase==='nibble'?(reduced.matches?4:Math.sin(game.time*9)*5):game.signal==='wind'?(reduced.matches?2:Math.sin(game.time*3)*3):0);
