@@ -99,6 +99,29 @@ function showMaps(){
   showDialog('Khám phá những bờ nước',renderMapAtlas(player),[],{kind:'atlas'});
   $$('[data-atlas-map]').forEach(button=>button.onclick=()=>{const id=button.dataset.atlasMap;closeDialog();travel(id);});
 }
+function pointInPolygon(x,y,poly){
+  let inside=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];
+    if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))inside=!inside;
+  }
+  return inside;
+}
+function bindWaterCast(){
+  const scene=$('.scene'),zone=game.spotData.waterZone;
+  if(!scene||!zone?.length)return;
+  scene.classList.add('tap-cast-enabled');
+  scene.onpointerup=e=>{
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    if(e.target.closest('button,.hand-panel,.scene-bottom,.scene-tools,.focus-back,.float-zoom,.session-hud'))return;
+    if(!['idle','failed','landed'].includes(game.phase)||player.pending)return;
+    const r=scene.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+    if(!pointInPolygon(x,y,zone)){toast('Chọn một điểm trên mặt nước thoáng để thả câu.');return;}
+    game.setCastTarget(x,y);
+    scene.style.setProperty('--cast-x',(x*100)+'%');scene.style.setProperty('--cast-y',(y*100)+'%');
+    scene.classList.add('has-cast-target');updateFishing();
+  };
+}
 function bindScreen(){
   $$('[data-open-maps]').forEach(button=>button.onclick=showMaps);
   $$('[data-travel]').forEach(button=>button.onclick=()=>travel(button.dataset.travel));
@@ -118,6 +141,7 @@ function bindScreen(){
     $('#leave-fishing').onclick=()=>navigate('home');
     $('#cast').onclick=()=>{unlockAudio();if(player.pending){showCatch();return;}game.cast();$('#main').focus({preventScroll:true});};
     hands.bind();
+    bindWaterCast();
     $('#retrieve').onclick=()=>{if(game.rod.tech==='lure'&&game.phase==='waiting'){game.toggleRetrieve();updateFishing();}else game.retrieve();};
     $('#ease').onclick=()=>{clearRodHold();game.ease();updateFishing();};
     $('#new-session').onclick=()=>{if(game.newSession())render();};
