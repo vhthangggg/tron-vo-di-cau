@@ -1,3 +1,5 @@
+import {usesReel} from './content.js';
+
 // Original, gently paced arrangements. No downloads, autoplay or third-party music.
 export const AUDIO_THEMES = {
   home:{title:'Hiên nhà',root:50,bpm:68,mode:'major',voice:'nylon',air:'birds'},
@@ -15,6 +17,40 @@ export const AUDIO_THEMES = {
 export const audioTheme = id => AUDIO_THEMES[id]||AUDIO_THEMES.home;
 const hz = midi => 440*2**((midi-69)/12);
 const clamp = n => Math.max(0,Math.min(1,Number.isFinite(n)?n:0));
+
+export function fightSoundState(game){
+  if(game.phase!=='fight'||game.paused)return null;
+  const reel=usesReel(game.rod),tension=clamp(game.tension/100);
+  const motion=clamp(Math.hypot(game.velocity?.x||0,game.velocity?.y||0)/.35);
+  const load=clamp(Math.sqrt(Math.max(0,game.hooked?.weight||0)/Math.max(.1,game.rod.power))/1.3);
+  // Reels click only as the fish takes line. Hand rods sing under taut-line load.
+  const payingOut=game.surge||(game.velocity?.y||0)<-.025||tension>.72;
+  const active=reel?tension>.35&&payingOut:tension>.28;
+  return {kind:reel?'drag':'line',level:active?(reel?.045:.025)+Math.max(0,tension-.28)*.13+load*.035+motion*.018:0,
+    rate:reel?.65+motion*.75+tension*.7+(game.surge?.25:0):.78+tension*.3+motion*.1,
+    frequency:reel?650+tension*700:1600+tension*1800+(game.surge?200:0)};
+}
+
+// Seamless friction and ratchet PCM, cached once per AudioContext.
+export function fillFightSound(samples,rate,kind){
+  let seed=kind==='drag'?73:191,pink=0,phase=0;
+  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296*2-1;};
+  const duration=samples.length/rate,clicks=Math.round(duration*28),cycle=samples.length/clicks;
+  for(let i=0;i<samples.length;i++){
+    const t=i/rate,noise=random();pink=pink*.96+noise*.04;
+    if(kind==='drag'){
+      const click=(i%cycle)/rate,envelope=Math.exp(-click/ .0028);
+      samples[i]=envelope*(noise*.42+Math.sin(2*Math.PI*2300*click)*.34+Math.sin(2*Math.PI*3700*click)*.12)+pink*.08;
+    }else{
+      phase+=2*Math.PI*(1850+42*Math.sin(2*Math.PI*t*3/duration))/rate;
+      const flutter=.82+.13*Math.sin(2*Math.PI*t*9/duration)+.05*Math.sin(2*Math.PI*t*23/duration);
+      samples[i]=(Math.sin(phase)*.2+Math.sin(phase*2)*.035+noise*.12+pink*.16)*flutter;
+    }
+  }
+  // Remove the loop seam without changing the repeated texture.
+  const edge=Math.min(Math.floor(rate*.005),Math.floor(samples.length/2));
+  for(let i=0;i<edge;i++){const fade=i/edge;samples[i]*=fade;samples[samples.length-1-i]*=fade;}
+}
 export function musicBar(id,bar){
   const t=audioTheme(id),minor=t.mode==='minor';
   const roots=minor?[0,-4,3,-2]:[0,-3,-7,-5];
@@ -53,6 +89,7 @@ export class GameAudio{
   applySettings(){
     if(!this.ctx)return;
     const s=this.getSettings();this.ramp(this.master.gain,s.sound?1:0,.02);this.ramp(this.effects.gain,clamp(s.effects??.7)*.65);
+    if(!s.sound||!clamp(s.effects??.7)||this.paused||this.hidden)this.stopFightSound(this.hidden?0:.12);
     this.ramp(this.music.gain,this.paused||this.hidden?0:clamp(s.music??.45)*.7);
     this.syncMusic();
   }
@@ -100,7 +137,28 @@ export class GameAudio{
     if(pan&&c.createStereoPanner){const p=c.createStereoPanner();p.pan.value=pan;g.connect(p);end=p;nodes.push(p);}
     end.connect(this[bus]);const v={source,gain:g,bus};this.voices.add(v);
     source.onended=()=>{this.voices.delete(v);for(const n of nodes)n.disconnect();};
-    source.start(at);source.stop(at+duration);return v;
+    source.start(at);if(Number.isFinite(duration))source.stop(at+duration);return v;
+  }
+  startFightSound(kind){
+    const c=this.ctx,key='fight:'+kind;let buffer=this.buffers.get(key);
+    if(!buffer){buffer=c.createBuffer(1,c.sampleRate*2,c.sampleRate);fillFightSound(buffer.getChannelData(0),c.sampleRate,kind);this.buffers.set(key,buffer);}
+    const source=c.createBufferSource();source.buffer=buffer;source.loop=true;
+    const filter=c.createBiquadFilter();filter.type=kind==='drag'?'highpass':'bandpass';filter.Q.value=kind==='drag'?.6:.8;
+    const voice=this.voice(source,{duration:Infinity,level:.0001,filter});
+    if(voice)this.fightVoice={...voice,kind,filter};
+  }
+  stopFightSound(fade=.12){
+    const v=this.fightVoice;if(!v)return;this.fightVoice=null;
+    this.ramp(v.gain.gain,0,Math.max(.005,fade/4));this.stopVoice(v,this.ctx.currentTime+fade);
+  }
+  updateFightSound(game){
+    const s=this.getSettings();
+    const state=s.sound&&clamp(s.effects??.7)&&this.ctx.state==='running'&&!this.paused&&!this.hidden?fightSoundState(game):null;
+    if(!state){this.stopFightSound();return;}
+    if(this.fightVoice&&this.fightVoice.kind!==state.kind)this.stopFightSound();
+    if(!this.fightVoice&&state.level>0)this.startFightSound(state.kind);
+    const v=this.fightVoice;if(!v)return;
+    this.ramp(v.gain.gain,state.level,.035);this.ramp(v.source.playbackRate,state.rate,.05);this.ramp(v.filter.frequency,state.frequency,.05);
   }
   instrument(midi,kind,duration){
     const key=kind+':'+midi+':'+duration.toFixed(2);if(this.buffers.has(key))return this.buffers.get(key);
@@ -161,10 +219,12 @@ export class GameAudio{
     else this.tone(440,t,.055,.025);
   }
   fishing(game){
-    if(!this.ctx||game.paused||this.paused||this.hidden)return;
+    if(!this.ctx)return;
+    this.updateFightSound(game);
+    if(game.paused||this.paused||this.hidden)return;
     const t=this.ctx.currentTime;
-    if((game.retrieving||game.pulling)&&['waiting','fight','snag'].includes(game.phase)&&t-this.lastReel>.4){this.lastReel=t;this.cue('reel');}
+    if(usesReel(game.rod)&&(game.retrieving||game.pulling)&&['waiting','snag'].includes(game.phase)&&t-this.lastReel>.4){this.lastReel=t;this.cue('reel');}
     if(game.phase==='fight'&&game.tension>87&&t-this.lastWarning>3){this.lastWarning=t;this.cue('warning');}
   }
-  dispose(){clearInterval(this.timer);if(this.ctx){for(const v of this.voices)this.stopVoice(v,this.ctx.currentTime);this.ctx.close().catch(()=>{});}this.buffers.clear();}
+  dispose(){clearInterval(this.timer);this.stopFightSound(0);if(this.ctx){for(const v of this.voices)this.stopVoice(v,this.ctx.currentTime);this.ctx.close().catch(()=>{});}this.buffers.clear();}
 }

@@ -4,6 +4,8 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const out=path.resolve(__dirname,'../test-results'),checks=[];fs.mkdirSync(out,{recursive:true});
 let server,browser;
 const engine=fs.readFileSync(path.resolve(__dirname,'../src/engine.js'),'utf8');
+const audioSource=fs.readFileSync(path.resolve(__dirname,'../src/game-audio.js'),'utf8');
+const fixtureAudio=audioSource.replace('this.getSettings=getSettings;','globalThis.__fightAudio=this;this.getSettings=getSettings;');
 const fixtureEngine=engine.replace("this.fish=[];this.populate();}","this.fish=[];this.populate();const f=globalThis.__fightFixture;if(f){this.phase='bite';this.target={id:'fixture',fishId:f.fishId,weight:f.weight,suspicion:0};this.baitPoint={x:.5,y:.65};this.signal='bite';}}");
 assert.notEqual(fixtureEngine,engine);
 async function rodPoint(page,level){return page.locator('#strike').evaluate((el,level)=>{
@@ -23,9 +25,12 @@ async function bow(page){return page.evaluate(()=>{
  server=spawn(process.execPath,['scripts/serve.mjs','--port','5194'],{cwd:path.resolve(__dirname,'..')});
  await new Promise((ok,no)=>{server.stdout.once('data',ok);server.once('error',no);});
  browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage'],...(process.env.CHROMIUM_EXECUTABLE?{executablePath:process.env.CHROMIUM_EXECUTABLE}:{})});
- for(const [label,fishId,weight,width,height,max] of [['loach','fish_27',.05,844,390,5],['crucian','fish_02',.1,375,812,6],['carp','fish_01',.5,844,390,12],['snakehead','fish_04',.5,844,390,16],['large','fish_01',2,844,390,40]]){
+ const {newPlayer}=await import('../src/save.js');
+ for(const [label,fishId,weight,width,height,max,rod='bamboo'] of [['loach','fish_27',.05,844,390,5],['crucian','fish_02',.1,375,812,6],['carp','fish_01',.5,844,390,12],['snakehead','fish_04',.5,844,390,16],['large','fish_01',2,844,390,40],['dai-line','fish_01',2,844,390,40,'dai54'],['reel-drag','fish_01',2,844,390,40,'bottom36']]){
   const context=await browser.newContext({viewport:{width,height},hasTouch:true,isMobile:true}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(r.status()+' '+r.url());});
+  const player=newPlayer();player.settings.music=0;player.rods=[...new Set(['bamboo',rod])];player.rod=rod;
+  await page.addInitScript(p=>localStorage.setItem('tron-vo-di-cau.v01',JSON.stringify(p)),player);
   await page.addInitScript(f=>{
    window.__fightFixture=f;const C=CanvasRenderingContext2D.prototype;
    for(const name of ['beginPath','moveTo','lineTo','quadraticCurveTo','stroke']){
@@ -43,10 +48,11 @@ async function bow(page){return page.evaluate(()=>{
    }
   },{fishId,weight});
   await page.route('**/src/engine.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:fixtureEngine}));
+  await page.route('**/src/game-audio.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:fixtureAudio}));
   await page.clock.install({time:new Date('2026-10-07T14:00:00Z')});await page.clock.pauseAt(new Date('2026-10-07T14:00:01Z'));
   await page.goto('http://127.0.0.1:5194/#fishing');await page.waitForFunction(()=>document.querySelector('.scene')?.dataset.loading==='ready');
   const cdp=await context.newCDPSession(page);await hands(page,cdp,.52,'touchStart');await page.clock.runFor(100);
-  assert.equal(await page.locator('.scene').getAttribute('data-phase'),'fight');let elapsed=.1;
+  assert.equal(await page.locator('.scene').getAttribute('data-phase'),'fight');let elapsed=.1,heard=false;
   if(label==='large'){
    for(let i=0;i<4;i++){await hands(page,cdp,.25);await page.clock.runFor(100);elapsed+=.1;}const low=await bow(page);
    for(let i=0;i<4;i++){await hands(page,cdp,.8);await page.clock.runFor(100);elapsed+=.1;}const high=await bow(page);
@@ -62,13 +68,17 @@ async function bow(page){return page.evaluate(()=>{
    assert.equal(phase,'fight','Fish failed: '+await page.locator('#status-copy').innerText());
    const surge=(await page.locator('#fight-hint').innerText()).startsWith('Cá bứt');
    await hands(page,cdp,surge?.22:.52);await page.clock.runFor(200);elapsed+=.2;
+   const sound=await page.evaluate(()=>window.__fightAudio?.fightVoice?.kind);
+   if(sound){assert.equal(sound,rod==='bottom36'?'drag':'line');heard=true;}
   }
   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
   assert.equal(await page.locator('.scene').getAttribute('data-phase'),'landed');assert(elapsed<max,label+' took '+elapsed);
+  assert(heard,label+' has the correct loaded-rod sound');assert(await page.evaluate(()=>window.__fightAudio.fightVoice===null));
+  await page.waitForFunction(()=>![...window.__fightAudio.voices].some(v=>v.source.loop));
   assert.equal(await page.locator('[data-catch-decision]').count(),3);
   const pending=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).pending);assert.equal(pending.fishId,fishId);assert.equal(pending.weight,weight);
   await page.locator('[data-catch-decision=release]').click();assert.equal(await page.locator('.scene').getAttribute('data-phase'),'idle');
-  assert.deepEqual(errors,[]);checks.push({check:label+' two-touch fight and catch resolve',seconds:+elapsed.toFixed(1)});await context.close();
+  assert.deepEqual(errors,[]);checks.push({check:label+' two-touch fight, correct sound and catch resolve',seconds:+elapsed.toFixed(1)});await context.close();
  }
  const timing=checks.filter(c=>'seconds'in c);assert(timing.find(c=>c.check.startsWith('snakehead')).seconds>timing.find(c=>c.check.startsWith('carp')).seconds);
  fs.writeFileSync(path.join(out,'fight-verification.json'),JSON.stringify({status:'passed',checks},null,2));console.log(JSON.stringify({status:'passed',checks},null,2));

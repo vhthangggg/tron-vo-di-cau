@@ -49,6 +49,7 @@ function updateWallet(){
 }
 function unlockAudio(){if(player.settings.sound)audio.unlock();}
 function syncAtmosphere(){
+  if(screen!=='fishing'||!sceneReady)audio.stopFightSound();
   audio.setScene(screen==='home'?'home':['prepare','fishing'].includes(screen)?player.map:'home');
   audio.setHidden(document.hidden);audio.setPaused(screen==='fishing'&&(!sceneReady||game.paused));
   const video=$('.scene-video');if(video&&sceneReady){if(game.paused||document.hidden)video.pause();else if(video.paused)video.play().catch(()=>{});}
@@ -356,17 +357,17 @@ function paint(){
   if(!context||!canvas)return;const w=canvas.clientWidth,h=canvas.clientHeight,c=context,t=reduced.matches?0:game.time;c.clearRect(0,0,w,h);
   if(!game.spotData.video)paintWater(c,w,h,game,$('.scene-bg'),reduced.matches);
   const spot=game.spotData;
+  const anchor=imageToScene(game.baitPoint||game.castTarget||game.defaultCastPoint,sceneFrame(w,h)),px=anchor.x,py=anchor.y;
   if(game.phase==='casting'&&game.castFlight){
     const f=game.castFlight,p=Math.min(1,f.t),sx=f.start.x*w,sy=f.start.y*h,end=imageToScene(f.end,sceneFrame(w,h)),ex=end.x,ey=end.y;
     const x=sx+(ex-sx)*p,y=sy+(ey-sy)*p-Math.sin(Math.PI*p)*h*(.20+Math.abs(ex-sx)/w*.08);
     const far=game.castHabitat?.far||0,scale=(1-p)*1.05+p*(.56+(1-far)*.58);
     c.save();c.translate(x,y);c.scale(scale,scale);c.fillStyle='#e65a39';c.beginPath();c.ellipse(0,0,5,9,0,0,Math.PI*2);c.fill();c.strokeStyle='#fff6c8';c.lineWidth=2;c.beginPath();c.moveTo(0,-17);c.lineTo(0,2);c.stroke();c.restore();
-    const rodTipX=w*.20,rodTipY=h*.46;c.strokeStyle='#FFFCF5B8';c.lineWidth=1;c.beginPath();c.moveTo(rodTipX,rodTipY);c.quadraticCurveTo((rodTipX+x)/2,Math.min(rodTipY,y)-h*.08,x,y);c.stroke();
+    const {x:rodTipX,y:rodTipY}=rodGeometry(w,h,{force:game.force,bend:rodFlex,end:anchor}).tip;c.strokeStyle='#FFFCF5B8';c.lineWidth=1;c.beginPath();c.moveTo(rodTipX,rodTipY);c.quadraticCurveTo((rodTipX+x)/2,Math.min(rodTipY,y)-h*.08,x,y);c.stroke();
     if(p>.86){const q=(p-.86)/.14;c.save();c.globalAlpha=1-q;c.strokeStyle='#fffbd0';c.lineWidth=1.5;c.beginPath();c.ellipse(ex,ey,8+q*25,2.5+q*8,0,0,Math.PI*2);c.stroke();for(let i=0;i<5;i++){const ang=-Math.PI*.85+i*Math.PI*.17,rr=8+q*18;c.beginPath();c.arc(ex+Math.cos(ang)*rr,ey+Math.sin(ang)*rr,1.5,0,Math.PI*2);c.fillStyle='#fffbd0';c.fill();}c.restore();}
   }
   // Chỉ đánh dấu góc bờ đã chọn ở màn Chuẩn bị.
   if(!game.busy&&!spot.video){c.beginPath();c.ellipse(spot.x*w,spot.y*h,23,8,0,0,Math.PI*2);c.strokeStyle='#FFFCF5';c.lineWidth=2.5;c.stroke();}
-  const anchor=imageToScene(game.baitPoint||game.castTarget||game.defaultCastPoint,sceneFrame(w,h)),px=anchor.x,py=anchor.y;
   let fishX=px,fishY=py;
   if(['fight','snag'].includes(game.phase)){
     const marker=$('#fish-target');if(marker){marker.style.left=game.fishPosition.x*100+'%';marker.style.top=game.fishPosition.y*100+'%';}

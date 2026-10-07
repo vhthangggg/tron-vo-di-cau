@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {FishingGame} from '../src/engine.js';
 import {newPlayer} from '../src/save.js';
 import {getFish} from '../src/content.js';
-import {fishFightProfile,rodLoad,rodGeometry} from '../src/fight-physics.js';
+import {fishFightProfile,rodLoad,rodGeometry,paintRod} from '../src/fight-physics.js';
 import {guideFish} from './control-player.mjs';
 
 function hook(fishId,weight,seed=1,rod='bamboo'){
@@ -68,5 +68,20 @@ test('Bent rods anchor the handle, keep shaft length, bend toward the line and s
     assert(bent.points.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.x<=w&&p.y>=0&&p.y<=h));
     const chord=Math.hypot(bent.tip.x-bent.root.x,bent.tip.y-bent.root.y);
     assert(length(bent)>chord*1.02,'Loaded shaft visibly bows instead of only pivoting');
+  }
+});
+
+test('The visible rod is 20 percent longer and thicker at phone and desktop sizes',()=>{
+  for(const [w,h] of [[640,360],[844,390],[1280,720],[375,812]]){
+    for(const force of [0,.5,1]){
+      const pose=rodGeometry(w,h,{force});
+      const oldLength=Math.hypot(w*(.20+force*.09)-w*.04,h*(.46-force*.17)-h*.98);
+      const length=pose.points.slice(1).reduce((sum,p,i)=>sum+Math.hypot(p.x-pose.points[i].x,p.y-pose.points[i].y),0);
+      assert(Math.abs(length/oldLength-1.2)<1e-9);
+      assert(pose.points.every(p=>p.x>=0&&p.x<=w&&p.y>=0&&p.y<=h));
+      const widths=[],c={save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},stroke(){if(this.strokeStyle==='#F4EDCF')widths.push(this.lineWidth);}};
+      paintRod(c,pose,h);
+      assert(Math.abs(widths[0]/(Math.max(3.5,Math.min(8,h*.016))*(1-1/25*.75))-1.2)<1e-9);
+    }
   }
 });
