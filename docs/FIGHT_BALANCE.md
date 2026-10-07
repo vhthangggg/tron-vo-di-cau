@@ -2,9 +2,9 @@
 
 Cần võng theo lực tay phải, độ căng dây, trọng lượng/sức cá và sức tải của chính cây cần. Phần gốc chắc, ngọn mềm hơn; giữ chiều dài thân cần và nối dây vào đúng đầu ngọn đã cong. Hạ lực làm cần duỗi lại dần, dừng buổi câu giữ nguyên hình khi tạm dừng.
 
-Kích thước cần khi câu tăng 20% cả chiều dài lẫn bề dày, phóng từ vị trí tay cầm. Độ cong cũng tăng cùng tỷ lệ. Dây nối đúng ngọn trong cả lúc vung và bo cá, trên màn ngang/dọc.
+Kích thước cần được tăng thêm 20% so với lần tăng trước (gấp 1,44 lần kích thước ban đầu) cả chiều dài lẫn bề dày, phóng từ vị trí tay cầm. Khi màn hình dọc hẹp, cần nghiêng nhẹ về phía trước để ngọn còn trong khung; chiều dài thân vẫn giữ nguyên.
 
-Cần đài/cần tay có tiếng rít cước khi dây chịu tải; cần máy (lure, câu đáy, ISO) có tiếng drag khi cá bứt, chạy ra xa hoặc kéo dây căng mạnh. Âm lượng và nhịp/cao độ thay đổi theo độ căng dây, tải cá và chuyển động. Dây chùng hoặc máy ngừng nhả dây thì âm giảm về im lặng. Đây là hiệu ứng tổng hợp bằng Web Audio; tiếng drag dựa trên trạng thái cá kéo, chưa mô phỏng lượng cước nhả hay núm chỉnh drag.
+Cần đài/cần tay có tiếng rít cước khi dây chịu tải; cần máy (lure, câu đáy, ISO) có tiếng drag khi cá bứt, chạy ra xa hoặc kéo dây căng mạnh. Tiếng cước có ma sát hạt và độ rung/cao độ biến thiên nhẹ để bớt giống mô-tơ. Âm lượng và nhịp/cao độ thay đổi theo độ căng dây, tải cá và chuyển động. Dây chùng hoặc máy ngừng nhả dây thì âm giảm về im lặng. Đây là hiệu ứng tổng hợp bằng Web Audio; tiếng drag dựa trên trạng thái cá kéo, chưa mô phỏng lượng cước nhả hay núm chỉnh drag.
 
 Âm thanh dùng mức “Hiệu ứng câu cá” đang có. Vòng âm thanh dừng khi lên cá, mất cá, tạm dừng, tắt tiếng, về nhà hoặc chuyển ứng dụng; phát lại cần tương tác người dùng và không khởi tạo nguồn âm mới mỗi khung hình.
 

@@ -33,7 +33,7 @@ export function fightSoundState(game){
 
 // Seamless friction and ratchet PCM, cached once per AudioContext.
 export function fillFightSound(samples,rate,kind){
-  let seed=kind==='drag'?73:191,pink=0,phase=0;
+  let seed=kind==='drag'?73:191,pink=0,body=0,phase=0;
   const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296*2-1;};
   const duration=samples.length/rate,clicks=Math.round(duration*28),cycle=samples.length/clicks;
   for(let i=0;i<samples.length;i++){
@@ -42,9 +42,14 @@ export function fillFightSound(samples,rate,kind){
       const click=(i%cycle)/rate,envelope=Math.exp(-click/ .0028);
       samples[i]=envelope*(noise*.42+Math.sin(2*Math.PI*2300*click)*.34+Math.sin(2*Math.PI*3700*click)*.12)+pink*.08;
     }else{
-      phase+=2*Math.PI*(1850+42*Math.sin(2*Math.PI*t*3/duration))/rate;
-      const flutter=.82+.13*Math.sin(2*Math.PI*t*9/duration)+.05*Math.sin(2*Math.PI*t*23/duration);
-      samples[i]=(Math.sin(phase)*.2+Math.sin(phase*2)*.035+noise*.12+pink*.16)*flutter;
+      // A moving inharmonic guide squeak sits inside a soft abrasive hiss;
+      // its uneven pitch and level avoid the steady motor-like note.
+      body=body*.985+noise*.015;
+      phase+=2*Math.PI*(1550+115*Math.sin(2*Math.PI*t*2.1/duration)+58*Math.sin(2*Math.PI*t*.63/duration))/rate;
+      const flutter=.9+.07*Math.sin(2*Math.PI*t*2.3/duration)+.03*Math.sin(2*Math.PI*t*6.7/duration);
+      const rub=(noise-body*.72)*.28+pink*.18;
+      const squeak=Math.sin(phase)*.085+Math.sin(phase*1.93+.7)*.025;
+      samples[i]=(rub+squeak)*flutter;
     }
   }
   // Remove the loop seam without changing the repeated texture.

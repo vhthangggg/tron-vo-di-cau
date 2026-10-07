@@ -30,6 +30,11 @@ test('Friction is continuous and drag is a distinct impulsive, bounded loop',()=
     let peak=0,power=0;
     for(const v of samples){assert(Number.isFinite(v)&&Math.abs(v)<=1);peak=Math.max(peak,Math.abs(v));power+=v*v;}
     const rms=Math.sqrt(power/samples.length);assert(rms>.03);assert.equal(Math.abs(samples[0]),0);assert.equal(Math.abs(samples.at(-1)),0);
+    if(kind==='line'){
+      const lag=Math.round(24000/1850);let xy=0,xx=0,yy=0;
+      for(let i=0;i<samples.length-lag;i++){xy+=samples[i]*samples[i+lag];xx+=samples[i]**2;yy+=samples[i+lag]**2;}
+      assert(Math.abs(xy/Math.sqrt(xx*yy))<.6,'Line friction should not hold a steady motor-like pitch');
+    }
     shapes.push({kind,crest:peak/rms});
   }
   assert(shapes[1].crest>shapes[0].crest*1.5,'Drag has pronounced ratchet clicks');

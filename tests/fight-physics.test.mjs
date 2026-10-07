@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {FishingGame} from '../src/engine.js';
 import {newPlayer} from '../src/save.js';
 import {getFish} from '../src/content.js';
-import {fishFightProfile,rodLoad,rodGeometry,paintRod} from '../src/fight-physics.js';
+import {fishFightProfile,rodLoad,rodGeometry,paintRod,ROD_SCALE} from '../src/fight-physics.js';
 import {guideFish} from './control-player.mjs';
 
 function hook(fishId,weight,seed=1,rod='bamboo'){
@@ -67,7 +67,8 @@ test('Bent rods anchor the handle, keep shaft length, bend toward the line and s
     assert(Math.abs(length(bent)-length(flat))<1e-6);assert(bent.tip.x>flat.tip.x);assert(bent.tip.y>flat.tip.y);
     assert(bent.points.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.x<=w&&p.y>=0&&p.y<=h));
     const chord=Math.hypot(bent.tip.x-bent.root.x,bent.tip.y-bent.root.y);
-    assert(length(bent)>chord*1.02,'Loaded shaft visibly bows instead of only pivoting');
+    const bow=Math.max(...bent.points.map(p=>Math.abs((bent.tip.y-bent.root.y)*(p.x-bent.root.x)-(bent.tip.x-bent.root.x)*(p.y-bent.root.y))/chord));
+    assert(bow>Math.min(w,h)*.1,'Loaded shaft visibly bows instead of only pivoting');
   }
 });
 
@@ -77,11 +78,23 @@ test('The visible rod is 20 percent longer and thicker at phone and desktop size
       const pose=rodGeometry(w,h,{force});
       const oldLength=Math.hypot(w*(.20+force*.09)-w*.04,h*(.46-force*.17)-h*.98);
       const length=pose.points.slice(1).reduce((sum,p,i)=>sum+Math.hypot(p.x-pose.points[i].x,p.y-pose.points[i].y),0);
-      assert(Math.abs(length/oldLength-1.2)<1e-9);
+      assert(Math.abs(length/oldLength-ROD_SCALE)<1e-9);
       assert(pose.points.every(p=>p.x>=0&&p.x<=w&&p.y>=0&&p.y<=h));
       const widths=[],c={save(){},restore(){},beginPath(){},moveTo(){},lineTo(){},stroke(){if(this.strokeStyle==='#F4EDCF')widths.push(this.lineWidth);}};
       paintRod(c,pose,h);
-      assert(Math.abs(widths[0]/(Math.max(3.5,Math.min(8,h*.016))*(1-1/25*.75))-1.2)<1e-9);
+      assert(Math.abs(widths[0]/(Math.max(3.5,Math.min(8,h*.016))*(1-1/25*.75))-ROD_SCALE)<1e-9);
+    }
+  }
+});
+
+test('The second size increase keeps the enlarged rod visible in tall mobile views',()=>{
+  for(const [w,h] of [[320,640],[375,812],[390,844],[844,390],[1280,720]]){
+    for(const force of [0,.5,1])for(const end of [{x:w*.2,y:h*.35},{x:w*.75,y:h*.42},{x:w*.9,y:h*.85}]){
+      const rod=rodGeometry(w,h,{force,bend:.8,end});
+      const length=rod.points.slice(1).reduce((s,p,i)=>s+Math.hypot(p.x-rod.points[i].x,p.y-rod.points[i].y),0);
+      const base=Math.hypot(w*(.20+force*.09)-w*.04,h*(.46-force*.17)-h*.98);
+      assert(Math.abs(length/base-ROD_SCALE)<1e-9);
+      assert(rod.points.every(p=>p.x>=0&&p.x<=w&&p.y>=0&&p.y<=h),`${w}x${h}, force ${force}, tip ${JSON.stringify(rod.tip)}`);
     }
   }
 });
