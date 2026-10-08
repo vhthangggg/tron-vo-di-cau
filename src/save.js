@@ -1,6 +1,6 @@
 import {FISH, MAPS, RODS, BAITS, ACCESSORIES, ACCESSORY_SLOTS, LESSONS, getRod, getBait, acceptsBait} from './content.js';
 import {CONTAINERS,MAX_KEPT_FISH} from './catch-fate.js';
-import {makeInventory,validateBag} from './inventory.js';
+import {inventoryFromLegacy,reconcileInventory} from './inventory.js';
 // Additive migration: the existing key and version preserve every v0.1 player's progress.
 export const SAVE_KEY='tron-vo-di-cau.v01';
 const validInt=(v,min=0,max=1e9)=>Number.isSafeInteger(v)&&v>=min&&v<=max;
@@ -55,21 +55,10 @@ export function validateSave(raw){
     }
     if(Array.isArray(rawSystems.transactions))
       p.systems.transactions=[...new Set(rawSystems.transactions.filter(id=>typeof id==='string'&&id.length>0&&id.length<=128))].slice(-500);
-    if(rawSystems.inventory){
-      const inv=rawSystems.inventory;
-      const owned={rods:p.rods,accessories:p.accessories,baits:p.baits};
-      // Stored and carried totals must reconcile with the legacy ownership fields.
-      const valid=validateBag(inv,owned);
-      const rods=[...(inv.carried?.rods||[]),...(inv.stored?.rods||[])];
-      const accessories=[...(inv.carried?.accessories||[]),...(inv.stored?.accessories||[])];
-      const counts={};
-      for(const place of ['carried','stored'])for(const [id,n] of Object.entries(inv[place]?.baits||{}))counts[id]=(counts[id]||0)+n;
-      const allRods=p.rods.every(id=>rods.includes(id))&&rods.length===p.rods.length;
-      const allAccessories=p.accessories.every(id=>accessories.includes(id))&&accessories.length===p.accessories.length;
-      const allBaits=Object.keys(p.baits).every(id=>(counts[id]||0)===p.baits[id]);
-      if(valid.ok&&allRods&&allAccessories&&allBaits)p.systems.inventory=inv;
-    }
+    if(rawSystems.inventory&&reconcileInventory(rawSystems.inventory,p))
+      p.systems.inventory=rawSystems.inventory;
   }
+  if(!p.systems.inventory)p.systems.inventory=inventoryFromLegacy(p);
   return p;
 }
 export function loadPlayer(storage){
