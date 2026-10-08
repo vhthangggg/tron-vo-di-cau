@@ -1812,16 +1812,17 @@ export const ACCESSORIES = [
   {
     "id": "line_basic",
     "slot": "line",
-    "name": "Dây nylon cơ bản",
+    "name": "Chỉ khâu của vợ",
     "price": 0,
     "power": 0,
     "grace": 0,
-    "effect": "Dây khởi đầu, luôn có sẵn."
+    "effect": "Chỉ may miễn phí, rất yếu; chỉ nên câu cá nhỏ.",
+    "assetKey": "sewing-thread", "breakingStrengthKg": 0.5, "stretchScore": 12, "abrasionScore": 5
   },
   {
     "id": "line18",
     "slot": "line",
-    "name": "Nylon bền 1.8",
+    "name": "Cước Nylon Monofilament 100m", "assetKey": "nylon", "breakingStrengthKg": 3.5, "stretchScore": 75, "abrasionScore": 60,
     "price": 6000,
     "power": 0.4,
     "grace": 0.05,
@@ -1839,11 +1840,21 @@ export const ACCESSORIES = [
   {
     "id": "braid",
     "slot": "line",
-    "name": "Dây PE đại ngư",
+    "name": "Cước SW PE 100m", "assetKey": "pe", "breakingStrengthKg": 7.5, "stretchScore": 10, "abrasionScore": 45,
     "price": 38000,
     "power": 1.8,
     "grace": 0.25,
     "effect": "+1,8 sức tải · +0,25 giây chịu lực đỏ."
+  },
+  {
+    "id": "line_copolymer",
+    "slot": "line",
+    "name": "Cước Co-polymer 100m",
+    "price": 12000,
+    "power": 0.7,
+    "grace": 0.1,
+    "effect": "Cước cân bằng, chịu mài mòn khá; +0,7 sức tải · +0,1 giây chịu lực đỏ.",
+    "assetKey": "copolymer", "breakingStrengthKg": 4.2, "stretchScore": 55, "abrasionScore": 75
   },
   {
     "id": "hook_basic",
