@@ -11,3 +11,22 @@ test('transaction cannot replay or overdraft',()=>{const w={balance:100,applied:
 test('bait survives retrieval and is consumed once on loss',()=>{const s={worm:2},m=mountBait(s,'worm');assert.equal(resolveBait(s,m,'retrieved').stock.worm,2);const lost=resolveBait(s,m,'lost');assert.equal(lost.stock.worm,1);assert.equal(digWorms({worm:59}).worm,60);});
 test('fish cannot be kept twice or disposed twice',()=>{const f={id:'catch-1',weight:2},r=keepCatch([],f);assert.equal(r.ok,true);assert.equal(keepCatch(r.catches,f).ok,false);const d=disposeCatch(r.catches,f.id,'sell');assert.equal(d.ok,true);assert.equal(disposeCatch(d.catches,f.id,'gift').ok,false);});
 test('tutorial reward claimed once',()=>{const p=advanceTutorial({},'BAIT_COLLECTED');const r=claimTutorial(p,'bait');assert.equal(r.ok,true);assert.equal(claimTutorial(r.progress,'bait').ok,false);});
+
+import {newPlayer,validateSave} from '../src/save.js';
+test('legacy player survives optional systems roundtrip',()=>{
+ const old=newPlayer();old.coins=99871;old.baits.worm=17;old.lessons=['signal'];
+ const restored=validateSave(JSON.parse(JSON.stringify(old)));
+ assert.equal(restored.coins,99871);assert.equal(restored.baits.worm,17);assert.deepEqual(restored.lessons,['signal']);
+ assert.deepEqual(restored.systems.tutorial,{});
+});
+test('tutorial completion survives reload without repeat reward',()=>{
+ const p=newPlayer();p.systems.tutorial=advanceTutorial({},'FISH_STORED');
+ const first=claimTutorial(p.systems.tutorial,'keep');
+ assert.equal(first.ok,true);p.systems.tutorial=first.progress;
+ const reloaded=validateSave(JSON.parse(JSON.stringify(p)));
+ assert.equal(claimTutorial(reloaded.systems.tutorial,'keep').ok,false);
+});
+test('malformed optional systems never discards legacy wallet',()=>{
+ const p=newPlayer();p.coins=43500;p.systems={inventory:{bagId:'missing'},tutorial:{},transactions:[]};
+ const q=validateSave(p);assert.equal(q.coins,43500);assert.equal(q.systems.inventory,null);
+});
