@@ -1,12 +1,13 @@
 import {FISH, MAPS, RODS, BAITS, ACCESSORIES, ACCESSORY_SLOTS, LESSONS, getRod, getBait, acceptsBait} from './content.js';
 import {CONTAINERS,MAX_KEPT_FISH} from './catch-fate.js';
+import {makeInventory,validateBag} from './inventory.js';
 // Additive migration: the existing key and version preserve every v0.1 player's progress.
 export const SAVE_KEY='tron-vo-di-cau.v01';
 const validInt=(v,min=0,max=1e9)=>Number.isSafeInteger(v)&&v>=min&&v<=max;
 const array=v=>Array.isArray(v)?v:[];
 export function newPlayer(){
   const base=ACCESSORIES.filter(a=>a.price===0);
-  return {version:1,coins:12000,baits:{...Object.fromEntries(BAITS.map(b=>[b.id,0])),worm:18,dough:6,corn:6},rods:['bamboo'],maps:['AO'],accessories:base.map(a=>a.id),equipment:Object.fromEntries(base.map(a=>[a.slot,a.id])),rod:'bamboo',bait:'worm',map:'AO',rig:{depth:MAPS[0].spots[0].depth,lead:1.08},catches:0,released:0,sold:0,gifted:0,container:'keepnet',keptFish:[],casts:0,collection:{},lessons:[],pending:null,serial:0,settings:{assist:true,sound:true,music:.45,effects:.7,deadline:0}};
+  return {version:1,coins:12000,baits:{...Object.fromEntries(BAITS.map(b=>[b.id,0])),worm:18,dough:6,corn:6},rods:['bamboo'],maps:['AO'],accessories:base.map(a=>a.id),equipment:Object.fromEntries(base.map(a=>[a.slot,a.id])),rod:'bamboo',bait:'worm',map:'AO',rig:{depth:MAPS[0].spots[0].depth,lead:1.08},catches:0,released:0,sold:0,gifted:0,container:'keepnet',keptFish:[],casts:0,collection:{},lessons:[],pending:null,serial:0,settings:{assist:true,sound:true,music:.45,effects:.7,deadline:0},systems:{inventory:null,tutorial:{},transactions:[]}};
 }
 export function validateSave(raw){
   if(!raw||raw.version!==1||!validInt(raw.coins)||!validInt(raw.catches)||!validInt(raw.serial)) throw Error('Save không hợp lệ');
@@ -43,6 +44,32 @@ export function validateSave(raw){
   p.settings.assist=raw.settings?.assist!==false;p.settings.sound=raw.settings?.sound!==false;
   for(const k of ['music','effects'])if(Number.isFinite(raw.settings?.[k]))p.settings[k]=Math.max(0,Math.min(1,raw.settings[k]));
   p.settings.deadline=[0,180,300].includes(raw.settings?.deadline)?raw.settings.deadline:0;
+  // Additive systems state. Existing legacy fields remain authoritative.
+  // Invalid or absent optional state never invalidates a player's legacy save.
+  const rawSystems=raw.systems;
+  if(rawSystems&&typeof rawSystems==='object'&&!Array.isArray(rawSystems)){
+    if(rawSystems.tutorial&&typeof rawSystems.tutorial==='object'&&!Array.isArray(rawSystems.tutorial)){
+      for(const [id,state] of Object.entries(rawSystems.tutorial).slice(0,100))
+        if(/^[a-z0-9_-]{1,64}$/i.test(id)&&state?.completed===true)
+          p.systems.tutorial[id]={completed:true,claimed:state.claimed===true};
+    }
+    if(Array.isArray(rawSystems.transactions))
+      p.systems.transactions=[...new Set(rawSystems.transactions.filter(id=>typeof id==='string'&&id.length>0&&id.length<=128))].slice(-500);
+    if(rawSystems.inventory){
+      const inv=rawSystems.inventory;
+      const owned={rods:p.rods,accessories:p.accessories,baits:p.baits};
+      // Stored and carried totals must reconcile with the legacy ownership fields.
+      const valid=validateBag(inv,owned);
+      const rods=[...(inv.carried?.rods||[]),...(inv.stored?.rods||[])];
+      const accessories=[...(inv.carried?.accessories||[]),...(inv.stored?.accessories||[])];
+      const counts={};
+      for(const place of ['carried','stored'])for(const [id,n] of Object.entries(inv[place]?.baits||{}))counts[id]=(counts[id]||0)+n;
+      const allRods=p.rods.every(id=>rods.includes(id))&&rods.length===p.rods.length;
+      const allAccessories=p.accessories.every(id=>accessories.includes(id))&&accessories.length===p.accessories.length;
+      const allBaits=Object.keys(p.baits).every(id=>(counts[id]||0)===p.baits[id]);
+      if(valid.ok&&allRods&&allAccessories&&allBaits)p.systems.inventory=inv;
+    }
+  }
   return p;
 }
 export function loadPlayer(storage){
