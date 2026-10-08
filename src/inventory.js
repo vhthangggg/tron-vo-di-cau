@@ -65,3 +65,12 @@ export function transferGear(inventory,owned,kind,id,to='carried'){
  next[to][kind].push(id);
  return reconcileInventory(next,{rods:owned.rods,accessories:owned.accessories,baits:owned.baits})?next:null;
 }
+
+/** Swap the actively carried rod with one in storage, preserving all ownership. */
+export function swapCarriedRod(inventory,owned,currentId,nextId){
+ if(currentId===nextId||!inventory?.carried?.rods?.includes(currentId)||!inventory?.stored?.rods?.includes(nextId))return null;
+ const next=structuredClone(inventory);
+ next.carried.rods=next.carried.rods.map(id=>id===currentId?nextId:id);
+ next.stored.rods=next.stored.rods.map(id=>id===nextId?currentId:id);
+ return reconcileInventory(next,{rods:owned.rods,accessories:owned.accessories,baits:owned.baits})?next:null;
+}
