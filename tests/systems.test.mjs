@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {makeInventory,validateBag,transferBait} from '../src/inventory.js';
+import {transact} from '../src/economy.js';
+import {mountBait,resolveBait,digWorms} from '../src/bait-system.js';
+import {keepCatch,disposeCatch} from '../src/catch-inventory.js';
+import {advanceTutorial,claimTutorial} from '../src/tutorial.js';
+test('starter bag capacity and ownership',()=>{const i=makeInventory(),owned={rods:['bamboo'],accessories:[],baits:{worm:18}};assert.equal(validateBag(i,owned).ok,true);i.carried.rods.push('dai');assert.equal(validateBag(i,owned).ok,false);});
+test('bait transfer rejects missing source',()=>{const i=makeInventory(),owned={rods:['bamboo'],accessories:[],baits:{worm:18}};assert.equal(transferBait(i,owned,'worm',1),null);});
+test('transaction cannot replay or overdraft',()=>{const w={balance:100,applied:[]},r=transact(w,'purchase-1',{delta:-80});assert.equal(r.ok,true);assert.equal(transact(r.wallet,'purchase-1',{delta:-80}).reason,'duplicate');assert.equal(transact(r.wallet,'purchase-2',{delta:-80}).reason,'funds');});
+test('bait survives retrieval and is consumed once on loss',()=>{const s={worm:2},m=mountBait(s,'worm');assert.equal(resolveBait(s,m,'retrieved').stock.worm,2);const lost=resolveBait(s,m,'lost');assert.equal(lost.stock.worm,1);assert.equal(digWorms({worm:59}).worm,60);});
+test('fish cannot be kept twice or disposed twice',()=>{const f={id:'catch-1',weight:2},r=keepCatch([],f);assert.equal(r.ok,true);assert.equal(keepCatch(r.catches,f).ok,false);const d=disposeCatch(r.catches,f.id,'sell');assert.equal(d.ok,true);assert.equal(disposeCatch(d.catches,f.id,'gift').ok,false);});
+test('tutorial reward claimed once',()=>{const p=advanceTutorial({},'BAIT_COLLECTED');const r=claimTutorial(p,'bait');assert.equal(r.ok,true);assert.equal(claimTutorial(r.progress,'bait').ok,false);});
