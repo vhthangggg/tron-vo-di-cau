@@ -61,3 +61,12 @@ test('bag summary renderer does not mutate player state',async()=>{
  assert.match(html,/Kho tại nhà/);assert.match(html,/Túi đồ/);
  assert.equal(JSON.stringify(p),before);
 });
+
+test('swap carried rod with stored rod preserves exact ownership',async()=>{
+ const {inventoryFromLegacy,swapCarriedRod,reconcileInventory}=await import('../src/inventory.js');
+ const p=newPlayer();p.rods.push('dai');
+ const before=inventoryFromLegacy(p),after=swapCarriedRod(before,p,'bamboo','dai');
+ assert.ok(after);assert.deepEqual(after.carried.rods,['dai']);assert.ok(after.stored.rods.includes('bamboo'));
+ assert.equal(reconcileInventory(after,p),true);
+ assert.equal(swapCarriedRod(after,p,'bamboo','dai'),null);
+});
