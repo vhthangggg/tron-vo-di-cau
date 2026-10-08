@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "notes": "Provisional gameplay tuning values; not manufacturer specifications. Do not override existing item IDs without migration.",
+  "schemaVersion": 2,
+  "notes": "Four-item asset catalog; provisional balancing values only. Asset paths refer to files uploaded by user. Not yet connected to existing runtime item IDs. PE size is not a millimeter diameter.",
   "items": [
     {
       "id": "sewing-thread",
@@ -18,8 +18,16 @@
       "provisional": true,
       "assets": {
         "icon": "/assets/items/lines/sewing-thread/icon.webp",
-        "detail": "/assets/items/lines/sewing-thread/detail.webp"
-      }
+        "detail": "/assets/items/lines/sewing-thread/detail.webp",
+        "fallbackIcon": "/assets/items/lines/sewing-thread/detail.webp"
+      },
+      "color": "ivory",
+      "lineStructure": "spun twisted sewing thread",
+      "role": "starter novelty",
+      "usage": "Small fish only; weak knot and abrasion resistance",
+      "priceCoins": 0,
+      "statSource": "gameplay-provisional",
+      "verifiedManufacturerSpec": false
     },
     {
       "id": "nylon",
@@ -35,8 +43,16 @@
       "provisional": true,
       "assets": {
         "icon": "/assets/items/lines/nylon/icon.webp",
-        "detail": "/assets/items/lines/nylon/detail.webp"
-      }
+        "detail": "/assets/items/lines/nylon/detail.webp",
+        "fallbackIcon": "/assets/items/lines/nylon/detail.webp"
+      },
+      "color": "clear-pearl",
+      "lineStructure": "nylon monofilament",
+      "role": "beginner all-round",
+      "usage": "Forgiving stretch and easy handling",
+      "priceCoins": null,
+      "statSource": "gameplay-provisional",
+      "verifiedManufacturerSpec": false
     },
     {
       "id": "pe",
@@ -53,8 +69,16 @@
       "provisional": true,
       "assets": {
         "icon": "/assets/items/lines/pe/icon.webp",
-        "detail": "/assets/items/lines/pe/detail.webp"
-      }
+        "detail": "/assets/items/lines/pe/detail.webp",
+        "fallbackIcon": "/assets/items/lines/pe/detail.webp"
+      },
+      "color": "green",
+      "lineStructure": "braided polyethylene",
+      "role": "high sensitivity",
+      "usage": "Low stretch; requires careful drag and suitable leader",
+      "priceCoins": null,
+      "statSource": "gameplay-provisional",
+      "verifiedManufacturerSpec": false
     },
     {
       "id": "copolymer",
@@ -70,8 +94,31 @@
       "provisional": true,
       "assets": {
         "icon": "/assets/items/lines/copolymer/icon.webp",
-        "detail": "/assets/items/lines/copolymer/detail.webp"
-      }
+        "detail": "/assets/items/lines/copolymer/detail.webp",
+        "fallbackIcon": "/assets/items/lines/copolymer/detail.webp"
+      },
+      "color": "violet-lavender",
+      "lineStructure": "copolymer monofilament",
+      "role": "balanced upgrade",
+      "usage": "Moderate stretch and handling; properties vary by manufacturer",
+      "priceCoins": null,
+      "statSource": "gameplay-provisional",
+      "verifiedManufacturerSpec": false
     }
-  ]
+  ],
+  "status": "staging",
+  "units": {
+    "breakingStrengthKg": "kg-force equivalent, provisional",
+    "diameterMm": "millimeters",
+    "lengthM": "meters",
+    "scores": "0-100 gameplay scores, not physical units"
+  },
+  "balanceRules": {
+    "effectiveBreakingStrength": "breakingStrengthKg * knotFactor * abrasionFactor * conditionFactor",
+    "factorsRange": [
+      0,
+      1
+    ],
+    "notes": "Do not apply strength as a fixed random chance; calculate line tension and wear. Validate against existing combat and save systems before runtime integration."
+  }
 }
