@@ -1,3 +1,4 @@
+import {inventoryFromLegacy,reconcileInventory,swapCarriedRod} from './inventory.js';
 import {elementPoint,coverFrame,imageToScene,sceneToImage,pointInPolygon} from './scene-geometry.js';
 import {GameAudio,audioTheme} from './game-audio.js';
 import {loadSceneVideo} from './scene-loader.js';
@@ -178,6 +179,20 @@ function bindScreen(){
     $('#map-load-back').onclick=()=>navigate('prepare');$('#map-load-retry').onclick=beginMapLoad;
   }
   if(screen==='rig'){
+    $('[data-bag-rod]').forEach(button=>button.onclick=()=>{
+      if(game.busy){toast('Thu cần và kết thúc lượt câu trước khi đổi túi.');return;}
+      const id=button.dataset.bagRod,to=button.dataset.bagTo;
+      const current=player.systems?.inventory;
+      const inv=current&&reconcileInventory(current,player)?current:inventoryFromLegacy(player);
+      if(!inv){toast('Không thể kiểm tra hành trang.');return;}
+      if(to==='stored'){toast('Hãy chọn cần thay thế từ kho trước khi cất cần đang sử dụng.');return;}
+      const next=swapCarriedRod(inv,player,player.rod,id);
+      if(!next){toast('Không thể chuyển cần. Kiểm tra sức chứa túi.');return;}
+      if(!game.equip('rod',id)){toast('Không thể trang bị cần này lúc đang câu.');return;}
+      player.systems??={inventory:null,tutorial:{},transactions:[]};
+      player.systems.inventory=next;
+      persist();render();toast('Đã đổi cần mang theo; cần cũ được cất trong kho.');
+    });
     $$('[data-equip]').forEach(button=>button.onclick=()=>{
       const id=button.dataset.equip;
       if(!player.rods.includes(id)){navigate('shop');filterShop('rod');return;}
