@@ -108,7 +108,7 @@ export function renderInventoryOverview(player){
  return `<section class="panel" aria-label="Túi đồ và kho tại nhà"><p class="eyebrow">QUẢN LÝ HÀNH TRANG</p><h2>Túi đồ · Kho tại nhà</h2>
  <p class="hint-note">${esc(bag.name)}: ${carried.rods.length}/${bag.rods} cần · ${Object.values(carried.baits).filter(n=>n>0).length}/${bag.baitTypes} loại mồi · ${carried.accessories.length}/${bag.accessorySlots} phụ kiện</p>
  <div class="loadout-summary"><div><span>Đang mang</span><strong>${carried.rods.length} cần · ${total(carried.baits)} mồi</strong></div><div><span>Kho nhà</span><strong>${stored.rods.length} cần · ${total(stored.baits)} mồi</strong></div><div><span>Phụ kiện cất</span><strong>${stored.accessories.length} món</strong></div></div>
- <p class="fineprint">Thông tin hành trang hiện ở chế độ xem trước; chuyển đồ giữa túi và kho sẽ được bật sau khi kết nối an toàn với engine.</p></section>`;
+ <div class="inventory-transfer"><h3>Chuyển cần giữa túi và kho</h3><div class="gear-slots">${[...carried.rods.map(id=>({id,from:'carried'})),...stored.rods.map(id=>({id,from:'stored'}))].map(({id,from})=>`<button type="button" class="gear-slot" data-bag-rod="${esc(id)}" data-bag-to="${from==='carried'?'stored':'carried'}" ${from==='carried'&&id===player.rod?'disabled title="Đang sử dụng; hãy lắp cần khác trước"':''}><small>${esc(getRod(id).name)}</small><em>${from==='carried'?'Cất vào kho':'Bỏ vào túi'}</em></button>`).join('')}</div><p class="hint-note">Cần đang lắp không thể cất. Túi vải mang tối đa một cần.</p></div></section>`;
 }
 export function renderRig(player,game){
  const lure=game.rod.tech==='lure',float=usesFloat(game.rod),stats=loadoutStats(player),error=rigError(player);
