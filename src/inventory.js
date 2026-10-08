@@ -54,3 +54,14 @@ export function reconcileInventory(inventory,player){
  }
  return Object.keys(counts).every(id=>id in owned.baits)&&Object.keys(owned.baits).every(id=>(counts[id]||0)===owned.baits[id]);
 }
+
+/** Transfer one unique rod/accessory between home storage and bag. */
+export function transferGear(inventory,owned,kind,id,to='carried'){
+ if(!['rods','accessories'].includes(kind)||!['carried','stored'].includes(to)||typeof id!=='string')return null;
+ const from=to==='carried'?'stored':'carried';
+ if(!inventory?.[from]?.[kind]?.includes(id)||inventory[to][kind].includes(id))return null;
+ const next=structuredClone(inventory);
+ next[from][kind]=next[from][kind].filter(x=>x!==id);
+ next[to][kind].push(id);
+ return reconcileInventory(next,{rods:owned.rods,accessories:owned.accessories,baits:owned.baits})?next:null;
+}
