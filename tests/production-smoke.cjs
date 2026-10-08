@@ -11,11 +11,12 @@ let browser;
  const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true}),page=await context.newPage(),errors=[],failed=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('requestfailed',r=>failed.push(r.url()));
  await page.clock.install({time:new Date('2026-10-07T01:00:00Z')});await page.clock.pauseAt(new Date('2026-10-07T01:00:01Z'));
- await page.goto(url+'/#fishing',{timeout:60000});await page.evaluate(()=>document.fonts.ready);await page.locator('.scene-bg').evaluate(e=>e.decode());
+ await page.goto(url.replace(/\/$/,'')+'/#fishing',{timeout:60000});await page.evaluate(()=>document.fonts.ready);await page.waitForFunction(()=>document.querySelector('.scene')?.dataset.loading==='ready',null,{timeout:60000});
+ if(await page.locator('video').count())assert(await page.locator('video').evaluate(v=>v.readyState>=2&&v.videoWidth>=1000&&!v.error));else await page.locator('.scene-bg').evaluate(e=>e.decode());
  await expect(page.locator('#track-pad')).toBeAttached();await page.locator('#cast').tap();await waitForBite(page);
- const cdp=await context.newCDPSession(page),r=await page.locator('#strike').boundingBox(),left=await targetPoint(page);
- await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:1,x:r.x+r.width*.65,y:r.y+r.height*.5},{id:2,...left}]});
- for(let i=0;i<8;i++){const t=await targetPoint(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{id:1,x:r.x+r.width*.65,y:r.y+r.height*.5},{id:2,...t}]});await page.clock.runFor(150);}
+ const cdp=await context.newCDPSession(page),rod=await page.locator('#strike').evaluate(el=>{const r=el.getBoundingClientRect();return getComputedStyle(el).getPropertyValue('--fishing-rotation').trim()==='90'?{x:r.left+r.width*.5,y:r.top+r.height*.65}:{x:r.left+r.width*.65,y:r.top+r.height*.5};}),left=await targetPoint(page);
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{id:1,...rod},{id:2,...left}]});
+ for(let i=0;i<8;i++){const t=await targetPoint(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{id:1,...rod},{id:2,...t}]});await page.clock.runFor(150);}
  assert(parseInt(await page.locator('#progress-value').innerText())>0);assert.equal(await page.locator('#strike').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('#track-pad').getAttribute('aria-pressed'),'true');
  const out=path.resolve(__dirname,'../test-results');fs.mkdirSync(out,{recursive:true});await page.screenshot({path:out+'/production-two-hands.png'});
  await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.locator('#pause').tap();const clock=await page.locator('#session-clock').innerText();await page.clock.runFor(1000);assert.equal(await page.locator('#session-clock').innerText(),clock);

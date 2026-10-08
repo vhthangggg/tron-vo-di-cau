@@ -10,7 +10,7 @@ test('bait transfer rejects missing source',()=>{const i=makeInventory(),owned={
 test('transaction cannot replay or overdraft',()=>{const w={balance:100,applied:[]},r=transact(w,'purchase-1',{delta:-80});assert.equal(r.ok,true);assert.equal(transact(r.wallet,'purchase-1',{delta:-80}).reason,'duplicate');assert.equal(transact(r.wallet,'purchase-2',{delta:-80}).reason,'funds');});
 test('bait survives retrieval and is consumed once on loss',()=>{const s={worm:2},m=mountBait(s,'worm');assert.equal(resolveBait(s,m,'retrieved').stock.worm,2);const lost=resolveBait(s,m,'lost');assert.equal(lost.stock.worm,1);assert.equal(digWorms({worm:59}).worm,60);});
 test('fish cannot be kept twice or disposed twice',()=>{const f={id:'catch-1',weight:2},r=keepCatch([],f);assert.equal(r.ok,true);assert.equal(keepCatch(r.catches,f).ok,false);const d=disposeCatch(r.catches,f.id,'sell');assert.equal(d.ok,true);assert.equal(disposeCatch(d.catches,f.id,'gift').ok,false);});
-test('tutorial reward claimed once',()=>{const p=advanceTutorial({},'BAIT_COLLECTED');const r=claimTutorial(p,'bait');assert.equal(r.ok,true);assert.equal(claimTutorial(r.progress,'bait').ok,false);});
+test('tutorial reward claimed once',()=>{const p=advanceTutorial({},'BAIT_COLLECTED',{count:6});const r=claimTutorial(p,'bait');assert.equal(r.ok,true);assert.equal(claimTutorial(r.progress,'bait').ok,false);});
 
 import {newPlayer,validateSave} from '../src/save.js';
 test('legacy player survives optional systems roundtrip',()=>{
@@ -20,7 +20,7 @@ test('legacy player survives optional systems roundtrip',()=>{
  assert.deepEqual(restored.systems.tutorial,{});
 });
 test('tutorial completion survives reload without repeat reward',()=>{
- const p=newPlayer();p.systems.tutorial=advanceTutorial({},'FISH_STORED');
+ const p=newPlayer();p.systems.tutorial=advanceTutorial({},'FISH_STORED',{stored:true});
  const first=claimTutorial(p.systems.tutorial,'keep');
  assert.equal(first.ok,true);p.systems.tutorial=first.progress;
  const reloaded=validateSave(JSON.parse(JSON.stringify(p)));
