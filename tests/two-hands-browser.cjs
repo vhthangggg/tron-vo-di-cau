@@ -11,12 +11,12 @@ let browser,server,lastPage;const checks=[],errors=[],requests=[];
   const context=await browser.newContext({viewport:{width:1440,height:980},...options}),page=await context.newPage();
   lastPage=page;page.on('pageerror',e=>errors.push(e.message));page.on('requestfailed',r=>requests.push(r.url()));
   await page.clock.install({time:new Date(timestamp)});await page.clock.pauseAt(new Date(timestamp+1000));
-  await page.goto('http://127.0.0.1:5188/tron-vo-di-cau/#fishing');await page.evaluate(()=>document.fonts.ready);
+  await page.goto('http://127.0.0.1:5188/tron-vo-di-cau/#fishing');await page.waitForFunction(()=>document.querySelector('.scene')?.dataset.loading==='ready');await page.evaluate(()=>document.fonts.ready);
   return {context,page,saved:()=>page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')))};
  }
  if(!process.env.TOUCH_ONLY){
  const desktop=await scenario(),p=desktop.page;
- const a=await p.locator('#water').evaluate(el=>el.toDataURL());await p.clock.runFor(1500);const b=await p.locator('#water').evaluate(el=>el.toDataURL());assert.notEqual(a,b,'Water and drift must animate while idle');
+ const a=await p.locator('#water').evaluate(el=>el.toDataURL());await p.clock.runFor(1500);const b=await p.locator('#water').evaluate(el=>el.toDataURL());if(await p.locator('video').count())assert(await p.locator('video').evaluate(v=>v.readyState>=2&&!v.paused),'Video environment decodes and plays while idle');else assert.notEqual(a,b,'Water and drift must animate while idle');
  await p.locator('#pause').click();await p.clock.runFor(100);const paused=await p.locator('#water').evaluate(el=>el.toDataURL());await p.clock.runFor(1500);assert.equal(await p.locator('#water').evaluate(el=>el.toDataURL()),paused);await p.locator('[data-dialog-action="0"]').click();
  checks.push('Moving current, foam, drifting debris and foliage; pause freezes decorative time');
  await p.locator('#cast').click();await waitForBite(p);await p.locator('#main').focus();await p.keyboard.down('Space');
@@ -35,7 +35,7 @@ let browser,server,lastPage;const checks=[],errors=[],requests=[];
   const s=await scenario({viewport:{width,height},hasTouch:true,isMobile:true}),page=s.page,cdp=await s.context.newCDPSession(page);
   await page.evaluate(()=>{window.pointerTrace=[];for(const type of ['pointerdown','pointerup','pointercancel','lostpointercapture'])document.addEventListener(type,e=>window.pointerTrace.push([type,e.pointerId,e.target.id]));window.pointerIds={};document.addEventListener('pointerdown',e=>{const el=e.target.closest('#strike,#track-pad');if(el)window.pointerIds[el.id]=e.pointerId;},true);});
   let touches=[];
-  const rod=async force=>{const r=await page.locator('#strike').boundingBox();return{id:1,x:r.x+r.width*.66,y:r.y+r.height*(1-force),radiusX:6,radiusY:6,force:1};};
+  const rod=async force=>({id:1,...await page.locator('#strike').evaluate((el,level)=>{const r=el.getBoundingClientRect(),rotated=getComputedStyle(el).getPropertyValue('--fishing-rotation').trim()==='90';return rotated?{x:r.left+r.width*level,y:r.top+r.height*.66}:{x:r.left+r.width*.66,y:r.top+r.height*(1-level)};},force),radiusX:6,radiusY:6,force:1});
   const track=async()=>({id:2,...await targetPoint(page),radiusX:6,radiusY:6,force:1});
   const send=async(type,points)=>{const dispatched=type==='touchEnd'&&points.length?touches.filter(p=>!points.some(q=>q.id===p.id)):points;touches=points;await cdp.send('Input.dispatchTouchEvent',{type,touchPoints:dispatched});if(type==='touchMove')await page.clock.runFor(34);};
   const pressed=id=>page.locator('#'+id).getAttribute('aria-pressed').then(x=>x==='true');
@@ -43,8 +43,8 @@ let browser,server,lastPage;const checks=[],errors=[],requests=[];
   // Right first, secondary left pointer: the original primary-only filter must not return.
   await send('touchStart',[await rod(.5)]);await send('touchStart',[await rod(.5),await track()]);assert(await pressed('strike'));assert(await pressed('track-pad'));assert.deepEqual(await page.locator('#strike').boundingBox(),before);
   await page.clock.runFor(500);assert(parseInt(await page.locator('#progress-value').innerText())>0);
-  await send('touchMove',[await rod(.8),await track()]);await expect(page.locator('#force-value')).toHaveText('80% lực cần');
-  await send('touchMove',[await rod(.23),await track()]);await expect(page.locator('#force-value')).toHaveText('23% lực cần');
+  await send('touchMove',[await rod(.8),await track()]);await expect(page.locator('#force-value')).toHaveText('80%');
+  await send('touchMove',[await rod(.23),await track()]);await expect(page.locator('#force-value')).toHaveText('23%');
   await send('touchEnd',[touches[0]]);assert(await pressed('strike'));assert.equal(await pressed('track-pad'),false);
   await send('touchStart',[await rod(.5),await track()]);await send('touchEnd',[touches[1]]);assert(await pressed('track-pad'));assert.equal(await pressed('strike'),false);await send('touchEnd',[]);
   console.log('Verified '+label+' input');checks.push(label+': independent simultaneous fingers, analog drag and releasing either hand preserves the other');
@@ -61,15 +61,16 @@ let browser,server,lastPage;const checks=[],errors=[],requests=[];
   for(let i=0;i<350;i++){
    const state=await page.evaluate(()=>{const t=document.querySelector('#fish-target').getBoundingClientRect(),r=document.querySelector('#strike').getBoundingClientRect();return{dialog:document.querySelector('#dialog').open,phase:document.querySelector('.scene').dataset.phase,surge:document.querySelector('#fight-hint').textContent.startsWith('Cá bứt'),tx:t.x+t.width/2,ty:t.y+t.height/2,rx:r.x+r.width*.66,ry:r.y,rh:r.height};});
    if(state.dialog)break;assert.equal(state.phase,'fight','Fish lost while tracking');
-   await send('touchMove',[{id:1,x:state.rx,y:state.ry+state.rh*(1-(state.surge?.22:.52)),force:1},{id:2,x:state.tx,y:state.ty,force:1}]);
+   await send('touchMove',[await rod(state.surge?.22:.52),{id:2,x:state.tx,y:state.ty,force:1}]);
    if(i===10)await page.screenshot({path:out+'/two-hands-'+label+'.png'});
    await page.clock.runFor(200);
   }
   assert(await page.locator('#dialog').evaluate(el=>el.open),'Landing dialog missing');await send('touchEnd',[]);assert(await page.locator('#dialog').evaluate(el=>el.open),'Finishing fingers dismissed catch dialog');
   const save=await s.saved();assert.equal(save.catches,1);assert.equal(save.baits.worm,17);assert(save.pending);assert.equal(await pressed('strike'),false);assert.equal(await pressed('track-pad'),false);
-  await page.screenshot({path:out+'/two-hands-landed-'+label+'.png'});await page.reload();assert.equal((await s.saved()).pending.id,save.pending.id);await page.locator('[data-dialog-action="1"]').tap();assert.equal((await s.saved()).coins,save.coins+save.pending.value);
+  await page.screenshot({path:out+'/two-hands-landed-'+label+'.png'});await page.reload();assert.equal((await s.saved()).pending.id,save.pending.id);await page.locator('[data-catch-decision="keep"]').tap();
   assert.deepEqual(await page.evaluate(()=>[document.documentElement.scrollWidth,document.documentElement.scrollHeight]),[width,height]);
-  console.log('Landed '+label);checks.push(label+': natural catch lands, final fingers do not dismiss dialog, reload preserves pending catch, sale is exactly once');
+  await page.locator('#leave-fishing').tap();assert.equal((await s.saved()).homeFish[0].id,save.pending.id);await page.locator('[data-open-keepnet]').tap();await page.locator('[data-kept="'+save.pending.id+'"][data-fate="sell"]').tap();assert.equal((await s.saved()).coins,save.coins+save.pending.value);assert.equal((await s.saved()).sold,1);
+  console.log('Landed '+label);checks.push(label+': natural catch lands, final fingers do not dismiss dialog, reload preserves pending catch, keep then home sale credits once');
   await s.context.close();
  }
  // Force no state: choose a deterministic real cast seed that naturally snags.

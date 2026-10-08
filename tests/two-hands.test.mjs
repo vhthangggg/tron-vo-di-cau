@@ -5,7 +5,7 @@ import {newPlayer} from '../src/save.js';
 import {FISH,MAPS} from '../src/content.js';
 import {fishBehavior,snagChance,waterWorld} from '../src/water-world.js';
 import {guideFish,freeSnag} from './control-player.mjs';
-function hooked(seed=22){const g=new FishingGame(newPlayer(),{seed});g.cast();for(let i=0;i<500&&g.phase!=='bite';i++){freeSnag(g);g.step(.1);}assert.equal(g.phase,'bite');g.holdRod(.5);return g;}
+function hooked(seed=22,fish){const g=new FishingGame(newPlayer(),{seed});g.cast();for(let i=0;i<500&&g.phase!=='bite';i++){freeSnag(g);g.step(.1);}assert.equal(g.phase,'bite');if(fish)Object.assign(g.target,fish);g.holdRod(.5);return g;}
 
 test('One stationary hand cannot earn progress; losing the moving target loses the fish',()=>{
  const g=hooked();for(let i=0;i<70&&g.phase==='fight';i++){g.setForce(g.surge?.2:.5);g.step(.1);}assert.equal(g.phase,'failed');assert.match(g.message,/Tay trái|tay trái/);assert.equal(g.player.catches,0);
@@ -16,7 +16,8 @@ test('Analog rod height changes line tension, independently from left-hand posit
 });
 test('Fish movement responds to species and both axes, not a shared visual sine loop',()=>{
  assert.notEqual(fishBehavior(FISH[0]).speed,fishBehavior(FISH[3]).speed);
- const g=hooked(),positions=[];for(let i=0;i<100;i++){guideFish(g);g.step(.1);positions.push({...g.fishPosition});}
+ // An adult stays hooked for this motion test; fry now legitimately land sooner.
+ const g=hooked(22,{fishId:'fish_01',weight:2.5}),positions=[];for(let i=0;i<100;i++){guideFish(g);g.step(.1);positions.push({...g.fishPosition});}
  assert(Math.max(...positions.map(p=>p.x))-Math.min(...positions.map(p=>p.x))>.12);assert(Math.max(...positions.map(p=>p.y))-Math.min(...positions.map(p=>p.y))>.12);
  assert(positions.every(p=>p.x>=.09&&p.x<=.91&&p.y>=.09&&p.y<=.91));
 });

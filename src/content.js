@@ -1800,8 +1800,15 @@ export const BAITS = [
   }
 ];
 
+export const BAGS = [
+  {id:'cloth',name:'Túi vải đơn giản',price:0,rods:1,baits:2,accessories:5,color:'#ab9470',note:'Gọn nhẹ cho một buổi câu gần nhà.'},
+  {id:'canvas',name:'Bao cần vải dù',price:9000,rods:2,baits:3,accessories:8,color:'#6f8560',note:'Mang thêm cần dự phòng, mồi và vài bộ thẻo.'},
+  {id:'waterproof',name:'Túi câu chống nước',price:24000,rods:3,baits:5,accessories:12,color:'#426c70',note:'Nhiều ngăn cho chuyến câu dài và nhiều kỹ thuật.'},
+  {id:'expedition',name:'Bao đồ câu đại ngư',price:52000,rods:5,baits:8,accessories:18,color:'#866a4b',note:'Đủ chỗ cho nhiều bộ cần và phụ kiện thay thế.'}
+];
+
 export const ACCESSORY_SLOTS = {
-  "line": "Dây câu",
+  "line": "Dây & thẻo",
   "hook": "Lưỡi câu",
   "float": "Phao",
   "reel": "Máy câu",
@@ -1812,17 +1819,30 @@ export const ACCESSORIES = [
   {
     "id": "line_basic",
     "slot": "line",
-    "name": "Dây nylon cơ bản",
+    "name": "Chỉ khâu của vợ",
     "price": 0,
+    "diameter": 0.20,
     "power": 0,
     "grace": 0,
-    "effect": "Dây khởi đầu, luôn có sẵn."
+    "effect": "Chỉ may miễn phí, rất yếu; chỉ nên câu cá nhỏ.",
+    "assetKey": "sewing-thread", "breakingStrengthKg": 0.5, "stretchScore": 12, "abrasionScore": 5
+  },
+  {
+    "id": "leader12", "slot": "line", "name": "Bộ thẻo mảnh 0,12 mm", "price": 3500,
+    "diameter": 0.12, "approach": 1.18, "power": -0.15, "grace": -0.10,
+    "effect": "Thẻo 0,12 mm · Cá thăm mồi nhanh hơn 18%; sức tải và thời gian chịu lực đỏ giảm nhẹ."
+  },
+  {
+    "id": "leader16", "slot": "line", "name": "Bộ thẻo mềm 0,16 mm", "price": 5000,
+    "diameter": 0.16, "approach": 1.10, "power": -0.08, "grace": -0.05,
+    "effect": "Thẻo 0,16 mm · Cá thăm mồi nhanh hơn 10%; sức tải và thời gian chịu lực đỏ giảm nhẹ."
   },
   {
     "id": "line18",
     "slot": "line",
-    "name": "Nylon bền 1.8",
+    "name": "Cước Nylon Monofilament 100m", "assetKey": "nylon", "breakingStrengthKg": 3.5, "stretchScore": 75, "abrasionScore": 60,
     "price": 6000,
+    "diameter": 0.18,
     "power": 0.4,
     "grace": 0.05,
     "effect": "+0,4 sức tải · +0,05 giây chịu lực đỏ."
@@ -1832,6 +1852,7 @@ export const ACCESSORIES = [
     "slot": "line",
     "name": "Dây fluorocarbon",
     "price": 16000,
+    "diameter": 0.18,
     "power": 0.9,
     "grace": 0.12,
     "effect": "+0,9 sức tải · +0,12 giây chịu lực đỏ."
@@ -1839,11 +1860,22 @@ export const ACCESSORIES = [
   {
     "id": "braid",
     "slot": "line",
-    "name": "Dây PE đại ngư",
+    "name": "Cước SW PE 100m", "assetKey": "pe", "breakingStrengthKg": 7.5, "stretchScore": 10, "abrasionScore": 45,
     "price": 38000,
+    "diameter": 0.28,
     "power": 1.8,
     "grace": 0.25,
     "effect": "+1,8 sức tải · +0,25 giây chịu lực đỏ."
+  },
+  {
+    "id": "line_copolymer",
+    "slot": "line",
+    "name": "Cước Co-polymer 100m",
+    "price": 12000,
+    "power": 0.7,
+    "grace": 0.1,
+    "effect": "Cước cân bằng, chịu mài mòn khá; +0,7 sức tải · +0,1 giây chịu lực đỏ.",
+    "assetKey": "copolymer", "breakingStrengthKg": 4.2, "stretchScore": 55, "abrasionScore": 75
   },
   {
     "id": "hook_basic",
@@ -2031,11 +2063,12 @@ export const getRod = id => RODS.find(x=>x.id===id) || RODS[0];
 export const getBait = id => BAITS.find(x=>x.id===id) || BAITS[0];
 export const getFish = id => FISH.find(x=>x.id===id);
 export const getAccessory = id => ACCESSORIES.find(x=>x.id===id);
+export const getBag = id => BAGS.find(x=>x.id===id) || BAGS[0];
 export const usesFloat = rod => !!TECHNIQUES[rod.tech]?.float;
 export const usesReel = rod => !!TECHNIQUES[rod.tech]?.reel;
 export const acceptsBait = (rod,bait) => bait.tech.includes(rod.tech);
 export const slotItem = (player,slot) => ACCESSORIES.find(a=>a.id===player.equipment?.[slot]&&a.slot===slot) || ACCESSORIES.find(a=>a.slot===slot&&a.price===0);
 export function loadoutStats(player){
  const rod=getRod(player.rod),line=slotItem(player,'line'),hook=slotItem(player,'hook'),float=slotItem(player,'float'),reel=usesReel(rod)?slotItem(player,'reel'):null,net=slotItem(player,'net');
- return {power:rod.power+line.power+(reel?.power||0),biteWindow:2.8+hook.bite,breakGrace:.75+line.grace,slackGrace:2+hook.slack,drain:1+(reel?.speed||0),landAt:net.land,capacity:float.capacity,stability:usesFloat(rod)?float.stability:0};
+ return {power:rod.power+line.power+(reel?.power||0),biteWindow:2.8+hook.bite,breakGrace:.75+line.grace,slackGrace:2+hook.slack,drain:1+(reel?.speed||0),landAt:net.land,capacity:float.capacity,stability:usesFloat(rod)?float.stability:0,leaderDiameter:line.diameter||.20,baitApproach:line.approach||1};
 }

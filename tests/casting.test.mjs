@@ -12,15 +12,15 @@ test('Every map populates only its actual spots, including the two video banks',
     assert(g.fish.every(f=>Number.isFinite(f.depth)));}
 });
 test('Old Ao Lang starter saves retain progress and receive a playable shallow rig',()=>{
-  const p=newPlayer();p.coins=54321;p.rig.depth=1.8;p.catches=7;
+  const p=newPlayer();p.coins=54321;p.rig.depth=1.8;p.catches=7;delete p.schemaVersion;
   const migrated=validateSave(p),g=new FishingGame(migrated,{seed:1});
   assert.equal(migrated.coins,54321);assert.equal(migrated.catches,7);
   assert.equal(migrated.rig.depth,g.spotData.depth);assert(g.fish.some(f=>g.eligible(f)));
 });
-test('Casting spends one bait, pauses safely, then lands at the selected water point',()=>{
+test('Casting mounts bait without spending it, pauses safely, then lands at the selected water point',()=>{
   const g=new FishingGame(newPlayer(),{seed:1}),bait=g.player.baits.worm;
   assert.equal(g.setCastTarget(.5,.1),false);assert(g.setCastTarget(.52,.56));assert(g.cast());
-  assert.equal(g.phase,'casting');assert.equal(g.cast(),false);assert.equal(g.player.baits.worm,bait-1);
+  assert.equal(g.phase,'casting');assert.equal(g.cast(),false);assert.equal(g.player.baits.worm,bait);
   assert.equal(g.holdRod(),false);assert.equal(g.phase,'casting');
   g.paused=true;g.step(.1);assert.equal(g.castFlight.t,0);g.paused=false;
   for(let i=0;i<8;i++)g.step(.1);

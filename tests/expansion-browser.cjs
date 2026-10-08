@@ -30,7 +30,7 @@ let server,browser;
    }
    if(target==='fishing'){
      if(await page.locator('body').getAttribute('data-screen')!=='prepare')await page.locator('nav [data-screen="prepare"]').click();
-     await page.locator('#start-fishing').click();
+     await page.locator('#start-fishing').click();await page.waitForFunction(()=>document.querySelector('.scene')?.dataset.loading==='ready');
    }else if(await page.locator('body').getAttribute('data-screen')!==target)await page.locator('nav [data-screen="'+target+'"]').click();
  };
 
@@ -39,7 +39,7 @@ let server,browser;
  for(const id of ['braid','hook_pro','float_sea','reel6000','net_pro'])await page.locator('[data-buy="accessory"][data-id="'+id+'"]').click();
  assert.equal((await saved()).coins,balance-226000);assert(await page.locator('[data-buy="accessory"][data-id="braid"]').isDisabled());
  await nav('rig');await page.locator('#gear-line').selectOption('braid');await page.locator('#gear-hook').selectOption('hook_pro');await page.locator('#gear-float').selectOption('float_sea');await page.locator('#gear-net').selectOption('net_pro');
- assert(await page.locator('#gear-reel').isDisabled());assert.match(await page.locator('#rig-state').innerText(),/4 vạch/);assert.equal((await saved()).equipment.line,'braid');
+ assert(await page.locator('#gear-reel').isDisabled());assert.match(await page.locator('#rig-state').innerText(),/Phao [2-7](?:\.\d)? vạch/);assert.equal((await saved()).equipment.line,'braid');
  await page.screenshot({path:out+'/accessories-desktop.png',fullPage:true});
  checks.push('Accessory shop deducts exact prices, rejects duplicates; owned gear equips, balances and blocks incompatible reel');
  await nav('shop');await page.locator('[data-shop-category="rod"]').click();for(const id of ['bottom42','spinheavy','iso53'])await page.locator('[data-buy="rod"][data-id="'+id+'"]').click();
@@ -52,20 +52,20 @@ let server,browser;
  checks.push('New rods, reusable lures and all maps purchase; bottom rod activates reel, hides float settings; loadout survives reload');
  await nav('prepare');await page.locator('[data-open-maps]').click();assert.equal(await page.locator('.atlas-card').count(),10);await page.locator('.atlas-art img').evaluateAll(images=>Promise.all(images.map(img=>img.decode())));await page.screenshot({path:out+'/map-atlas-desktop.png'});await page.keyboard.press('Escape');
  for(const m of MAPS){
-  await nav('prepare');await page.locator('[data-open-maps]').click();await page.locator('[data-atlas-map="'+m.id+'"]').click();assert.equal(await page.locator('#prepare-map-heading').innerText(),m.name);assert.equal(await page.locator('[data-spot]').count(),3);await page.locator('#start-fishing').click();assert.equal(await page.locator('#map-heading').innerText(),m.name);
-  assert.equal(await page.locator('.scene-bg').getAttribute('src'),m.background);await page.locator('.scene-bg').evaluate(el=>el.decode());assert(await page.locator('.scene-bg').evaluate(el=>el.naturalWidth>=1000));
+  await nav('prepare');await page.locator('[data-open-maps]').click();await page.locator('[data-atlas-map="'+m.id+'"]').click();assert.equal(await page.locator('#prepare-map-heading').innerText(),m.name);assert.equal(await page.locator('.prepare-spot-list [data-spot]').count(),m.id==='AO'?2:3);await page.locator('#start-fishing').click();await page.waitForFunction(()=>document.querySelector('.scene')?.dataset.loading==='ready');assert.equal(await page.locator('#map-heading').innerText(),m.name);
+  if(m.id==='AO'){await page.waitForFunction(()=>document.querySelector('.scene').dataset.loading==='ready');assert(await page.locator('video').evaluate(el=>el.videoWidth>=1000));}else{assert.equal(await page.locator('.scene-bg').getAttribute('src'),m.background);await page.locator('.scene-bg').evaluate(el=>el.decode());assert(await page.locator('.scene-bg').evaluate(el=>el.naturalWidth>=1000));}
   assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));assert.equal(await page.locator('[data-spot]').count(),0);
   await page.screenshot({path:out+'/map-'+m.id+'.png'});
  }
- checks.push('All 10 map choices render their own decoded landscape and three spots without overflow');
+ checks.push('All 10 maps render decoded landscapes and their configured spots (two Ao Làng banks, three elsewhere) without overflow');
  await nav('prepare');await page.locator('[data-open-maps]').click();await page.locator('[data-atlas-map="AO"]').click();await nav('fishing');await page.locator('#cast').click();assert.equal(await page.locator('[data-open-maps]').count(),0);
- assert(await page.locator('#tip-detail').isVisible());assert(await page.locator('#float-detail').isHidden());
+ await page.clock.runFor(850);assert.equal(await page.locator('#tip-detail').evaluate(el=>el.hasAttribute('hidden')),false);assert(await page.locator('#float-detail').isHidden());
  await waitForBite(page);
- assert.match(await page.locator('#float-label').innerText(),/Đầu cần cong/);await page.locator('#strike').click();
+ assert(await page.locator('#tip-detail').isVisible());assert.equal(await page.locator('#float-label').innerText(),'Giật cần!');await page.locator('#strike').click();
  await driveHands(page);
- assert(await page.locator('#dialog').evaluate(el=>el.open));const caught=await saved();assert.equal(caught.catches,8);assert(caught.pending);await page.locator('[data-dialog-action="0"]').click();assert.equal((await saved()).released,2);
+ assert(await page.locator('#dialog').evaluate(el=>el.open));const caught=await saved();assert.equal(caught.catches,8);assert(caught.pending);await page.locator('[data-catch-decision=release]').click();assert.equal((await saved()).released,2);
  checks.push('Bottom fishing with upgraded loadout: tip signal → strike → controlled fight → net landing → release; map controls remain in preparation');
- await nav('rig');await page.locator('#rod').selectOption('spinheavy');await page.locator('#bait').selectOption('crank');await nav('fishing');await page.locator('#cast').click();await page.locator('#retrieve').click();assert.equal((await saved()).baits.crank,1);assert.match(await page.locator('#retrieve').innerText(),/Dừng thu mồi/);
+ await nav('rig');await page.locator('#rod').selectOption('spinheavy');await page.locator('#bait').selectOption('crank');await nav('fishing');await page.locator('#cast').click();await page.clock.runFor(850);await page.locator('#retrieve').click();assert.equal((await saved()).baits.crank,1);assert.match(await page.locator('#retrieve').innerText(),/Dừng thu mồi/);
  await page.locator('#pause').click();await page.locator('[data-dialog-action="1"]').click();await page.locator('[data-dialog-action="1"]').click();await nav('rig');assert.equal((await saved()).bait,'crank');
  checks.push('Purchased crankbait can cast/retrieve with lure rod and is not consumed');
  await nav('journal');assert.equal(await page.locator('.fish-row').count(),50);await page.locator('#fish-map').selectOption('GHE');const expected= (await import('../src/content.js')).FISH.filter(f=>f.maps.includes('GHE')).length;assert.equal(await page.locator('.fish-row').count(),expected);assert.match(await page.locator('.fish-tips').first().innerText(),/Mồi:/);

@@ -6,11 +6,15 @@ import {MAPS,FISH,RODS,BAITS,ACCESSORIES,TECHNIQUES,loadoutStats,usesFloat,accep
 import {FishingGame,floatMarks,balancedLead} from '../src/engine.js';
 import {newPlayer,validateSave} from '../src/save.js';
 const tickUntil=(g,predicate,max=60)=>{for(let i=0;i<max*10;i++){freeSnag(g);g.step(.1);if(predicate())return;}assert.fail(g.message+' / '+g.phase);};
-const fullPlayer=()=>{const p=newPlayer();p.coins=10000000;p.maps=MAPS.map(m=>m.id);p.rods=RODS.map(r=>r.id);p.accessories=ACCESSORIES.map(a=>a.id);p.baits=Object.fromEntries(BAITS.map(b=>[b.id,b.reusable?1:100]));return p;};
+const fullPlayer=()=>{const p=newPlayer();p.coins=10000000;p.maps=MAPS.map(m=>m.id);p.rods=RODS.map(r=>r.id);p.accessories=ACCESSORIES.map(a=>a.id);p.baits=Object.fromEntries(BAITS.map(b=>[b.id,b.reusable?1:100]));p.systems.inventory=null;return p;};
 const bite=g=>{assert.ok(g.cast());if(g.rod.tech==='lure')g.toggleRetrieve();tickUntil(g,()=>g.phase==='bite');};
 
 test('All 10 maps have unique packaged landscape art and valid playable content',async()=>{
- assert.equal(MAPS.length,10);assert.equal(FISH.length,50);assert.equal(RODS.length,12);assert.equal(BAITS.length,15);assert.equal(ACCESSORIES.length,20);
+ assert.equal(MAPS.length,10);assert.equal(FISH.length,50);assert.equal(RODS.length,12);assert.equal(BAITS.length,15);
+ // New equipment is additive: validate the original IDs instead of freezing the catalog size.
+ const legacyAccessories={line:['line_basic','line18','fluoro','braid'],hook:['hook_basic','hook_barb','hook_wide','hook_pro'],float:['float_basic','float_canal','float_slender','float_sea'],reel:['reel_basic','reel2000','reel4000','reel6000'],net:['net_basic','net_fold','net_long','net_pro']};
+ assert.equal(new Set(ACCESSORIES.map(a=>a.id)).size,ACCESSORIES.length,'Accessory IDs must remain unique');
+ for(const [slot,ids] of Object.entries(legacyAccessories))for(const id of ids)assert.equal(ACCESSORIES.find(a=>a.id===id)?.slot,slot,`Legacy accessory ${id} must retain its slot`);
  assert.equal(new Set(MAPS.map(m=>m.background)).size,10);
  for(const m of MAPS){const file=new URL('../'+m.background,import.meta.url);assert((await stat(file)).size>10000);const bytes=await readFile(file);assert.ok(bytes.toString('ascii',8,12)==='WEBP'||bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),'Valid PNG/WebP landscape');assert.equal(m.spots.length,m.id==='AO'?2:3);assert(FISH.some(f=>f.maps.includes(m.id)));assert(m.spots.every(s=>s.depth<=m.maxDepth));}
  for(const f of FISH){assert(f.maps.every(id=>MAPS.some(m=>m.id===id)),f.id);assert(f.baits.every(id=>BAITS.some(b=>b.id===id)),f.id);assert(f.tech.every(t=>TECHNIQUES[t]),f.id);assert(f.max>=f.min);}
@@ -18,10 +22,10 @@ test('All 10 maps have unique packaged landscape art and valid playable content'
 
 test('Old v0.1 save migrates without losing money, owned gear, catch or pending sale',()=>{
  const old={version:1,coins:43210,baits:{worm:7,dough:5,corn:1,cloudbait:4},rods:['bamboo','spinning'],maps:['AO','HO'],rod:'spinning',bait:'lure',map:'HO',rig:{depth:2.6,lead:1.08},catches:8,released:3,sold:4,casts:25,collection:{fish_04:{count:2,best:1.92}},lessons:['signal'],serial:8,pending:{id:'catch-8',fishId:'fish_04',weight:1.92,value:92160,mapId:'HO'},settings:{assist:false,sound:false,deadline:300}};
- const p=validateSave(old);for(const key of ['coins','catches','released','sold','casts','rod','map','collection','lessons','pending'])assert.deepEqual(p[key],old[key]);
+ const p=validateSave(old);for(const key of ['coins','catches','released','sold','casts','rod','map','collection','lessons'])assert.deepEqual(p[key],old[key]);
  assert.deepEqual(p.settings,{...old.settings,music:.45,effects:.7});assert.equal(p.gifted,0);assert.deepEqual(p.keptFish,[]);
- assert.equal(p.baits.lure,1);assert.equal(p.baits.shrimp,0);assert.equal(p.accessories.length,5);assert.equal(p.equipment.line,'line_basic');
- const g=new FishingGame(p);assert.ok(g.resolveCatch('catch-8','sell'));assert.equal(p.coins,old.coins+92160);assert.equal(g.resolveCatch('catch-8','sell'),false);
+ assert.deepEqual(p.pending,{...old.pending,status:'landed'});assert.equal(p.baits.lure,1);assert.equal(p.baits.shrimp,0);assert.equal(p.accessories.length,5);assert.equal(p.equipment.line,'line_basic');
+ const g=new FishingGame(p);assert.ok(g.resolveCatch('catch-8','keep'));assert.ok(g.resolveKeptCatch('catch-8','sell'));assert.equal(p.coins,old.coins+92160);assert.equal(g.resolveCatch('catch-8','sell'),false);
 });
 
 test('Accessory purchases/equips reject invalid, unaffordable, duplicate and mid-cast actions atomically',()=>{
@@ -30,7 +34,7 @@ test('Accessory purchases/equips reject invalid, unaffordable, duplicate and mid
  assert.ok(g.buy('accessory','line18'));assert.equal(p.coins,6000);assert.ok(g.equip('line','line18'));assert.equal(p.equipment.line,'line18');snapshot=JSON.stringify(p);
  assert.equal(g.buy('accessory','line18'),false);assert.equal(g.equip('hook','line18'),false);assert.equal(JSON.stringify(p),snapshot);
  assert.ok(g.cast());snapshot=JSON.stringify(p);assert.equal(g.buy('accessory','hook_barb'),false);assert.equal(g.equip('line','line_basic'),false);assert.equal(g.setRig('depth',1),false);assert.equal(g.balance(),false);assert.equal(JSON.stringify(p),snapshot);
- g.retrieve();assert.ok(g.equip('line','line_basic'));assert.equal(p.coins,6000);
+ g.retrieve();assert.equal(g.equip('line','line_basic'),false);assert.ok(g.returnHome());assert.ok(g.equip('line','line_basic'));assert.equal(p.coins,6000);
 });
 
 test('Reusable purchased lures consume one purchase and zero portions across casts and reload',()=>{

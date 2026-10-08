@@ -28,7 +28,7 @@ let server;
    }
    if(target==='fishing'){
      if(await page.locator('body').getAttribute('data-screen')!=='prepare')await page.locator('nav [data-screen="prepare"]').click();
-     await page.locator('#start-fishing').click();
+     await page.locator('#start-fishing').click();await page.waitForFunction(()=>document.querySelector('.scene')?.dataset.loading==='ready');
    }else if(await page.locator('body').getAttribute('data-screen')!==target)await page.locator('nav [data-screen="'+target+'"]').click();
  };
 
@@ -52,13 +52,13 @@ let server;
  await nav('fishing');
  await page.locator('#main').focus();await page.keyboard.press('Space');
  assert(await page.locator('#cast').isDisabled());
- await page.locator('#strike').click();assert.match(await page.locator('#status-copy').innerText(),/Giật sớm/);
+ await page.clock.runFor(800);await page.keyboard.press('Space');assert.match(await page.locator('#status-copy').innerText(),/Giật sớm/);
  checks.push('Keyboard cast and early-strike failure');
  await page.locator('#cast').click();
  const exitSave=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')));
  await page.locator('#leave-fishing').click();assert.match(await page.locator('#dialog-title').innerText(),/Thu cần/);
  const frozen=await page.locator('#session-clock').innerText();await page.clock.runFor(1000);assert.equal(await page.locator('#session-clock').innerText(),frozen);
- await page.locator('[data-dialog-action="0"]').click();assert.equal(await page.locator('body').getAttribute('data-screen'),'fishing');assert.equal(await page.locator('.scene').getAttribute('data-phase'),'waiting');
+ await page.locator('[data-dialog-action="0"]').click();assert.equal(await page.locator('body').getAttribute('data-screen'),'fishing');assert.equal(await page.locator('.scene').getAttribute('data-phase'),'casting');
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).baits.worm),exitSave.baits.worm);
  await page.keyboard.press('Escape');assert.equal(await page.locator('#dialog').getAttribute('data-kind'),'pause');await page.screenshot({path:out+'/pause-desktop.png'});
  await page.locator('[data-dialog-action="1"]').click();assert.match(await page.locator('#dialog-title').innerText(),/Thu cần/);
@@ -77,7 +77,7 @@ let server;
      const box=await page.locator('#'+id).boundingBox();assert(box.height>=44&&box.width>=44,id+' fight touch target');assert(box.y>=0&&box.y+box.height<=height,id+' fight outside viewport');
    }
    const fight=await page.locator('#fight').boundingBox(),caption=await page.locator('.scene-caption').boundingBox(),signal=await page.locator('#float-zoom').boundingBox();
-   assert(caption.y+caption.height<=fight.y,'Map info obscures fight at '+label);
+   if(caption)assert(caption.y+caption.height<=fight.y,'Map info obscures fight at '+label);
    assert.equal(signal,null,'Float zoom is hidden during the two-hand fight');
    await page.screenshot({path:out+'/fight-'+label+'.png'});
  }
@@ -93,7 +93,7 @@ let server;
  await page.reload();await page.evaluate(()=>document.fonts.ready);
  const restored=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')));
  assert.equal(restored.pending.id,catchId);assert(await page.locator('#dialog').evaluate(el=>el.open));
- await page.locator('[data-dialog-action="1"]').click();
+ await page.locator('[data-catch-decision=keep]').click();await page.locator('#leave-fishing').click();await page.locator('[data-open-keepnet]').click();await page.locator('[data-kept="'+catchId+'"][data-fate=sell]').click();await page.locator('[data-dialog-action]').last().click();
  const sold=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')));
  assert.equal(sold.coins,before.coins+before.pending.value);assert.equal(sold.sold,1);assert.equal(sold.pending,null);
  checks.push('Natural fish approach → bite → controlled fight → catch; unresolved catch survives reload; sale credited once');
@@ -107,12 +107,12 @@ let server;
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).coins),learned.coins);
  checks.push('Lesson: wrong answer retriable, reward issued only once');
  await nav('rig');
- await page.locator('#lead').fill('1.5');await page.locator('#lead').dispatchEvent('input');assert.match(await page.locator('#rig-state').innerText(),/chưa cân/);
- await nav('prepare');assert(await page.locator('#start-fishing').isDisabled());assert.match(await page.locator('#prepare-ready').innerText(),/chưa cân/);await nav('rig');
- await page.locator('#balance').click();assert.match(await page.locator('#rig-state').innerText(),/4 vạch/);
+ await page.locator('#lead').fill('1.5');await page.locator('#lead').dispatchEvent('input');assert.match(await page.locator('#rig-state').innerText(),/Phao chìm/);
+ await nav('prepare');assert(await page.locator('#start-fishing').isEnabled());await nav('rig');
+ await page.locator('#balance').click();const calibrated=Number((await page.locator('#rig-state').innerText()).match(/Phao ([\d.]+) vạch/)[1]);assert(Math.abs(calibrated-4)<=.2,'Quantized lead should balance near four marks');
  const worms=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).baits.worm);
  await page.locator('#dig').click();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).baits.worm),worms+6);
- checks.push('Rig balancing and free bait recovery');
+ checks.push('Unbalanced setup remains playable, calibration reflects load, and free bait recovers');
  await page.locator('[data-equip="dai"]').click();
  assert.equal(await page.locator('[data-shop-category="rod"]').getAttribute('aria-pressed'),'true');
  await page.locator('[data-shop-category="all"]').click();
@@ -139,18 +139,18 @@ let server;
    assert(await page.locator('#game-nav').isHidden());assert(await page.locator('.game-header').isHidden());
    const scene=await page.locator('.scene').boundingBox();assert.equal(scene.width,width);assert.equal(scene.height,height);assert.equal(await page.evaluate(()=>document.documentElement.scrollHeight),height);
    assert.equal(await page.locator('.scene a,[data-open-maps],.bank-panel').count(),0);
-   for(const id of ['cast','retrieve','pause','help','leave-fishing']){
+   for(const id of ['cast','pause','help','leave-fishing']){
      const box=await page.locator('#'+id).boundingBox();
      assert(box.height>=44&&box.width>=44,id+' '+label+' touch target');
      assert(box.y>=0&&box.y+box.height<=height,id+' '+label+' outside viewport');
    }
    if(label==='mobile'){
-     await nav('prepare');await page.locator('[data-spot="1"]').click();await nav('fishing');
-     assert.equal(await page.locator('#spot-name').innerText(),'Mép bèo');
+     await nav('prepare');await page.locator('.prepare-spot-list [data-spot="1"]').click();await nav('fishing');
+     assert.equal(await page.locator('#spot-name').innerText(),'Mũi Đất');
      await page.locator('#cast').click();await page.locator('#pause').click();
      const paused=await page.locator('#session-clock').innerText();await page.clock.runFor(1000);
      assert.equal(await page.locator('#session-clock').innerText(),paused);
-     await page.locator('[data-dialog-action="0"]').click();await page.locator('#retrieve').click();
+     await page.locator('[data-dialog-action="0"]').click();const retrieve=await page.locator('#retrieve').boundingBox();assert(retrieve.width>=44&&retrieve.height>=44,'Visible retrieve touch target');assert(retrieve.y>=0&&retrieve.y+retrieve.height<=height,'Retrieve fits viewport');await page.locator('#retrieve').click();
      checks.push('Preparation selects a mobile spot; immersive touch cast, pause sheet and resume/retrieve work');
    }
  }

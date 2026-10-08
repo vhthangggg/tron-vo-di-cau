@@ -12,12 +12,35 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
+      - name: Install browser test dependencies
+        run: npm ci
       - name: Verify gameplay rules
         run: npm test
       - name: Package static game
         run: npm run build
+      - name: Install the verified Chrome headless shell
+        run: |
+          npx playwright install-deps chromium
+          curl --fail --location --retry 3 --output "$RUNNER_TEMP/chrome-headless-shell.zip" https://storage.googleapis.com/chrome-for-testing-public/155.0.8059.39/linux64/chrome-headless-shell-linux64.zip
+          unzip -q "$RUNNER_TEMP/chrome-headless-shell.zip" -d "$RUNNER_TEMP"
+          echo "CHROMIUM_EXECUTABLE=$RUNNER_TEMP/chrome-headless-shell-linux64/chrome-headless-shell" >> "$GITHUB_ENV"
+      - name: Verify the production release journeys
+        run: |
+          npm run test:browser:audio
+          npm run test:browser:fights
+          npm run test:browser:experience
+          npm run test:browser:systems
+          npm run test:browser:spots
+          npm run test:browser:bag
+          npm run test:browser:lines
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fishing-release-browser-evidence
+          path: test-results/

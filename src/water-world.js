@@ -28,7 +28,11 @@ export function snagChance(map,spot,depth,tech,habitat){
 export function fishBehavior(fish){
   const base={carp:[.13,17,2.9],catfish:[.12,23,3.5],long:[.22,22,2.2],round:[.17,15,2.6],knife:[.21,18,2.3],grouper:[.19,26,2.8]}[fish.shape] || [.16,20,2.8];
   const id=Number(fish.id.split('_')[1]),variation=.87+(id%7)*.045;
+  // Game tuning: quick, darting movement does not imply a strong or enduring fish.
+  const strength={2:.65,3:.85,4:1.45,6:.9,7:1.45,8:.8,11:.6,12:.5,18:1.55,22:1.5,25:1.2,26:.5,27:.45,31:1.65,34:.6,35:1.55,36:.85,37:1.5,38:1.55,43:1.2,49:.9,50:.6}[id]
+    ?? {carp:1.1,catfish:1.25,long:1.3,round:1,knife:1.15,grouper:1.4}[fish.shape] ?? 1;
   return {speed:base[0]*variation,burst:base[1]+id%4,rest:base[2],turn:1.1+(id%5)*.21,
+    strength,
     label:fish.shape==='catfish'?'Ghì sâu, bứt nặng':fish.shape==='long'?'Chạy dài, đổi hướng':fish.shape==='grouper'?'Lao nhanh, ghì mạnh':fish.shape==='knife'?'Lạng ngang liên tục':'Đảo hướng, bứt từng nhịp'};
 }
 

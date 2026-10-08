@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 2,
+  "notes": "Mapped to stable runtime item IDs; measurements and scores are provisional game balancing ratings. PE size is not a millimeter diameter.",
+  "items": [
+    {
+      "id": "sewing-thread",
+      "name": "Cuộn chỉ khâu của vợ",
+      "material": "spun-sewing-thread",
+      "lengthM": 30,
+      "diameterMm": 0.15,
+      "breakingStrengthKg": 0.5,
+      "stretchScore": 12,
+      "sensitivityScore": 20,
+      "abrasionScore": 5,
+      "handlingScore": 30,
+      "starter": true,
+      "priceTier": "free",
+      "provisional": true,
+      "assets": {
+        "icon": "/assets/items/lines/sewing-thread/icon.webp",
+        "detail": "/assets/items/lines/sewing-thread/detail.webp",
+        "fallbackIcon": "/assets/items/lines/sewing-thread/detail.webp"
+      },
+      "color": "ivory",
+      "lineStructure": "spun twisted sewing thread",
+      "role": "starter novelty",
+      "usage": "Small fish only; weak knot and abrasion resistance",
+      "priceCoins": 0,
+      "statSource": "gameplay-provisional",
+      "verifiedManufacturerSpec": false,
+      "runtimeItemId": "line_basic"
+    },
+    {
+      "id": "nylon",
+      "name": "Cước Monofilament/Nylon 100m",
+      "material": "nylon-monofilament",
+      "lengthM": 100,
+      "diameterMm": 0.2,
+      "breakingStrengthKg": 3.5,
+      "stretchScore": 75,
+      "sensitivityScore": 55,
+      "abrasionScore": 60,
+      "handlingScore": 90,
+      "provisional": true,
+      "assets": {
+        "icon": "/assets/items/lines/nylon/icon.webp",
+        "detail": "/assets/items/lines/nylon/detail.webp",
+        "fallbackIcon": "/assets/items/lines/nylon/detail.webp"
+      },
+      "color": "clear-pearl",
+      "lineStructure": "nylon monofilament",
+      "role": "beginner all-round",
+      "usage": "Forgiving stretch and easy handling",
+      "priceCoins": 6000,
+      "statSource": "gameplay-provisional",
+      "verifiedManufacturerSpec": false,
+      "runtimeItemId": "line18"
+    },
+    {
+      "id": "pe",
+      "name": "Cước SW PE 100m",
+      "material": "braided-pe",
+      "lengthM": 100,
+      "peSize": "1.0",
+      "diameterMm": null,
+      "breakingStrengthKg": 7.5,
+      "stretchScore": 10,
+      "sensitivityScore": 95,
+      "abrasionScore": 45,
+      "handlingScore": 55,
+      "provisional": true,
+      "assets": {
+        "icon": "/assets/items/lines/pe/icon.webp",
+        "detail": "/assets/items/lines/pe/detail.webp",
+        "fallbackIcon": "/assets/items/lines/pe/detail.webp"
+      },
+      "color": "green",
+      "lineStructure": "braided polyethylene",
+      "role": "high sensitivity",
+      "usage": "Low stretch; requires careful drag and suitable leader",
+      "priceCoins": 38000,
+      "statSource": "gameplay-provisional",
+      "verifiedManufacturerSpec": false,
+      "runtimeItemId": "braid"
+    },
+    {
+      "id": "copolymer",
+      "name": "Cước Co-polymer 100m",
+      "material": "copolymer-monofilament",
+      "lengthM": 100,
+      "diameterMm": 0.2,
+      "breakingStrengthKg": 4.2,
+      "stretchScore": 55,
+      "sensitivityScore": 72,
+      "abrasionScore": 75,
+      "handlingScore": 80,
+      "provisional": true,
+      "assets": {
+        "icon": "/assets/items/lines/copolymer/icon.webp",
+        "detail": "/assets/items/lines/copolymer/detail.webp",
+        "fallbackIcon": "/assets/items/lines/copolymer/detail.webp"
+      },
+      "color": "violet-lavender",
+      "lineStructure": "copolymer monofilament",
+      "role": "balanced upgrade",
+      "usage": "Moderate stretch and handling; properties vary by manufacturer",
+      "priceCoins": 12000,
+      "statSource": "gameplay-provisional",
+      "verifiedManufacturerSpec": false,
+      "runtimeItemId": "line_copolymer"
+    }
+  ],
+  "status": "runtime",
+  "units": {
+    "breakingStrengthKg": "kg-force equivalent, provisional",
+    "diameterMm": "millimeters",
+    "lengthM": "meters",
+    "scores": "0-100 gameplay scores, not physical units"
+  },
+  "balanceRules": {
+    "effectiveBreakingStrength": "breakingStrengthKg * knotFactor * abrasionFactor * conditionFactor",
+    "factorsRange": [
+      0,
+      1
+    ],
+    "notes": "Do not apply strength as a fixed random chance; calculate line tension and wear. Validate against existing combat and save systems before runtime integration."
+  }
+}

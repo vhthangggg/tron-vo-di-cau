@@ -1,6 +1,6 @@
 # Trốn Vợ Đi Câu — nội dung mở rộng v0.1
 
-Bản chơi hiện có **50 loài cá, 10 map, 12 cần, 15 mồi và 20 phụ kiện**. Các định nghĩa chạy trong `src/content.js`; mua, lắp và câu dùng cùng engine. Bản lưu cũ tự nhận năm phụ kiện khởi đầu, giữ xu, map/cần đã mở, cá đã câu và cá đang chờ bán/thả.
+Bản chơi hiện có **50 loài cá, 10 map, 12 cần, 15 mồi, 22 phụ kiện và 4 túi đựng đồ**. Các định nghĩa chạy trong `src/content.js`; mua, lắp và câu dùng cùng engine. Bản lưu cũ tự nhận năm phụ kiện khởi đầu, giữ xu, map/cần đã mở, cá đã câu và cá đang chờ bán/thả.
 
 ## Bản đồ và ảnh cảnh
 
