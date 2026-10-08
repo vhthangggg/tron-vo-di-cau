@@ -28,5 +28,20 @@ test('tutorial completion survives reload without repeat reward',()=>{
 });
 test('malformed optional systems never discards legacy wallet',()=>{
  const p=newPlayer();p.coins=43500;p.systems={inventory:{bagId:'missing'},tutorial:{},transactions:[]};
- const q=validateSave(p);assert.equal(q.coins,43500);assert.equal(q.systems.inventory,null);
+ const q=validateSave(p);assert.equal(q.coins,43500);assert.equal(q.systems.inventory?.bagId,'cloth');
+});
+
+test('legacy gear projects into bag and storage without losing ownership',async()=>{
+ const {inventoryFromLegacy,reconcileInventory}=await import('../src/inventory.js');
+ const p=newPlayer();p.rods.push('dai');p.baits.worm=17;p.baits.dough=9;
+ const inv=inventoryFromLegacy(p);
+ assert.ok(inv);assert.equal(inv.carried.rods.length,1);assert.ok(inv.stored.rods.includes('dai'));
+ assert.equal(reconcileInventory(inv,p),true);
+ const restored=validateSave({...p,systems:{inventory:inv,tutorial:{},transactions:[]}});
+ assert.equal(reconcileInventory(restored.systems.inventory,restored),true);
+});
+test('tampered inventory cannot erase stored equipment on reload',()=>{
+ const p=newPlayer();p.rods.push('dai');
+ const q=validateSave({...p,systems:{inventory:{bagId:'cloth',carried:{rods:['bamboo'],baits:{worm:18},accessories:[]},stored:{rods:[],baits:{},accessories:[]}},tutorial:{},transactions:[]}});
+ assert.ok(q.rods.includes('dai'));assert.ok(q.systems.inventory.stored.rods.includes('dai'));
 });
