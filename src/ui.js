@@ -54,6 +54,8 @@ export function toolArt(kind,id=''){
  }
  const svg=inner=>`<svg viewBox="0 0 140 110" aria-hidden="true">${inner}</svg>`;
  if(kind==='accessory'){
+  const assetKey=ACCESSORIES.find(a=>a.id===id)?.assetKey;
+  if(assetKey)return `<img class="fishing-line-icon" src="./assets/items/lines/${assetKey}/icon.webp" alt="" loading="lazy" decoding="async">`;
   const slot=ACCESSORIES.find(a=>a.id===id)?.slot||id;
   const arts={
    line:'<ellipse cx="70" cy="55" rx="30" ry="34" fill="#acbfa5" stroke="#496c5a" stroke-width="6"/><ellipse cx="70" cy="55" rx="12" ry="18" fill="#eadfc6"/><path d="M92 76q37 15 17-37" fill="none" stroke="#496c5a" stroke-width="3"/><path d="M43 45q28 16 55 0m-55 12q28 16 55 0" fill="none" stroke="#e5eacc" stroke-width="2"/>',
