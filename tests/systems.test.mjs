@@ -45,3 +45,19 @@ test('tampered inventory cannot erase stored equipment on reload',()=>{
  const q=validateSave({...p,systems:{inventory:{bagId:'cloth',carried:{rods:['bamboo'],baits:{worm:18},accessories:[]},stored:{rods:[],baits:{},accessories:[]}},tutorial:{},transactions:[]}});
  assert.ok(q.rods.includes('dai'));assert.ok(q.systems.inventory.stored.rods.includes('dai'));
 });
+
+test('rod transfers enforce capacity and retain ownership',async()=>{
+ const {inventoryFromLegacy,transferGear,reconcileInventory}=await import('../src/inventory.js');
+ const p=newPlayer();p.rods.push('dai');const inv=inventoryFromLegacy(p);
+ const owned={rods:p.rods,accessories:p.accessories,baits:p.baits};
+ assert.equal(transferGear(inv,owned,'rods','dai','carried'),null);
+ const stowed=transferGear(inv,owned,'rods','bamboo','stored');
+ assert.ok(stowed);const moved=transferGear(stowed,owned,'rods','dai','carried');
+ assert.ok(moved);assert.equal(reconcileInventory(moved,p),true);
+});
+test('bag summary renderer does not mutate player state',async()=>{
+ const {renderInventoryOverview}=await import('../src/ui.js');
+ const p=newPlayer(),before=JSON.stringify(p),html=renderInventoryOverview(p);
+ assert.match(html,/Kho tại nhà/);assert.match(html,/Túi đồ/);
+ assert.equal(JSON.stringify(p),before);
+});
