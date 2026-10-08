@@ -10,7 +10,11 @@ const fullPlayer=()=>{const p=newPlayer();p.coins=10000000;p.maps=MAPS.map(m=>m.
 const bite=g=>{assert.ok(g.cast());if(g.rod.tech==='lure')g.toggleRetrieve();tickUntil(g,()=>g.phase==='bite');};
 
 test('All 10 maps have unique packaged landscape art and valid playable content',async()=>{
- assert.equal(MAPS.length,10);assert.equal(FISH.length,50);assert.equal(RODS.length,12);assert.equal(BAITS.length,15);assert.equal(ACCESSORIES.length,20);
+ assert.equal(MAPS.length,10);assert.equal(FISH.length,50);assert.equal(RODS.length,12);assert.equal(BAITS.length,15);
+ // New equipment is additive: validate the original IDs instead of freezing the catalog size.
+ const legacyAccessories={line:['line_basic','line18','fluoro','braid'],hook:['hook_basic','hook_barb','hook_wide','hook_pro'],float:['float_basic','float_canal','float_slender','float_sea'],reel:['reel_basic','reel2000','reel4000','reel6000'],net:['net_basic','net_fold','net_long','net_pro']};
+ assert.equal(new Set(ACCESSORIES.map(a=>a.id)).size,ACCESSORIES.length,'Accessory IDs must remain unique');
+ for(const [slot,ids] of Object.entries(legacyAccessories))for(const id of ids)assert.equal(ACCESSORIES.find(a=>a.id===id)?.slot,slot,`Legacy accessory ${id} must retain its slot`);
  assert.equal(new Set(MAPS.map(m=>m.background)).size,10);
  for(const m of MAPS){const file=new URL('../'+m.background,import.meta.url);assert((await stat(file)).size>10000);const bytes=await readFile(file);assert.ok(bytes.toString('ascii',8,12)==='WEBP'||bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])),'Valid PNG/WebP landscape');assert.equal(m.spots.length,m.id==='AO'?2:3);assert(FISH.some(f=>f.maps.includes(m.id)));assert(m.spots.every(s=>s.depth<=m.maxDepth));}
  for(const f of FISH){assert(f.maps.every(id=>MAPS.some(m=>m.id===id)),f.id);assert(f.baits.every(id=>BAITS.some(b=>b.id===id)),f.id);assert(f.tech.every(t=>TECHNIQUES[t]),f.id);assert(f.max>=f.min);}
