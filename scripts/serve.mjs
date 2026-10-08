@@ -15,7 +15,7 @@ createServer(async(req,res)=>{
       path=path.slice(base.length);
     }
     if(path.endsWith('/'))path+='index.html';
-    const file=resolve(root,'.'+path);
+    const file=path.startsWith('/assets/items/')?resolve(root,'public'+path):resolve(root,'.'+path);
     if(!file.startsWith(root+sep)||path.split('/').some(p=>p.startsWith('.')&&p!=='.nojekyll')){res.writeHead(403);res.end('Forbidden');return;}
     if(!(await stat(file)).isFile()){res.writeHead(404);res.end('Not found');return;}
     res.writeHead(200,{'Content-Type':mime[extname(file)]||'application/octet-stream','Cache-Control':'no-cache'});res.end(await readFile(file));
