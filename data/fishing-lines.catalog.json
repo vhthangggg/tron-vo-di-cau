@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "notes": "Provisional gameplay tuning values; not manufacturer specifications. Do not override existing item IDs without migration.",
+  "items": [
+    {
+      "id": "sewing-thread",
+      "name": "Cuộn chỉ khâu của vợ",
+      "material": "spun-sewing-thread",
+      "lengthM": 30,
+      "diameterMm": 0.15,
+      "breakingStrengthKg": 0.5,
+      "stretchScore": 12,
+      "sensitivityScore": 20,
+      "abrasionScore": 5,
+      "handlingScore": 30,
+      "starter": true,
+      "priceTier": "free",
+      "provisional": true,
+      "assets": {
+        "icon": "/assets/items/lines/sewing-thread/icon.webp",
+        "detail": "/assets/items/lines/sewing-thread/detail.webp"
+      }
+    },
+    {
+      "id": "nylon",
+      "name": "Cước Monofilament/Nylon 100m",
+      "material": "nylon-monofilament",
+      "lengthM": 100,
+      "diameterMm": 0.2,
+      "breakingStrengthKg": 3.5,
+      "stretchScore": 75,
+      "sensitivityScore": 55,
+      "abrasionScore": 60,
+      "handlingScore": 90,
+      "provisional": true,
+      "assets": {
+        "icon": "/assets/items/lines/nylon/icon.webp",
+        "detail": "/assets/items/lines/nylon/detail.webp"
+      }
+    },
+    {
+      "id": "pe",
+      "name": "Cước SW PE 100m",
+      "material": "braided-pe",
+      "lengthM": 100,
+      "peSize": "1.0",
+      "diameterMm": null,
+      "breakingStrengthKg": 7.5,
+      "stretchScore": 10,
+      "sensitivityScore": 95,
+      "abrasionScore": 45,
+      "handlingScore": 55,
+      "provisional": true,
+      "assets": {
+        "icon": "/assets/items/lines/pe/icon.webp",
+        "detail": "/assets/items/lines/pe/detail.webp"
+      }
+    },
+    {
+      "id": "copolymer",
+      "name": "Cước Co-polymer 100m",
+      "material": "copolymer-monofilament",
+      "lengthM": 100,
+      "diameterMm": 0.2,
+      "breakingStrengthKg": 4.2,
+      "stretchScore": 55,
+      "sensitivityScore": 72,
+      "abrasionScore": 75,
+      "handlingScore": 80,
+      "provisional": true,
+      "assets": {
+        "icon": "/assets/items/lines/copolymer/icon.webp",
+        "detail": "/assets/items/lines/copolymer/detail.webp"
+      }
+    }
+  ]
+}
