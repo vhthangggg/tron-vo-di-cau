@@ -6,7 +6,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const root=path.resolve(__dirname,'..'),out=path.join(root,'test-results');fs.mkdirSync(out,{recursive:true});
 let server,browser;
 (async()=>{
- const {MAPS,BAITS,RODS}=await import('../src/content.js');
+ const {MAPS,BAITS,RODS,ACCESSORIES}=await import('../src/content.js');
  server=require('node:child_process').spawn(process.execPath,['scripts/serve.mjs','--base','tron-vo-di-cau','--port','5186'],{cwd:root});
  await new Promise((resolve,reject)=>{server.stdout.once('data',resolve);server.once('error',reject);});
  browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE?{executablePath:process.env.CHROMIUM_EXECUTABLE}:{}),...(process.env.CHROMIUM_ARGS?{args:JSON.parse(process.env.CHROMIUM_ARGS)}:{})});
@@ -36,8 +36,8 @@ let server,browser;
 
  await nav('shop');await page.locator('[data-shop-category="accessory"]').click();
  let balance=(await saved()).coins;
- for(const id of ['braid','hook_pro','float_sea','reel6000','net_pro'])await page.locator('[data-buy="accessory"][data-id="'+id+'"]').click();
- assert.equal((await saved()).coins,balance-226000);assert(await page.locator('[data-buy="accessory"][data-id="braid"]').isDisabled());
+ for(const id of ['braid','hook_pro','float_sea','reel6000','net_pro']){await page.locator('[data-shop-accessory="'+ACCESSORIES.find(a=>a.id===id).slot+'"]').click();await page.locator('[data-buy="accessory"][data-id="'+id+'"]').click();}
+ await page.locator('[data-shop-accessory="line"]').click();assert.equal((await saved()).coins,balance-226000);assert(await page.locator('[data-buy="accessory"][data-id="braid"]').isDisabled());
  await nav('rig');await page.locator('#gear-line').selectOption('braid');await page.locator('#gear-hook').selectOption('hook_pro');await page.locator('#gear-float').selectOption('float_sea');await page.locator('#gear-net').selectOption('net_pro');
  assert(await page.locator('#gear-reel').isDisabled());assert.match(await page.locator('#rig-state').innerText(),/Phao [2-7](?:\.\d)? vạch/);assert.equal((await saved()).equipment.line,'braid');
  await page.screenshot({path:out+'/accessories-desktop.png',fullPage:true});

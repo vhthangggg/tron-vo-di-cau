@@ -55,6 +55,8 @@ async function rejectStoredSelection(page,selector,value,expected){
   assert.equal(await page.locator(selector).inputValue(),expected,selector+' must reflect equipped gear after rejection');
 }
 async function comparisonRow(page,id,label,previous,next){
+  const slot=await page.locator('[data-compare="'+id+'"]').evaluate(el=>el.closest('[data-shop-accessory-group]')?.dataset.shopAccessoryGroup);
+  if(slot){await page.locator('[data-shop-category="accessory"]').click();await page.locator('[data-shop-accessory="'+slot+'"]').click();}
   const rows=await page.locator('[data-compare="'+id+'"] dl>div').evaluateAll(elements=>elements.map(row=>({label:row.querySelector('dt').textContent,previous:row.querySelector('dd>span')?.textContent,next:row.querySelector('dd>b').textContent})));
   const row=rows.find(row=>row.label===label);assert(row,id+' comparison includes '+label);
   assert.equal(row.previous,previous);assert.equal(row.next,next);
@@ -95,6 +97,7 @@ async function comparisonRow(page,id,label,previous,next){
     for(const [kind,id] of purchases){
       await page.locator('[data-shop-category="'+kind+'"]').click();
       const definition=(kind==='rod'?RODS:kind==='accessory'?ACCESSORIES:BAITS).find(item=>item.id===id);
+      if(kind==='accessory')await page.locator('[data-shop-accessory="'+definition.slot+'"]').click();
       expected-=definition.price;
       await clickTwiceSameAction(page.locator('[data-buy="'+kind+'"][data-id="'+id+'"]'));
       assert.equal((await saved(page)).coins,expected,'A queued purchase spends its price once');

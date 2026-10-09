@@ -8,7 +8,7 @@ import {CONTAINERS,getContainer,catchTeaser,MAX_KEPT_FISH} from './catch-fate.js
 import {twoHands} from './two-hands.js';
 import {paintWater} from './water-world.js';
 import {rodLoad,rodGeometry,paintRod} from './fight-physics.js';
-import {MAPS,FISH,RODS,BAITS,ACCESSORIES,LESSONS,getMap,getRod,getBait,getFish,getBag,usesFloat,usesReel} from './content.js';
+import {MAPS,FISH,RODS,BAITS,ACCESSORIES,ACCESSORY_SLOTS,LESSONS,getMap,getRod,getBait,getFish,getBag,usesFloat,usesReel} from './content.js';
 import {FishingGame,floatMarks,rigError,clamp,FIGHT_ZONE,NO_BITE_HINT} from './engine.js';
 import {loadPlayer,savePlayer} from './save.js';
 import {icon,avatarArt,fishArt,NAV_ITEMS,rankFor,renderHome,renderPrepare,renderFishing,renderRig,renderLearn,journalRows as fishRows,renderJournal,renderShop,renderMapAtlas,renderRigCalibration,renderFieldKit,toolArt} from './ui.js';
@@ -72,12 +72,18 @@ function journalRows(query='',map='all'){return fishRows(player,query,map);}
 function journalHTML(){return renderJournal(player);}
 function shopHTML(){return renderShop(player);}
 function baitCount(){return getBait(player.bait).reusable?'Dùng lại':`${carriedBaitCount(player,player.bait)} phần trong túi`;}
-let shopCategory='all';
+let shopCategory='all',shopAccessoryCategory='line';
+function filterShopAccessory(slot){
+  shopAccessoryCategory=Object.hasOwn(ACCESSORY_SLOTS,slot)?slot:'line';
+  $$('[data-shop-accessory-group]').forEach(group=>group.hidden=group.dataset.shopAccessoryGroup!==shopAccessoryCategory);
+  $$('[data-shop-accessory]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.shopAccessory===shopAccessoryCategory)));
+}
 function filterShop(category){
   shopCategory=['all','rod','bait','accessory','bag','map'].includes(category)?category:'all';
   $('#shop-inventory').dataset.filter=shopCategory;
   $$('[data-category]').forEach(section=>section.hidden=shopCategory!=='all'&&section.dataset.category!==shopCategory);
   $$('[data-shop-category]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.shopCategory===shopCategory)));
+  filterShopAccessory(shopAccessoryCategory);
 }
 
 const renderers={home:homeHTML,prepare:prepareHTML,fishing:fishingHTML,rig:rigHTML,learn:learnHTML,journal:journalHTML,shop:shopHTML};
@@ -220,7 +226,7 @@ function bindScreen(){
   }
   if(screen==='learn'){$$('[data-lesson]').forEach(b=>b.onclick=()=>showLesson(b.dataset.lesson));$$('[data-tutorial-claim]').forEach(button=>button.onclick=()=>{if(game.claimTutorial(button.dataset.tutorialClaim)){render();toast(game.message);}});}
   if(screen==='journal'){const filter=()=>$('#fish-results').innerHTML=journalRows($('#fish-search').value,$('#fish-map').value);$('#fish-search').oninput=filter;$('#fish-map').onchange=filter;$('#export').onclick=exportSave;}
-  if(screen==='shop'){$$('[data-line-detail]').forEach(button=>button.onclick=()=>showLineDetail(button.dataset.lineDetail));filterShop(shopCategory);$$('[data-shop-category]').forEach(button=>button.onclick=()=>filterShop(button.dataset.shopCategory));$$('[data-buy]').forEach(b=>{const tx=nextTransactionId(player,'shop');b.onclick=()=>{if(game.buy(b.dataset.buy,b.dataset.id,tx)){render();toast(game.message);}else toast('Chưa mua được. Kiểm tra số xu và bộ đã có.');};});}
+  if(screen==='shop'){$$('[data-shop-accessory]').forEach(button=>button.onclick=()=>filterShopAccessory(button.dataset.shopAccessory));$$('[data-line-detail]').forEach(button=>button.onclick=()=>showLineDetail(button.dataset.lineDetail));filterShop(shopCategory);$$('[data-shop-category]').forEach(button=>button.onclick=()=>filterShop(button.dataset.shopCategory));$$('[data-buy]').forEach(b=>{const tx=nextTransactionId(player,'shop');b.onclick=()=>{if(game.buy(b.dataset.buy,b.dataset.id,tx)){render();toast(game.message);}else toast('Chưa mua được. Kiểm tra số xu và bộ đã có.');};});}
 }
 function updateRig(){
  const error=rigError(player),state=game.float;
