@@ -20,6 +20,8 @@
     "test:browser:bag": "node tests/fishing-bag-browser.cjs",
     "test:browser:lines": "node tests/lines-browser.cjs",
     "test:browser:species": "node tests/species-browser.cjs",
+    "test:browser:desktop": "node tests/desktop-browser.cjs",
+    "test:browser:fish-images": "node tests/fish-images-browser.cjs",
     "export:species": "node scripts/export-fish-catalog.mjs"
   },
   "engines": {

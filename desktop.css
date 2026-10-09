@@ -1,0 +1,100 @@
+/* PC uses the same game and save, with room for persistent information.
+   app.js selects this layout at >=1024px with a fine primary pointer. */
+.desktop-fishing-panel,.desktop-only{display:none}
+body[data-layout=desktop]:not([data-screen=fishing]) .game-header{position:sticky;top:0;z-index:16;background:var(--forest-deep);max-width:none;height:78px;padding-inline:max(32px,calc((100% - 1540px)/2))}
+body[data-layout=desktop]:not([data-screen=fishing]) .game-dock{top:78px;bottom:auto;width:min(1000px,calc(100% - 64px));max-width:none;padding:6px 12px;border-radius:0 0 14px 14px;gap:12px;background:var(--forest-deep)}
+body[data-layout=desktop]:not([data-screen=fishing]) .game-dock a{min-height:48px;flex-direction:row;gap:12px;font-size:14px}
+body[data-layout=desktop]:not([data-screen=fishing]) .game-dock a[aria-current=page]::before{top:auto;bottom:-7px}
+body[data-layout=desktop]:not([data-screen=fishing]) #main{padding:82px 28px 28px}
+body[data-layout=desktop]:not([data-screen=fishing]) .game-window{margin-top:0}
+body[data-layout=desktop]:not([data-screen=fishing]) .camp-scene{margin-top:0;min-height:650px;height:calc(100dvh - 188px)}
+body[data-layout=desktop]{scroll-padding-top:154px}
+html:has(body[data-layout=desktop]){scroll-padding-top:154px;scroll-padding-bottom:28px}
+
+body[data-layout=desktop][data-screen=fishing]{background:var(--forest-deep);overflow:hidden}
+body[data-layout=desktop][data-screen=fishing] #main{min-height:0;height:100dvh}
+body[data-layout=desktop][data-screen=fishing] .fishing-layout{display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,21vw,320px);height:100%;gap:0}
+body[data-layout=desktop][data-screen=fishing] .scene{height:100%;min-height:0;min-width:0;--hand-width:clamp(144px,18cqw,220px)}
+.desktop-fishing-panel{color:var(--surface);background:var(--forest-deep);border-left:1px solid var(--hud-line);padding:24px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--hud-line) var(--forest-deep)}
+body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel{display:flex;flex-direction:column;gap:22px}
+.desktop-panel-heading .eyebrow{color:var(--gold-light);font-size:11px;letter-spacing:1.5px}
+.desktop-panel-heading h2{font-family:VietDisplay,Georgia,serif;color:var(--surface);font-size:24px;line-height:1.3;margin:8px 0}
+.desktop-panel-heading p{font-size:13px;line-height:1.6;margin:0;color:var(--dim)}
+.desktop-player{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-block:1px solid var(--hud-line);font-size:12px}
+.desktop-player strong{color:var(--gold-light);white-space:nowrap}
+.desktop-fishing-panel h3{font-size:14px;color:var(--gold-light);margin:0 0 12px}
+.desktop-loadout dl{margin:0 0 16px}
+.desktop-loadout dl>div{padding:7px 0}
+.desktop-loadout dt{color:var(--dim);font-size:12px;margin-bottom:3px}
+.desktop-loadout dd{font-size:14px;line-height:1.5;margin:0;overflow-wrap:anywhere}
+.desktop-fishing-panel button{width:100%;justify-content:flex-start;gap:8px;color:var(--surface);background:var(--forest);border:1px solid var(--hud-line);box-shadow:none;font-size:13px;min-height:44px;padding:10px 12px}
+.desktop-fishing-panel button:hover:not(:disabled){background:var(--forest-light);border-color:var(--gold)}
+.desktop-loadout button+button{margin-top:8px}
+.desktop-fishing-panel button .icon{width:18px;height:18px;flex-shrink:0}
+.desktop-fishing-panel button kbd{margin-left:auto;flex-shrink:0}
+.desktop-fishing-panel kbd{display:inline-block;min-width:24px;padding:2px 6px;border:1px solid var(--hud-line);border-bottom-width:2px;border-radius:4px;font:12px/1.5 Viet,Arial,sans-serif;color:var(--gold-light);background:var(--forest)}
+.desktop-keyboard{border-top:1px solid var(--hud-line);padding-top:18px}
+.desktop-keyboard ul{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.desktop-keyboard li{display:grid;grid-template-columns:78px minmax(0,1fr);align-items:start;gap:10px;font-size:12px;line-height:1.6;color:var(--surface)}
+.desktop-keyboard li>kbd{justify-self:start}
+.desktop-keyboard p{font-size:12px;color:var(--dim);line-height:1.65;margin:16px 0 0}
+body[data-layout=desktop] .desktop-only{display:inline-flex}
+body[data-layout=desktop][data-screen=fishing] .fishing-topbar{top:20px;left:20px;right:20px;gap:16px}
+body[data-layout=desktop][data-screen=fishing] .fishing-topbar .location-hud h1{font-size:22px}
+body[data-layout=desktop][data-screen=fishing] .fishing-topbar .location-hud p:last-child{font-size:13px;margin-top:4px}
+body[data-layout=desktop][data-screen=fishing] .fishing-topbar .focus-back{font-size:13px}
+body[data-layout=desktop][data-screen=fishing] .fishing-topbar .session-hud{min-height:40px;height:40px;padding:0 12px}
+body[data-layout=desktop][data-screen=fishing] .fishing-topbar .session-hud strong{font-size:16px}
+body[data-layout=desktop][data-screen=fishing] .scene-bottom{bottom:54px;width:min(440px,calc(100% - 2 * var(--hand-width) - 72px));gap:12px}
+body[data-layout=desktop][data-screen=fishing] .scene:is([data-phase=idle],[data-phase=failed],[data-phase=landed],[data-phase=casting],[data-phase=waiting]) .scene-bottom{width:min(500px,calc(100% - 48px));bottom:54px;flex-direction:column;align-items:stretch;gap:12px}
+body[data-layout=desktop][data-screen=fishing] .status-box{padding:14px 16px;background:var(--forest-deep);border-color:var(--hud-line)}
+body[data-layout=desktop][data-screen=fishing] .status-box #status-title{font-size:14px}
+body[data-layout=desktop][data-screen=fishing] .status-box #status-copy{display:block;font-size:12px;line-height:1.6;margin-top:4px;color:var(--dim)}
+body[data-layout=desktop][data-screen=fishing] .water-controls button{min-height:48px;font-size:14px;padding:10px 18px}
+body[data-layout=desktop][data-screen=fishing] .water-controls .key{display:inline-block;font-size:11px}
+body[data-layout=desktop][data-screen=fishing] .hand-panel{bottom:54px}
+body[data-layout=desktop][data-screen=fishing] .left-hand{left:24px}
+body[data-layout=desktop][data-screen=fishing] .right-hand{right:24px}
+body[data-layout=desktop][data-screen=fishing] .hand-panel p{display:block;font-size:12px;line-height:1.5;margin-top:10px}
+body[data-layout=desktop][data-screen=fishing] .hand-heading{margin-bottom:10px}
+body[data-layout=desktop][data-screen=fishing] .hand-heading span,body[data-layout=desktop][data-screen=fishing] .hand-heading strong{font-size:13px}
+body[data-layout=desktop][data-screen=fishing] .track-pad,body[data-layout=desktop][data-screen=fishing] .rod-pad{height:clamp(136px,23cqh,210px);border-radius:14px;background:var(--forest-deep)}
+body[data-layout=desktop][data-screen=fishing] .fish-target{width:40px;height:40px}
+body[data-layout=desktop][data-screen=fishing] .fish-target .icon{width:25px;height:25px}
+body[data-layout=desktop][data-screen=fishing] #rod-label{font-size:14px}
+body[data-layout=desktop][data-screen=fishing] .fight{padding:16px;background:var(--forest-deep);border-color:var(--hud-line)}
+body[data-layout=desktop][data-screen=fishing] .fight .meter-head{font-size:13px;gap:12px}
+body[data-layout=desktop][data-screen=fishing] .fight #fight-title{display:block;font-size:12px}
+body[data-layout=desktop][data-screen=fishing] .fight #fight-hint{font-size:13px;line-height:1.6;margin:12px 0}
+body[data-layout=desktop][data-screen=fishing] .tension-track{height:12px;margin-top:8px}
+body[data-layout=desktop][data-screen=fishing] .energy-track{height:6px;margin-top:8px}
+body[data-layout=desktop][data-screen=fishing] .float-zoom{top:96px;right:24px;width:86px;padding:10px 8px;background:var(--forest-deep)}
+body[data-layout=desktop][data-screen=fishing] .float-zoom-title,body[data-layout=desktop][data-screen=fishing] #float-label{font-size:12px}
+body[data-layout=desktop][data-screen=fishing] .float-zoom svg{width:56px;height:96px}
+body[data-layout=desktop][data-screen=fishing] .dual-instruction{display:block!important;bottom:16px;left:20px;right:20px;font-size:12px}
+body[data-layout=desktop][data-screen=fishing] .quiet-fishing-note{max-width:min(440px,calc(100% - 48px))}
+body[data-layout=desktop][data-screen=fishing] #dialog{width:min(760px,calc(100vw - 48px));max-width:760px;max-height:calc(100dvh - 48px);padding:28px}
+body[data-layout=desktop][data-screen=fishing] .focus-save-warning{top:90px;left:20px;right:124px}
+body[data-layout=desktop] :is(button,a,input,select,summary):focus-visible{outline:3px solid var(--gold-light);outline-offset:3px}
+@media(max-height:800px){
+ body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel{padding:18px;gap:16px}
+ body[data-layout=desktop] .desktop-panel-heading h2{font-size:21px}
+ body[data-layout=desktop] .desktop-loadout dl>div{display:grid;grid-template-columns:85px minmax(0,1fr);gap:8px;padding:6px 0}
+ body[data-layout=desktop] .desktop-loadout dt{margin:0}
+ body[data-layout=desktop] .desktop-loadout dd{font-size:12px}
+ body[data-layout=desktop] .desktop-keyboard ul{gap:8px}
+}
+@media(max-width:1200px){
+ body[data-layout=desktop][data-screen=fishing] .fishing-topbar{gap:10px;left:16px;right:16px}
+ body[data-layout=desktop][data-screen=fishing] .fishing-topbar .location-hud h1{font-size:18px}
+ body[data-layout=desktop][data-screen=fishing] .fight #fight-title{display:none}
+ body[data-layout=desktop][data-screen=fishing] .fight{padding:12px}
+ body[data-layout=desktop][data-screen=fishing] .dual-instruction{font-size:11px}
+}
+@media(max-height:540px){
+ body[data-layout=desktop][data-screen=fishing] .scene-bottom,body[data-layout=desktop][data-screen=fishing] .hand-panel{bottom:36px}
+ body[data-layout=desktop][data-screen=fishing] .scene:is([data-phase=idle],[data-phase=failed],[data-phase=landed],[data-phase=casting],[data-phase=waiting]) .scene-bottom{bottom:36px}
+ body[data-layout=desktop][data-screen=fishing] .dual-instruction{display:none!important}
+ body[data-layout=desktop][data-screen=fishing] .status-box #status-copy{display:none}
+ body[data-layout=desktop][data-screen=fishing] .hand-panel p{display:none}
+}

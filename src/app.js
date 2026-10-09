@@ -23,9 +23,11 @@ let screen='home',canvas=null,context=null,sceneObserver=null,toastTimer,previou
 let rodFlex=0;
 const audio=new GameAudio({getSettings:()=>player.settings});
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const desktop=matchMedia('(min-width: 1024px) and (pointer: fine)');
+document.body.dataset.layout=desktop.matches?'desktop':'compact';
 let game=new FishingGame(player,{onChange:gameChanged});
 const dialogPointerStarts=new Set();
-const hands=twoHands(game,{canUse:()=>screen==='fishing'&&sceneReady&&!game.paused&&!$('#dialog').open&&!game.deadlineReached,onUpdate:()=>{unlockAudio();updateFishing();}});
+const hands=twoHands(game,{canUse:()=>screen==='fishing'&&sceneReady&&!game.paused&&!$('#dialog').open&&!game.deadlineReached,mouseTrackingEnabled:()=>desktop.matches,onUpdate:()=>{unlockAudio();updateFishing();}});
 function clearRodHold(){hands.clear();}
 
 function persist(){if(!savePlayer(storage,player))saveWarning='Trình duyệt đang chặn lưu. Tiến độ chỉ giữ trong phiên này.';}
@@ -49,6 +51,7 @@ function updateWallet(){
   $('#profile-rank').textContent=rank.name;$('#rank-count').textContent=rank.label;
   $('#rank-progress').max=rank.max;$('#rank-progress').value=rank.complete?rank.max:rank.count;
   $('#rank-progress').setAttribute('aria-valuetext',rank.name+', '+rank.label);
+  if($('#desktop-coins')){$('#desktop-coins').textContent=money(player.coins);$('#desktop-rank').textContent=rank.name;}
 }
 function unlockAudio(){if(player.settings.sound)audio.unlock();}
 function syncAtmosphere(){
@@ -112,7 +115,7 @@ function beginMapLoad(){
 }
 async function setFishingOrientation(active){
   document.body.classList.toggle('fishing-landscape',active);
-  if(!window.screen.orientation?.lock)return;
+  if(!matchMedia('(pointer: coarse)').matches||!window.screen.orientation?.lock)return;
   try{
     if(active)await window.screen.orientation.lock('landscape');
     else window.screen.orientation.unlock();
@@ -193,6 +196,9 @@ function bindScreen(){
     $('#ease').onclick=()=>{clearRodHold();game.ease();updateFishing();};
     $('#new-session').onclick=()=>{if(game.newSession())updateFishing();};
     $('#map-load-back').onclick=()=>navigate('prepare');$('#map-load-retry').onclick=beginMapLoad;
+    $('#desktop-kit').onclick=()=>showFieldKit();$('#desktop-keepnet').onclick=()=>showKeepnet();
+    $('#desktop-fullscreen').onclick=toggleFullscreen;updateFullscreenButton();
+    for(const [id,key] of [['cast','Space'],['strike','Space'],['retrieve','R'],['pause','P Escape']])$('#'+id).setAttribute('aria-keyshortcuts',key);
   }
   if(screen==='rig'){
     $$('[data-transfer-kind]').forEach(button=>{const tx=nextTransactionId(player,'transfer');button.onclick=()=>{
@@ -290,8 +296,39 @@ function updateFishing(){
   const n=game.float.visibleMarks,offset=44+(4-n)*8+(phase==='bite'?41:phase==='nibble'?(reduced.matches?4:Math.sin(game.time*9)*5):game.signal==='wind'?(reduced.matches?2:Math.sin(game.time*3)*3):0);
   $('#zoom-float').setAttribute('transform',`translate(0 ${offset})`);$('#session-clock').textContent=clock(player.settings.deadline?Math.max(0,player.settings.deadline-game.elapsed):game.elapsed);
   $('#session-end').hidden=!game.deadlineReached;$('.scene').classList.toggle('is-ended',game.deadlineReached);
+  updateDesktopFishing();
   syncAtmosphere();if(sceneReady)audio.fishing(game);
 }
+
+function updateDesktopFishing(){
+  if(!$('#desktop-kit'))return;
+  const trackNote=desktop.matches?'Rê chuột theo cá · hoặc W A S D':'Di chuyển trái / phải / lên / xuống';
+  const rodNote=desktop.matches?'Giữ Space · ↑ ↓ chỉnh lực':'Giữ + kéo lên / xuống để chỉnh lực';
+  if($('#track-note').textContent!==trackNote)$('#track-note').textContent=trackNote;
+  if($('#rod-control-note').textContent!==rodNote)$('#rod-control-note').textContent=rodNote;
+  if(!desktop.matches)return;
+  const line=ACCESSORIES.find(item=>item.id===player.equipment.line);
+  for(const [id,value] of [['desktop-rod',game.rod.name],['desktop-bait',getBait(player.bait).name],['desktop-bait-count',baitCount()],['desktop-line',`${line?.name||'Cước mặc định'} · Thẻo ${player.rig.leaderMm} mm`],['desktop-keepnet-label',`${getContainer(player.container).name} · ${player.keptFish.length} con`]]){
+    const el=$('#'+id);if(el.textContent!==value)el.textContent=value;
+  }
+  $('#desktop-kit').disabled=!sceneReady||game.deadlineReached||!['idle','failed','waiting'].includes(game.phase)||!!player.pending;
+  $('#desktop-keepnet').disabled=!sceneReady||game.busy&&!player.pending;
+}
+function updateFullscreenButton(){
+  const button=$('#desktop-fullscreen');if(!button)return;
+  button.hidden=!document.fullscreenEnabled;button.setAttribute('aria-pressed',String(!!document.fullscreenElement));
+  const label=document.fullscreenElement?'Thoát toàn màn hình':'Toàn màn hình';
+  $('#desktop-fullscreen-label').textContent=label;button.title=label+' (F)';
+}
+async function toggleFullscreen(){
+  if(!desktop.matches||!document.fullscreenEnabled)return;
+  clearRodHold();
+  try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}
+  catch{toast('Trình duyệt chưa cho phép toàn màn hình. Bạn có thể dùng F11.');}
+  updateFullscreenButton();
+}
+document.addEventListener('fullscreenchange',()=>{clearRodHold();updateFullscreenButton();resizeCanvas();});
+desktop.addEventListener('change',()=>{clearRodHold();document.body.dataset.layout=desktop.matches?'desktop':'compact';updateDesktopFishing();resizeCanvas();});
 
 function showDialog(title,body,actions=[],{canClose=true,kind='standard'}={}){
   clearRodHold();
@@ -434,8 +471,14 @@ $('#settings').onclick=showSettings;
 document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;e.preventDefault();if(a.classList.contains('skip')){$('#main').focus();return;}navigate(a.getAttribute('href').slice(1));});
 addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
 document.addEventListener('keydown',e=>{
-  if(screen!=='fishing'||!sceneReady||$('#dialog').open||/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))return;
+  if(screen!=='fishing'||!sceneReady||$('#dialog').open||e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,select,textarea,[contenteditable]'))return;
   if((e.code==='KeyP'||e.code==='Escape')&&!e.repeat){e.preventDefault();showPause();return;}
+  if(desktop.matches&&!e.repeat){
+    const action={KeyR:()=>{if(!$('#retrieve').disabled&&!$('#retrieve').hidden)$('#retrieve').click();},KeyB:()=>{if(!$('#desktop-kit').disabled)showFieldKit();},KeyK:()=>{if(!$('#desktop-keepnet').disabled)showKeepnet();},KeyF:toggleFullscreen}[e.code];
+    if(action){e.preventDefault();action();return;}
+  }
+  // Space on a focused UI button retains its native activation outside a fight.
+  if(e.code==='Space'&&e.target.closest('button,a')&&!['fight','snag'].includes(game.phase)&&!e.target.closest('#strike,#track-pad'))return;
   if(hands.keydown(e))return;
   if(e.code==='Space'&&!e.repeat&&!/^(BUTTON|A)$/.test(e.target.tagName)){
     e.preventDefault();unlockAudio();if(['idle','failed'].includes(game.phase))game.cast();else if(player.pending)showCatch();
