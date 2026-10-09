@@ -36,6 +36,30 @@ let server,browser;
   assert(await page.evaluate(()=>a.fightVoice.source.buffer!==first.source.buffer));
   checks.push('Bamboo uses a separate audible soft fibre-creak buffer, while carbon uses taut-line friction');
 
+  // Render through the actual filter and default effect bus, not just the raw PCM.
+  // The old bamboo signal was below -60 dBFS even at high tension.
+  const levels=await page.evaluate(async()=>{
+    const {GameAudio}=await import('/src/game-audio.js'),{getRod}=await import('/src/content.js'),out=[];
+    for(const rate of [24000,48000])for(const tension of [36,55,78]){
+      const ctx=new OfflineAudioContext(1,rate*2,rate),mix={sound:true,music:0,effects:.7};
+      const audio=new GameAudio({getSettings:()=>mix});audio.ctx=ctx;audio.effects=ctx.createGain();audio.effects.gain.value=mix.effects*.65;audio.effects.connect(ctx.destination);
+      audio.music=ctx.createGain();audio.music.connect(ctx.destination);
+      const state=(await import('/src/game-audio.js')).fightSoundState({phase:'fight',rod:getRod('bamboo'),tension,velocity:{x:.1,y:.06},hooked:{weight:.1},player:{equipment:{line:'line_basic'}}});
+      audio.startFightSound(state.kind,state.timbre);const voice=audio.fightVoice;
+      voice.gain.gain.setValueAtTime(state.level,0);voice.filter.frequency.setValueAtTime(state.frequency,0);voice.source.playbackRate.setValueAtTime(state.rate,0);
+      const pcm=(await ctx.startRendering()).getChannelData(0),rms=Math.sqrt(pcm.reduce((sum,v)=>sum+v*v,0)/pcm.length);
+      out.push({rate,tension,rms,db:+(20*Math.log10(rms)).toFixed(1),peak:Math.max(...pcm.slice(0,24000).map(Math.abs))});
+    }
+    return out;
+  });
+  for(const sample of levels){assert(sample.rms>.003,'Bamboo line must remain audible at default settings: '+JSON.stringify(sample));assert(sample.peak<.2);}
+  checks.push({check:'Starter bamboo and sewing thread produce a measurable audible signal at low/normal/high tension on 24/48 kHz output',levels});
+  await page.evaluate(()=>{mix.music=.45;a.applySettings();a.fishing(f);});
+  await page.waitForFunction(()=>a.music.gain.value<.14);assert(await page.evaluate(()=>a.fightMix));
+  await page.evaluate(()=>{f.tension=16;a.fishing(f);});await page.waitForFunction(()=>a.music.gain.value>.28);assert.equal(await page.evaluate(()=>a.fightMix),false);
+  await page.evaluate(()=>{mix.music=0;f.tension=68;a.applySettings();a.fishing(f);});
+  checks.push('Background music ducks under taut-line feedback and recovers smoothly when the line slackens');
+
   await page.evaluate(()=>a.setPaused(true));await page.waitForFunction(()=>a.voices.size===0);assert(await page.evaluate(()=>a.fightVoice===null));
   await page.evaluate(()=>{a.setPaused(false);a.fishing(f);});assert(await page.evaluate(()=>a.fightVoice.kind==='line'));
   await page.evaluate(()=>{mix.effects=0;a.applySettings();a.fishing(f);});await page.waitForFunction(()=>a.voices.size===0);

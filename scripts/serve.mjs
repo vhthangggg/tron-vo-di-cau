@@ -15,6 +15,8 @@ createServer(async(req,res)=>{
       if(!path.startsWith(base+'/')){res.writeHead(404);res.end('Not found');return;}
       path=path.slice(base.length);
     }
+    // Research exports are development files, never public game downloads.
+    if(path.startsWith('/data/')||path.startsWith('/docs/')){res.writeHead(404);res.end('Not found');return;}
     if(path==='/src/fish-assets.js'){res.writeHead(200,{'Content-Type':'text/javascript; charset=utf-8','Cache-Control':'no-cache'});res.end(await fishAssetModule(root));return;}
     if(path.endsWith('/'))path+='index.html';
     const file=(path.startsWith('/assets/items/')||path.startsWith('/assets/fish/'))?resolve(root,'public'+path):resolve(root,'.'+path);

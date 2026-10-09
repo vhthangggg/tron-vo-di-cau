@@ -143,11 +143,14 @@ Giao diện PC tự bật từ 1024 px với chuột: thanh điều hướng tr�
 
 Ảnh cá đã được giới hạn trong khung trên sổ cá, thông tin loài, màn cá lên bờ và rọ; giữ nguyên tỷ lệ và nền trong suốt. Kiểm tra PC: `npm run test:browser:desktop`; ảnh thật: `npm run test:browser:fish-images`.
 
+Khi nhả tay/phím Space, lực kéo được nhả ngay, còn cần hạ và hết cong dần; không nhảy về tư thế ban đầu. Cần tre có tiếng ma sát dây rõ hơn ở âm lượng mặc định, kể cả dây chỉ may; nhạc nền giảm nhẹ trong lúc dây căng và trở lại khi dây chùng. Tạm dừng, tắt tiếng hoặc rời tab dừng hiệu ứng. Kiểm tra: `npm run test:browser:audio`, `npm run test:browser:rod-release`, `npm run test:browser:fights`.
+
 ## Danh mục loài và ảnh 57 ID (09/10/2026)
 
 Có **56 loài câu được**, sử dụng 57 ID ảnh: `fish_55` gộp vào trắm cỏ `fish_07` theo yêu cầu người dùng. Toàn bộ ID và thành tích cũ được giữ. Tôm, cua đồng, ba ba, cua biển, ếch đồng và cá sửu biển đã có dữ liệu gameplay; cua biển và ếch có thể dùng hình dự phòng.
 
 - [Bảng và phương pháp](docs/FISH_CATALOG_57.md), [CSV 57 ID](data/fish-catalog-57.csv), [JSON](data/fish-catalog-57.json). Kích cỡ trong game, chiều dài ước tính và điểm sức kéo là mô phỏng; số liệu tối đa công bố ghi riêng cùng đơn vị TL/SL/FL.
+- Các bảng xuất chỉ phục vụ phát triển: sổ cá không có nút tải bảng ID, build không đóng gói CSV/JSON và server phát triển không phục vụ thư mục `data`/`docs`. Xuất bản lưu cá nhân vẫn có. Đây không phải cơ chế bảo mật dữ liệu: trình duyệt vẫn cần hồ sơ loài để chạy game; mã nguồn và lịch sử GitHub công khai vẫn có thể đọc được.
 - Hồ sơ runtime: `src/species-data.js`; thuật toán kích cỡ/sức kéo: `src/species-physics.js`. `npm run export:species` cập nhật bảng khi đổi thông số.
 - Sổ cá có tìm theo tên không dấu/tên khoa học/ID, xem nhận dạng, map, mồi, bốn dải cỡ và nguồn.
 - Upload một file cho mỗi loài vào `public/assets/fish/fish_01.webp`...`fish_57.webp` (PNG cũng được). Không cần icon/detail riêng. Trắm cỏ ưu tiên ảnh `fish_55`, rồi `fish_07`.

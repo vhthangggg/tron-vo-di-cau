@@ -27,9 +27,9 @@ export function fightSoundState(game){
   const payingOut=game.surge||(game.velocity?.y||0)<-.025||tension>.72;
   const active=reel?tension>.35&&payingOut:tension>.28;
   const bamboo=game.rod.id==='bamboo';
-  return {kind:reel?'drag':'line',timbre:bamboo?'bamboo':reel?'drag':'carbon',level:active?((reel?.045:bamboo?.016:.025)+Math.max(0,tension-.28)*.13+load*.035+motion*.018)*(bamboo?.75:1):0,
+  return {kind:reel?'drag':'line',timbre:bamboo?'bamboo':reel?'drag':'carbon',level:active?((reel?.09:bamboo?.12:.14)+Math.max(0,tension-.28)*.26+load*.06+motion*.025)*(bamboo?.85:1):0,
     rate:reel?.65+motion*.75+tension*.7+(game.surge?.25:0):.78+tension*.3+motion*.1,
-    frequency:reel?650+tension*700:bamboo?750+tension*950:1600+tension*1800+(game.surge?200:0)};
+    frequency:reel?650+tension*700:bamboo?1100+tension*1000:1600+tension*1800+(game.surge?200:0)};
 }
 
 // Seamless friction and ratchet PCM, cached once per AudioContext.
@@ -43,10 +43,14 @@ export function fillFightSound(samples,rate,kind){
       const click=(i%cycle)/rate,envelope=Math.exp(-click/ .0028);
       samples[i]=envelope*(noise*.42+Math.sin(2*Math.PI*2300*click)*.34+Math.sin(2*Math.PI*3700*click)*.12)+pink*.08;
     }else if(kind==='bamboo'){
-      // Soft, uneven fibre creaks and line rub: a bamboo pole has no spool ratchet.
+      // Midrange line rub stays audible on phone speakers; low fibre creaks alone
+      // disappear through a bandpass. A bamboo pole still has no spool ratchet.
       body=body*.975+noise*.025;
       const flex=.55+.3*Math.sin(2*Math.PI*t*1.7)+.15*Math.sin(2*Math.PI*t*3.1+.8);
-      samples[i]=(body*.95+pink*.4+(noise-body)*.11)*flex;
+      phase+=2*Math.PI*(1150+120*Math.sin(2*Math.PI*t*2.1/duration))/rate;
+      const rub=(noise-body)*.36+pink*.2;
+      const squeak=Math.sin(phase)*.13+Math.sin(phase*1.71+.8)*.035;
+      samples[i]=(body*.65+rub+squeak)*flex;
     }else{
       // A moving inharmonic guide squeak sits inside a soft abrasive hiss;
       // its uneven pitch and level avoid the steady motor-like note.
@@ -101,8 +105,13 @@ export class GameAudio{
     if(!this.ctx)return;
     const s=this.getSettings();this.ramp(this.master.gain,s.sound?1:0,.02);this.ramp(this.effects.gain,clamp(s.effects??.7)*.65);
     if(!s.sound||!clamp(s.effects??.7)||this.paused||this.hidden)this.stopFightSound(this.hidden?0:.12);
-    this.ramp(this.music.gain,this.paused||this.hidden?0:clamp(s.music??.45)*.7);
+    this.ramp(this.music.gain,this.musicLevel());
     this.syncMusic();
+  }
+  musicLevel(){return this.paused||this.hidden?0:clamp(this.getSettings().music??.45)*.7*(this.fightMix?.4:1);}
+  setFightMix(active){
+    if(this.fightMix===active)return;this.fightMix=active;
+    if(this.ctx)this.ramp(this.music.gain,this.musicLevel(),active?.1:.25);
   }
   setScene(id){
     id=AUDIO_THEMES[id]?id:'home';if(id===this.theme)return;
@@ -154,11 +163,12 @@ export class GameAudio{
     const c=this.ctx,key='fight:'+timbre;let buffer=this.buffers.get(key);
     if(!buffer){buffer=c.createBuffer(1,c.sampleRate*2,c.sampleRate);fillFightSound(buffer.getChannelData(0),c.sampleRate,timbre==='carbon'?'line':timbre);this.buffers.set(key,buffer);}
     const source=c.createBufferSource();source.buffer=buffer;source.loop=true;
-    const filter=c.createBiquadFilter();filter.type=kind==='drag'?'highpass':'bandpass';filter.Q.value=kind==='drag'?.6:.8;
+    const filter=c.createBiquadFilter();filter.type=kind==='drag'?'highpass':'bandpass';filter.Q.value=kind==='drag'?.6:timbre==='bamboo'?.5:.8;
     const voice=this.voice(source,{duration:Infinity,level:.0001,filter});
     if(voice)this.fightVoice={...voice,kind,timbre,filter};
   }
   stopFightSound(fade=.12){
+    this.setFightMix(false);
     const v=this.fightVoice;if(!v)return;this.fightVoice=null;
     this.ramp(v.gain.gain,0,Math.max(.005,fade/4));this.stopVoice(v,this.ctx.currentTime+fade);
   }
@@ -167,6 +177,7 @@ export class GameAudio{
     const state=s.sound&&clamp(s.effects??.7)&&this.ctx.state==='running'&&!this.paused&&!this.hidden?fightSoundState(game):null;
     if(!state){this.stopFightSound();return;}
     if(this.fightVoice&&this.fightVoice.timbre!==state.timbre)this.stopFightSound();
+    this.setFightMix(state.level>0);
     if(!this.fightVoice&&state.level>0)this.startFightSound(state.kind,state.timbre);
     const v=this.fightVoice;if(!v)return;
     this.ramp(v.gain.gain,state.level,.035);this.ramp(v.source.playbackRate,state.rate,.05);this.ramp(v.filter.frequency,state.frequency,.05);
