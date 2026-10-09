@@ -249,6 +249,9 @@ function filterInventory(){
  grid.querySelectorAll('[data-inventory-item]').forEach(card=>{
   const d=card.dataset,match=(workbench.filter==='all'||d.itemKind===workbench.filter)&&d.itemSearch.includes(query)&&(workbench.location==='all'||Number(d[workbench.location==='stored'?'itemStored':'itemCarried'])>0);
   card.hidden=!match;if(match)count++;
+  const from=workbench.location==='carried'?'carried':workbench.location==='stored'?'stored':Number(d.itemStored)>0?'stored':'carried';
+  d.itemFrom=from;card.draggable=game.atHome&&!game.busy&&(from==='stored'||d.itemEquipped!=='true'||d.itemKind==='bait');
+  if(d.itemEquipped!=='true')card.querySelector('.inventory-item-status').textContent=from==='stored'?'Kho nhà':'Trong túi';
  });
  $$('[data-inventory-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.inventoryFilter===workbench.filter)));
  $('#inventory-no-results').hidden=count>0;$('#inventory-results').textContent=count+' món';
@@ -290,7 +293,7 @@ function bindInventoryWorkbench(){
  });
  $$('[data-inventory-item]').forEach(button=>{
   button.onclick=()=>{selectInventory(button.dataset.inventoryItem);if($('.inventory-workbench')?.clientWidth<1100){$('#inventory-item-heading')?.focus();}};
-  button.ondblclick=()=>{if(!game.atHome||game.busy)return;const key=button.dataset.inventoryItem,entry=inventoryEntry(player,key);if(entry)moveInventory(key,entry.stored?'carried':'stored');};
+  button.ondblclick=()=>{if(!game.atHome||game.busy)return;const key=button.dataset.inventoryItem,entry=inventoryEntry(player,key);if(entry)moveInventory(key,button.dataset.itemFrom==='stored'?'carried':'stored');};
   button.ondragstart=e=>{
    if(!game.atHome||game.busy||button.draggable!==true){e.preventDefault();return;}
    e.dataTransfer.setData('application/x-tron-item',JSON.stringify({key:button.dataset.inventoryItem,from:button.dataset.itemFrom}));e.dataTransfer.effectAllowed='move';

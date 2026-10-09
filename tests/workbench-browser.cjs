@@ -13,7 +13,8 @@ async function dragItem(page,key,kind){
  // Start the native drag before scrolling to a destination that may be offscreen.
  await page.mouse.move(start.x+start.width/2+12,start.y+start.height/2+6,{steps:5});
  await target.scrollIntoViewIfNeeded();const end=await target.boundingBox();
- await page.mouse.move(end.x+20,end.y+20,{steps:10});await page.mouse.move(end.x+21,end.y+21);await page.mouse.up();
+ const y=Math.min(page.viewportSize().height-40,end.y+end.height-20,Math.max(180,end.y+20));
+ await page.mouse.move(end.x+20,y,{steps:10});await page.mouse.move(end.x+21,y+1);await page.mouse.up();
 }
 
 (async()=>{
@@ -61,6 +62,10 @@ async function dragItem(page,key,kind){
    await dragItem(page,'accessory:hook_pro','bait');assert.deepEqual((await saved(page)).systems.inventory,beforeDrop);
    await dragItem(page,'accessory:hook_pro','accessory');assert((await saved(page)).systems.inventory.carried.accessories.includes('hook_pro'));
    await dragItem(page,'bait:corn','bait');assert.equal((await saved(page)).systems.inventory.carried.baits.corn,6);
+   await page.locator('#inventory-location').selectOption('carried');assert.equal(await page.locator('.inventory-grid [data-inventory-item="bait:corn"]').getAttribute('data-item-from'),'carried');
+   await dragItem(page,'bait:corn','all');state=await saved(page);assert.equal(state.systems.inventory.carried.baits.corn,0);assert.equal(state.systems.inventory.stored.baits.corn,6);
+   await page.locator('#inventory-location').selectOption('stored');assert.equal(await page.locator('.inventory-grid [data-inventory-item="bait:corn"]').getAttribute('data-item-from'),'stored');
+   await dragItem(page,'bait:corn','bait');assert.equal((await saved(page)).systems.inventory.carried.baits.corn,6);await page.locator('#inventory-location').selectOption('all');
   }
   await item(page,'rod:dai');await page.locator('[data-transfer-id="dai"][data-transfer-to="carried"]').click();
   const beforeSmall=(await saved(page)).systems.inventory;await page.locator('#bag-select').selectOption('cloth');assert.deepEqual((await saved(page)).systems.inventory,beforeSmall);assert.equal(await page.locator('#bag-select').inputValue(),'standard');
