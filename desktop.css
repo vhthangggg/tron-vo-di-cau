@@ -7,7 +7,7 @@ body[data-layout=desktop]:not([data-screen=fishing]) .game-dock a{min-height:48p
 body[data-layout=desktop]:not([data-screen=fishing]) .game-dock a[aria-current=page]::before{top:auto;bottom:-7px}
 body[data-layout=desktop]:not([data-screen=fishing]) #main{padding:82px 28px 28px}
 body[data-layout=desktop]:not([data-screen=fishing]) .game-window{margin-top:0}
-body[data-layout=desktop]:not([data-screen=fishing]) .camp-scene{margin-top:0;min-height:650px;height:calc(100dvh - 188px)}
+body[data-layout=desktop]:not([data-screen=fishing]) .camp-scene{margin-top:0;min-height:880px;height:calc(100dvh - 188px)}
 body[data-layout=desktop]{scroll-padding-top:154px}
 html:has(body[data-layout=desktop]){scroll-padding-top:154px;scroll-padding-bottom:28px}
 

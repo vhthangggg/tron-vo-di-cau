@@ -1614,7 +1614,7 @@ export const BAITS = [
       "bottom",
       "iso"
     ],
-    "note": "Mồi nhập môn cho rô, diếc, trê và bống. Đào miễn phí ở bàn đồ."
+    "note": "Mồi nhập môn cho rô, diếc, trê và bống. Chăm góc đất ủ lá tại Ruộng vườn để có giun; hoặc mua tại Chợ bến."
   },
   {
     "id": "dough",

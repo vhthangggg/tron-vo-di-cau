@@ -1,3 +1,4 @@
+import {GARDEN_HOUR} from '../src/garden.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {FishingGame} from '../src/engine.js';
@@ -44,9 +45,10 @@ function assets(p){return {coins:p.coins,rods:[...p.rods],accessories:[...p.acce
 // Start with blocked actions, then prove the supported recovery changes real gameplay state.
 test('integrated recovery with zero money and zero bait remains playable before and after reload',()=>{
  const p=newPlayer();p.coins=0;for(const id of Object.keys(p.baits))p.baits[id]=0;
- const g=new FishingGame(p,{seed:22});assert.equal(g.cast(),false);assert.equal(g.buy('bait','worm'),false);
- assert.equal(g.digWorms(),true);assert.equal(p.coins,0);assert.equal(p.baits.worm,6);assert.equal(carriedBaitCount(p,'worm'),6);
- const q=reloaded(p),again=new FishingGame(q,{seed:22});land(again);assert.equal(q.baits.worm,5);assert.equal(q.coins,0);
+ let now=p.systems.garden.lastAt;const g=new FishingGame(p,{seed:22,wallClock:()=>now});assert.equal(g.cast(),false);assert.equal(g.buy('bait','worm'),false);
+ assert.equal(g.digWorms(),false);assert(g.workGarden('feed','worms'));assert(g.workGarden('water','worms'));now+=12*GARDEN_HOUR;
+ assert.equal(g.digWorms(),true);assert.equal(p.coins,0);assert.equal(p.baits.worm,3);assert.equal(carriedBaitCount(p,'worm'),0);assert(g.moveBait('worm',3,'carried'));
+ const q=reloaded(p),again=new FishingGame(q,{seed:22,wallClock:()=>now});land(again);assert.equal(q.baits.worm,2);assert.equal(q.coins,0);
  assert.equal(again.resolveCatch(q.pending.id,'keep'),true);assert.equal(again.returnHome(),true);assert.equal(again.sellKeptFish(),true);assert(q.coins>0);
  assert.equal(reconcileInventory(q.systems.inventory,q),true);
 });
@@ -192,8 +194,8 @@ test('return transfer merges a matching replay uniquely and conflicts fail witho
 });
 
 test('ten tutorial lessons are completed by the real loop and claim exactly once after reload',()=>{
- const p=newPlayer(),g=new FishingGame(p,{seed:22});const initial=p.coins;
- assert.equal(g.claimTutorial('land'),false);assert.equal(g.digWorms(),true);assert.equal(g.balance(),true);assert.equal(g.setCastTarget(.5,.65),true);land(g);
+ const p=newPlayer();let now=p.systems.garden.lastAt;const g=new FishingGame(p,{seed:22,wallClock:()=>now});const initial=p.coins;
+ assert.equal(g.claimTutorial('land'),false);assert(g.workGarden('feed','worms'));assert(g.workGarden('water','worms'));now+=12*GARDEN_HOUR;assert.equal(g.digWorms(),true);assert.equal(g.balance(),true);assert.equal(g.setCastTarget(.5,.65),true);land(g);
  const id=p.pending.id;assert.equal(g.resolveCatch(id,'keep'),true);assert.equal(g.returnHome(),true);assert.notEqual(p.systems.tutorial.home?.completed,true);
  assert.equal(g.resolveKeptCatch(id,'gift'),true);
  for(const lesson of STARTER_STEPS){assert.equal(p.systems.tutorial[lesson.id]?.completed,true,lesson.id);assert.equal(g.claimTutorial(lesson.id),true,lesson.id);}

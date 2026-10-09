@@ -1,6 +1,6 @@
 # Trốn Vợ Đi Câu
 
-Một buổi câu bên bờ nước Việt Nam. Bản web **v0.3** chơi trực tiếp trên trình duyệt: chuẩn bị túi đồ, lắp mồi, đọc phao, dẫn cá rồi thả hoặc mang thành quả về nhà.
+Một buổi câu bên bờ nước Việt Nam. Bản web **v0.4** chơi trực tiếp trên trình duyệt: chuẩn bị túi đồ, lắp mồi, đọc phao, dẫn cá rồi thả hoặc mang thành quả về nhà.
 
 ![Trang nhà trong bản web v0.1](docs/preview.webp)
 
@@ -29,7 +29,7 @@ Luồng **Nhà → Chuẩn bị → Đi câu**. Chọn map, góc bờ, cần và
 - Mồi lắp trên lưỡi giữ nguyên qua thả, chờ, thu cần và tải lại. Mồi tự nhiên chỉ tiêu khi bị ăn, mất hoặc thay; mồi giả dùng lại nhưng có thể mất khi đứt/mắc đáy.
 - Bộ câu có dây trục, thẻo, phao, chì, lưỡi và mồi; chỉnh thẻo, cỡ lưỡi, khoảng cách chì và lưu tối đa 12 bộ. Phao cân theo thể tích chìm, tải mồi, điểm chạm đáy và dòng nước; cân sai giảm tín hiệu nhưng vẫn được câu. Cần đáy/lure không cần phao.
 - Cá lên bờ chỉ **Giữ** hoặc **Thả**. Rọng, xô và thùng có giới hạn số con/khối lượng; đầy thì cá vẫn chờ quyết định. Về nhà để bán, nấu ăn hoặc nịnh vợ; mỗi con chỉ xử lý một lần, thành tích vẫn ở sổ cá.
-- Mười bài thực hành tùy chọn ghi nhận kết quả chơi thật, thưởng một lần và giữ tiến độ; ba bài trắc nghiệm cũ vẫn có thưởng lần đầu. Đào giun, chuẩn bị mồi bột và lấy ngô miễn phí giúp phục hồi khi hết xu/mồi. Có xuất bản lưu JSON.
+- Mười bài thực hành tùy chọn ghi nhận kết quả chơi thật, thưởng một lần và giữ tiến độ; ba bài trắc nghiệm cũ vẫn có thưởng lần đầu. Ruộng vườn cần chăm hàng ngày để thu ngô và giun; ủ lá cho phép người hết xu phục hồi sau thời gian chờ. Mồi bột chỉ mua ở chợ. Có xuất bản lưu JSON.
 - Lưu tự động trên trình duyệt, bàn phím, nút cảm ứng, giảm chuyển động và chế độ giờ về nhà 3 hoặc 5 phút.
 
 Khởi đầu có cần tre, 12.000 xu và mồi. Xu hoàn toàn là tiền trong game. Không có tài khoản, thanh toán, quảng cáo hoặc dịch vụ máy chủ.
@@ -37,6 +37,16 @@ Khởi đầu có cần tre, 12.000 xu và mồi. Xu hoàn toàn là tiền tron
 Bản phát hành v0.3 và đối chiếu yêu cầu 36 giờ: [RELEASE_2026-10-09.md](docs/RELEASE_2026-10-09.md).
 
 Chi tiết bản cập nhật hai tay và cảnh động: [TWO_HANDS.md](docs/TWO_HANDS.md).
+
+## Ruộng vườn v0.4
+
+Vào **Nhà → Ruộng vườn**. Xới, bón phân hữu cơ và tưới luống rồi gieo ngô; chăm mỗi ngày để đủ **72 giờ đất tốt**. Cây ngừng lớn khi đất thiếu điều kiện, bỏ lâu sẽ héo. Ngô khỏe cho 16 phần mồi và giữ 1 lượt giống; cây yếu cho ít hơn. Đây là thời gian mô phỏng rút gọn.
+
+Góc đất ủ lá nuôi giun cần ẩm và chất hữu cơ, không cuốc lật. Sau ít nhất 12 giờ đất tốt mới đủ cho lượt đào đầu; các lượt sau cách nhau **24 giờ**, tối đa 4 phần bằng bay cũ hoặc 6 bằng bay thép. Giun trong đất tối đa 8 phần, giảm khi đất bị bỏ khô.
+
+Dụng cụ cũ, 3 lượt giống và 2 phần phân chỉ cấp một lần. **Chợ bến → Đồ làm vườn** bán cuốc, bình tưới, bay đào, giống và phân. Có thể gom lá mỗi 24 giờ, ủ 12 giờ lấy 1 phần phân để phục hồi khi hết xu. Mồi thu hoạch cất vào **kho nhà**, cần chuyển vào túi ở Đồ nghề. Đã bỏ toàn bộ nút lấy mồi ngay và trộn mồi bột tại nhà.
+
+Thiết kế, nguồn tham khảo và kiểm tra: [GARDEN.md](docs/GARDEN.md). Bản lưu cũ tự nâng cấp, giữ nguyên xu, đồ, mồi và thành tích.
 
 ## Cách chơi
 
@@ -50,7 +60,7 @@ Chi tiết bản cập nhật hai tay và cảnh động: [TWO_HANDS.md](docs/TW
 
 **Mắc đáy:** góc bờ/tầng mồi quyết định nguy cơ, hiển thị ở Chuẩn bị. Bám điểm gỡ bằng tay trái và giữ lực cần 15–35% bằng tay phải trong vài giây. Kéo mạnh làm đứt dây, quá 16 giây thì mất lượt; Bỏ lượt giúp thử lại. Gỡ thành công không tiêu thêm mồi, không mất phụ kiện. Với lure, cần **Bật thu mồi** trước khi cá tiếp cận.
 
-Chọn **Tạm dừng → Chuẩn bị lại** để đổi map, góc bờ, cần hoặc mồi; dùng **Đồ nghề** để chỉnh phụ kiện và độ sâu. Rời bờ giữa lượt cần xác nhận thu cần; mồi còn nguyên trên lưỡi được giữ để thả lại, mồi đã bị ăn hoặc mất mới tiêu hao. Chọn điểm mới tự dò độ sâu đáy; chỉnh lại tầng nông hơn để tìm cá giữa nước. Hết mồi và xu vẫn dùng cần tre, đào thêm giun miễn phí. **Bắt đầu buổi câu mới** trong menu tạm dừng khi chưa thả câu tạo lại quần thể và đặt lại đồng hồ; cũng có nút bắt đầu buổi mới khi đến giờ về nhà.
+Chọn **Tạm dừng → Chuẩn bị lại** để đổi map, góc bờ, cần hoặc mồi; dùng **Đồ nghề** để chỉnh phụ kiện và độ sâu. Rời bờ giữa lượt cần xác nhận thu cần; mồi còn nguyên trên lưỡi được giữ để thả lại, mồi đã bị ăn hoặc mất mới tiêu hao. Chọn điểm mới tự dò độ sâu đáy; chỉnh lại tầng nông hơn để tìm cá giữa nước. Hết mồi và xu có thể về nhà ủ lá, chăm góc giun rồi chờ đủ 12 giờ đất tốt để đào; mồi mới ở kho, cần bỏ vào túi trước khi đi câu. **Bắt đầu buổi câu mới** trong menu tạm dừng khi chưa thả câu tạo lại quần thể và đặt lại đồng hồ; cũng có nút bắt đầu buổi mới khi đến giờ về nhà.
 
 ## Chạy tại máy
 
@@ -86,6 +96,7 @@ npm run test:browser:two-hands
 npm run test:browser:spots
 npm run test:browser:experience
 npm run test:browser:systems
+npm run test:browser:garden
 npm run test:browser:audio
 npm run test:browser:fights
 npm run test:browser:bag

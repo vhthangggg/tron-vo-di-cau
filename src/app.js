@@ -1,3 +1,4 @@
+import {renderGarden} from './garden-ui.js';
 import {inventoryFor,carriedBaitCount,BAG_TYPES} from './inventory.js';
 import {nextTransactionId} from './economy.js';
 import {canStoreCatch,containerUsage} from './catch-inventory.js';
@@ -82,14 +83,14 @@ function filterShopAccessory(slot){
   $$('[data-shop-accessory]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.shopAccessory===shopAccessoryCategory)));
 }
 function filterShop(category){
-  shopCategory=['all','rod','bait','accessory','bag','map'].includes(category)?category:'all';
+  shopCategory=['all','rod','bait','accessory','bag','garden','map'].includes(category)?category:'all';
   $('#shop-inventory').dataset.filter=shopCategory;
   $$('[data-category]').forEach(section=>section.hidden=shopCategory!=='all'&&section.dataset.category!==shopCategory);
   $$('[data-shop-category]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.shopCategory===shopCategory)));
   filterShopAccessory(shopAccessoryCategory);
 }
 
-const renderers={home:homeHTML,prepare:prepareHTML,fishing:fishingHTML,rig:rigHTML,learn:learnHTML,journal:journalHTML,shop:shopHTML};
+const renderers={home:homeHTML,prepare:prepareHTML,fishing:fishingHTML,rig:rigHTML,learn:learnHTML,journal:journalHTML,shop:shopHTML,garden:()=>renderGarden(player,game)};
 function render(){
   clearRodHold();sceneLoader?.cancel();sceneLoader=null;sceneObserver?.disconnect();canvas=null;context=null;
   sceneReady=screen!=='fishing'||!game.spotData.video;
@@ -124,7 +125,7 @@ async function setFishingOrientation(active){
 function changeScreen(next){
   const wasFishing=screen==='fishing';
   if(next==='fishing'&&!player.pending&&!game.beginTrip()){toast(game.message);return;}
-  if(next==='home'&&!game.atHome&&!game.returnHome()){toast(game.message);return;}
+  if(['home','garden'].includes(next)&&!game.atHome&&!game.returnHome()){toast(game.message);return;}
   screen=next;setHash(next);
   if(next==='fishing')game.paused=document.hidden;
   render();window.scrollTo(0,0);$('#main').focus({preventScroll:true});
@@ -212,7 +213,6 @@ function bindScreen(){
       if(game.moveBait(id,count,button.dataset.transferTo,tx)){render();toast(game.message);}else toast(game.message);
     };});
     const bag=$('#bag-select');if(bag)bag.onchange=e=>{if(game.selectBag(e.target.value)){render();toast(game.message);}else{render();toast(game.message);}};
-    $$('[data-gather]').forEach(button=>button.onclick=()=>{if(game.gather(button.dataset.gather)){render();toast(game.message);}else toast(game.message);});
     $('#save-rig').onclick=()=>{if(game.saveRigPreset($('#preset-name').value)){render();toast(game.message);}else toast(game.message||'Nhập tên và kiểm tra bộ câu.');};
     $$('[data-load-rig]').forEach(button=>button.onclick=()=>{if(game.loadRigPreset(button.dataset.loadRig)){render();toast(game.message);}else toast(game.message);});
     $$('[data-remove-rig]').forEach(button=>button.onclick=()=>{if(game.removeRigPreset(button.dataset.removeRig))render();});
@@ -228,7 +228,9 @@ function bindScreen(){
     $('#depth').oninput=e=>{game.setRig('depth',+e.target.value);updateRig();};
     $('#lead').oninput=e=>{game.setRig('lead',+e.target.value);updateRig();};
     $('#balance').onclick=()=>{if(game.balance()){updateRig();toast(game.message);}};
-    $('#dig').onclick=()=>{if(game.digWorms()){render();toast(game.message);}};
+  }
+  if(screen==='garden'){
+    $$('[data-garden-action]').forEach(button=>{const tx=nextTransactionId(player,'garden-ui');button.onclick=()=>{const id=button.id;if(game.workGarden(button.dataset.gardenAction,button.dataset.bed,tx)){audio.cue('ui');render();$('#'+id)?.focus({preventScroll:true});toast(game.message);}else{render();$('#'+id)?.focus({preventScroll:true});toast(game.message);}};});
   }
   if(screen==='learn'){$$('[data-lesson]').forEach(b=>b.onclick=()=>showLesson(b.dataset.lesson));$$('[data-tutorial-claim]').forEach(button=>button.onclick=()=>{if(game.claimTutorial(button.dataset.tutorialClaim)){render();toast(game.message);}});}
   if(screen==='journal'){const filter=()=>$('#fish-results').innerHTML=journalRows($('#fish-search').value,$('#fish-map').value);$('#fish-search').oninput=filter;$('#fish-map').onchange=filter;$('#export').onclick=exportSave;}
@@ -463,7 +465,7 @@ function showLesson(id){
   $$('[data-answer]').forEach(b=>b.onclick=()=>{const first=!player.lessons.includes(id),correct=game.answerLesson(id,+b.dataset.answer);if(correct){$('#quiz-feedback').className='quiz-feedback good';$('#quiz-feedback').textContent=l.explain+(first?' Hoàn thành, nhận 2.500 xu.':' Bài đã hoàn thành trước đó.');$$('[data-answer]').forEach(x=>x.disabled=true);const done=document.createElement('button');done.className='primary';done.textContent='Ghi vào sổ';done.onclick=()=>{closeDialog();render();};$('#dialog-content .actions').append(done);}else{$('#quiz-feedback').className='quiz-feedback bad';$('#quiz-feedback').textContent='Chưa đúng nhịp. Thử một lựa chọn khác.';}});
 }
 function showSettings(){
-  showDialog('Tùy chọn bên bờ ao',`${audioOptionsHTML('global')}<div class="settingline"><label for="setting-assist">Gợi ý đọc tín hiệu</label><input id="setting-assist" type="checkbox" ${player.settings.assist?'checked':''}></div><label for="deadline">Giờ về nhà (tùy chọn)</label><select id="deadline"><option value="0" ${!player.settings.deadline?'selected':''}>Thư thả · Không giới hạn</option><option value="180" ${player.settings.deadline===180?'selected':''}>Một buổi 3 phút</option><option value="300" ${player.settings.deadline===300?'selected':''}>Một buổi 5 phút</option></select><p class="hint-note" style="margin-top:12px">Đồng hồ chạy khi chơi; dừng lúc tạm dừng, mở hộp thoại hoặc rời tab. Áp dụng ngay cho buổi hiện tại.</p><div class="rule"></div><p class="smalltext muted">Bản web v0.3 · Tiến độ lưu trên trình duyệt này. Xuất bản lưu để giữ một bản riêng. Cấp cần thủ tăng theo tổng cá đã câu: 5, 15, 30 và 60 con.</p>`,[{label:'Xuất bản lưu',action:exportSave},{label:'Xong',primary:true,action:closeDialog}]);
+  showDialog('Tùy chọn bên bờ ao',`${audioOptionsHTML('global')}<div class="settingline"><label for="setting-assist">Gợi ý đọc tín hiệu</label><input id="setting-assist" type="checkbox" ${player.settings.assist?'checked':''}></div><label for="deadline">Giờ về nhà (tùy chọn)</label><select id="deadline"><option value="0" ${!player.settings.deadline?'selected':''}>Thư thả · Không giới hạn</option><option value="180" ${player.settings.deadline===180?'selected':''}>Một buổi 3 phút</option><option value="300" ${player.settings.deadline===300?'selected':''}>Một buổi 5 phút</option></select><p class="hint-note" style="margin-top:12px">Đồng hồ chạy khi chơi; dừng lúc tạm dừng, mở hộp thoại hoặc rời tab. Áp dụng ngay cho buổi hiện tại.</p><div class="rule"></div><p class="smalltext muted">Bản web v0.4 · Tiến độ lưu trên trình duyệt này. Xuất bản lưu để giữ một bản riêng. Cấp cần thủ tăng theo tổng cá đã câu: 5, 15, 30 và 60 con.</p>`,[{label:'Xuất bản lưu',action:exportSave},{label:'Xong',primary:true,action:closeDialog}]);
   bindAudioOptions('global');$('#setting-assist').onchange=e=>{player.settings.assist=e.target.checked;persist();};$('#deadline').onchange=e=>{player.settings.deadline=+e.target.value;persist();if(screen==='fishing')updateFishing();};
 }
 function exportSave(){const blob=new Blob([JSON.stringify(player,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='tron-vo-di-cau-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Đã xuất bản lưu JSON.');}
@@ -532,6 +534,7 @@ function paint(){
   }
   if(game.paused&&!$('#dialog').open){c.fillStyle='#183D3730';c.fillRect(0,0,w,h);c.fillStyle='#FFFCF5';c.fillRect(w/2-94,h/2-25,188,50);c.font='14px Viet';c.textAlign='center';c.fillStyle='#183D37';c.fillText('Buổi câu tạm dừng',w/2,h/2+5);}
 }
+let lastGardenRefresh=0;
 function frame(now){
   const dt=lastFrame?Math.min(.1,(now-lastFrame)/1000):0;lastFrame=now;
   if(screen==='fishing'&&sceneReady){
@@ -542,9 +545,10 @@ function frame(now){
     }
   }else rodPose={force:0,bend:0};
   if(now-lastUpdate>100){if(screen==='fishing')updateFishing();lastUpdate=now;}
+  if(screen==='garden'&&now-lastGardenRefresh>30000&&!$('#dialog').open){const focus=document.activeElement?.id;render();if(focus)$('#'+focus)?.focus({preventScroll:true});lastGardenRefresh=now;}
   paint();requestAnimationFrame(frame);
 }
 $('#brand-icon').innerHTML=icon('fish');$('#profile-avatar').innerHTML=avatarArt();$('#coin-icon').innerHTML=icon('coin');$('#settings').innerHTML=icon('settings');
 $('#game-nav').innerHTML=NAV_ITEMS.map(([id,symbol,label])=>`<a href="#${id}" data-screen="${id}"><span class="dock-icon">${icon(symbol)}</span><span>${label}</span></a>`).join('');
-screen=renderers[location.hash.slice(1)]?location.hash.slice(1):(game.atHome?'home':'prepare');if(!game.atHome&&screen==='home')screen='prepare';setHash(screen);render();if(screen==='fishing')setFishingOrientation(true);persist();requestAnimationFrame(frame);
+screen=renderers[location.hash.slice(1)]?location.hash.slice(1):(game.atHome?'home':'prepare');if(!game.atHome&&['home','garden'].includes(screen))screen='prepare';setHash(screen);render();if(screen==='fishing')setFishingOrientation(true);persist();requestAnimationFrame(frame);
 if(player.pending)showCatch();

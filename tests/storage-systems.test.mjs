@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {newPlayer,validateSave,loadPlayer,savePlayer,SAVE_KEY,SAVE_BACKUP_KEY,SAVE_CORRUPT_KEY} from '../src/save.js';
+import {newPlayer,validateSave,loadPlayer,savePlayer,SCHEMA_VERSION,SAVE_KEY,SAVE_BACKUP_KEY,SAVE_CORRUPT_KEY} from '../src/save.js';
 import {BAG_TYPES,ensureInventory,syncInventory,inventoryFor,reconcileInventory,validateBag,validateDeparture,carriedBaitCount,transferBait,transferGear,bagInventory,spareAccessoryCount} from '../src/inventory.js';
 import {applyTransaction,transactionId} from '../src/economy.js';
 
@@ -131,7 +131,7 @@ test('first migrated write preserves the original payload before overwriting the
  const old=newPlayer();delete old.schemaVersion;delete old.systems;old.coins=99341;
  const raw=JSON.stringify(old),storage=memoryStorage({[SAVE_KEY]:raw}),loaded=loadPlayer(storage);
  assert.equal(loaded.player.coins,99341);assert.equal(loaded.warning,'');assert.ok(savePlayer(storage,loaded.player));
- assert.equal(storage.values.get(SAVE_BACKUP_KEY),raw);assert.equal(storage.writes[0][0],SAVE_BACKUP_KEY);assert.equal(JSON.parse(storage.values.get(SAVE_KEY)).schemaVersion,2);
+ assert.equal(storage.values.get(SAVE_BACKUP_KEY),raw);assert.equal(storage.writes[0][0],SAVE_BACKUP_KEY);assert.equal(JSON.parse(storage.values.get(SAVE_KEY)).schemaVersion,3);
 });
 
 test('failed migration backup prevents overwriting the original save',()=>{
@@ -154,7 +154,7 @@ test('corrupt current save recovers a verified backup, preserving its wallet and
 });
 
 test('an unsupported future schema cannot be overwritten by an older client',()=>{
- const future={...newPlayer(),schemaVersion:3,coins:85345};assert.throws(()=>validateSave(future));
+ const future={...newPlayer(),schemaVersion:SCHEMA_VERSION+1,coins:85345};assert.throws(()=>validateSave(future));
  const raw=JSON.stringify(future);
  for(const backup of [null,JSON.stringify(newPlayer())]){
   const storage=memoryStorage({[SAVE_KEY]:raw,...(backup?{[SAVE_BACKUP_KEY]:backup}:{})}),loaded=loadPlayer(storage);
