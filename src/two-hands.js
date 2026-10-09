@@ -1,14 +1,15 @@
 import {elementPoint} from './scene-geometry.js';
 // Each hand owns an independent pointer. A secondary touch is deliberately accepted.
-export function twoHands(game,{canUse,onUpdate}){
+export function twoHands(game,{canUse,onUpdate,mouseTrackingEnabled=()=>false}){
   const pointers=new Map(),keys=new Set();
-  let force=.55,keyboardTracking=false,trackElement,rodElement;
+  let force=.55,keyboardTracking=false,mouseTracking=false,trackElement,rodElement;
   const heldKey=()=>keys.has('Space')||keys.has('Enter');
   const hasHand=hand=>[...pointers.values()].some(p=>p.hand===hand);
   function sync(){
     const rod=[...pointers.values()].find(p=>p.hand==='rod');
     game.setForce(rod?.force??force,!!rod||heldKey());
-    if(!hasHand('track')&&!(keyboardTracking&&(heldKey()||hasHand('rod'))))game.setTracking(false);
+    if(!heldKey())mouseTracking=false;
+    if(!hasHand('track')&&!((keyboardTracking||mouseTracking)&&(heldKey()||hasHand('rod'))))game.setTracking(false);
     onUpdate();
   }
   function release(id){
@@ -18,7 +19,7 @@ export function twoHands(game,{canUse,onUpdate}){
     sync();
   }
   function clear(){
-    const old=[...pointers];pointers.clear();keys.clear();keyboardTracking=false;game.releaseHands();
+    const old=[...pointers];pointers.clear();keys.clear();keyboardTracking=false;mouseTracking=false;game.releaseHands();
     for(const [id,p] of old)if(p.element.hasPointerCapture(id))p.element.releasePointerCapture(id);
   }
   function position(element,e){
@@ -37,10 +38,18 @@ export function twoHands(game,{canUse,onUpdate}){
       sync();
     };
     element.onpointermove=e=>{
-      const p=pointers.get(e.pointerId);if(!p||!canUse())return;e.preventDefault();
+      const p=pointers.get(e.pointerId);if(!canUse())return;
+      if(!p){
+        if(hand==='track'&&e.pointerType==='mouse'&&mouseTrackingEnabled()&&heldKey()&&!hasHand('track')){
+          const pos=position(element,e);keyboardTracking=false;mouseTracking=game.setTracking(true,pos.x,pos.y);onUpdate();
+        }
+        return;
+      }
+      e.preventDefault();
       const pos=position(element,e);
       if(p.hand==='rod'){p.force=1-pos.y;sync();}else{game.setTracking(true,pos.x,pos.y);onUpdate();}
     };
+    element.onpointerleave=()=>{if(hand==='track'&&mouseTracking&&!hasHand('track')){mouseTracking=false;sync();}};
     element.onlostpointercapture=e=>release(e.pointerId);
     element.oncontextmenu=e=>e.preventDefault();
     // A button click cannot silently substitute for the held two-hand gesture.
@@ -52,7 +61,7 @@ export function twoHands(game,{canUse,onUpdate}){
     if(!canUse()||/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))return false;
     const key=e.code,control=['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown'].includes(key);
     if(control&&['fight','snag'].includes(game.phase)){
-      e.preventDefault();keys.add(key);if(key.startsWith('Key')){keyboardTracking=true;game.setTracking(true);}return true;
+      e.preventDefault();keys.add(key);if(key.startsWith('Key')){keyboardTracking=true;mouseTracking=false;game.setTracking(true);}return true;
     }
     if((key==='Space'||key==='Enter'&&e.target===rodElement)&&['waiting','nibble','bite','fight','snag'].includes(game.phase)){
       e.preventDefault();if(!e.repeat&&game.holdRod(force)){keys.add(key);sync();}return true;

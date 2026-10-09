@@ -10,6 +10,8 @@ let server,browser;
  for(const viewport of [{width:390,height:844},{width:1280,height:800}]){
   const context=await browser.newContext({viewport,hasTouch:viewport.width<500,isMobile:viewport.width<500,acceptDownloads:true});
   const page=await context.newPage(),errors=[],fishRequests=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.url().includes('/assets/fish/'))fishRequests.push(r.url());});
+  // Explicit no-upload fixture: the live repository now includes photographs.
+  await page.route('**/src/fish-assets.js',r=>r.fulfill({contentType:'text/javascript',body:'export const FISH_IMAGE_FILES={};'}));
   await page.goto('http://127.0.0.1:5209/#journal');await page.locator('.fish-row').first().waitFor();
   assert.equal(await page.locator('.fish-row').count(),56);assert.equal(await page.locator('[data-fish-image]').count(),0);assert.equal(fishRequests.length,0);
   const csv=await page.request.get('http://127.0.0.1:5209/data/fish-catalog-57.csv');assert.equal(csv.status(),200);assert.match(await csv.text(),/Gộp vào fish_07/);

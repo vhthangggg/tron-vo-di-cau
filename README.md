@@ -137,6 +137,12 @@ Các mô tả sinh học, tên phân loại và phân bố trong GDD đang chờ
 
 10 tranh cảnh được tạo cho dự án; SVG cá, đồ nghề và biểu tượng được viết cho giao diện này. Font DejaVu được subset để có dấu Việt, kèm [giấy phép font](assets/FONT_LICENSE.txt). Thông tin tài nguyên và phương pháp ở [ATTRIBUTIONS.md](ATTRIBUTIONS.md). Repo chưa cấp giấy phép mã nguồn mở cho mã và nội dung gốc.
 
+## Chơi trên PC web
+
+Giao diện PC tự bật từ 1024 px với chuột: thanh điều hướng trên đầu, cảnh câu rộng và bảng bộ câu/rọ/hướng dẫn bên phải. Space thả/giữ cần; rê chuột trong ô trái để bám cá khi giữ Space; ↑ ↓ chỉnh lực; W A S D là lựa chọn bám cá bằng bàn phím. R thu cần, B mở túi, K xem rọ, P/Esc tạm dừng, F toàn màn hình. Điện thoại giữ giao diện và điều khiển cảm ứng. Chi tiết và kiểm chứng ở [docs/DESKTOP_WEB.md](docs/DESKTOP_WEB.md).
+
+Ảnh cá đã được giới hạn trong khung trên sổ cá, thông tin loài, màn cá lên bờ và rọ; giữ nguyên tỷ lệ và nền trong suốt. Kiểm tra PC: `npm run test:browser:desktop`; ảnh thật: `npm run test:browser:fish-images`.
+
 ## Danh mục loài và ảnh 57 ID (09/10/2026)
 
 Có **56 loài câu được**, sử dụng 57 ID ảnh: `fish_55` gộp vào trắm cỏ `fish_07` theo yêu cầu người dùng. Toàn bộ ID và thành tích cũ được giữ. Tôm, cua đồng, ba ba, cua biển, ếch đồng và cá sửu biển đã có dữ liệu gameplay; cua biển và ếch có thể dùng hình dự phòng.
