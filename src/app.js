@@ -307,12 +307,11 @@ function showDialog(title,body,actions=[],{canClose=true,kind='standard'}={}){
 function closeDialog(){$('#dialog').close();}
 function showLineDetail(id){
  const line=ACCESSORIES.find(a=>a.id===id&&a.assetKey);if(!line)return;
- showDialog(line.name,`<img class="line-detail-image" src="./assets/items/lines/${line.assetKey}/detail.webp" alt="${esc(line.name)}" data-line-image="${line.assetKey}" data-image-stage="detail"><p>${esc(line.effect)}</p><p class="hint-note">Thông số dùng để cân bằng trong game. ${line.assetKey==='pe'?'PE #1.0 là cỡ dây, không phải đường kính mm.':''}</p>`,[{label:'Đóng',primary:true,action:closeDialog}],{kind:'line-detail'});
+ showDialog(line.name,`<img class="line-detail-image" src="./assets/items/lines/${({'sewing-thread':'chi-cua-vo','nylon':'cuoc-nylon','fluorocarbon':'cuoc-fluorocarbon','pe':'cuoc-pe','copolymer':'cuoc-copolymer','thien-to-huyen-vu':'thien-to-huyen-vu'})[line.assetKey]||line.assetKey}.webp" alt="${esc(line.name)}" data-line-image="${line.assetKey}" data-image-stage="detail"><p>${esc(line.effect)}</p><p class="hint-note">Thông số dùng để cân bằng trong game. ${line.assetKey==='pe'?'PE #1.0 là cỡ dây, không phải đường kính mm.':''}</p>`,[{label:'Đóng',primary:true,action:closeDialog}],{kind:'line-detail'});
 }
 document.addEventListener('error',event=>{
  const img=event.target;if(!(img instanceof HTMLImageElement)||!img.dataset.lineImage)return;
- if(img.dataset.imageStage==='icon'){img.dataset.imageStage='detail';img.src=`./assets/items/lines/${img.dataset.lineImage}/detail.webp`;}
- else{img.replaceWith(Object.assign(document.createElement('span'),{className:'line-image-fallback',textContent:'Cuộn cước'}));}
+ {img.replaceWith(Object.assign(document.createElement('span'),{className:'line-image-fallback',textContent:'Cuộn cước'}));}
 },true);
 function showPacking(){
   if(!game.atHome||game.busy){toast('Về nhà để soạn túi và chuyển đồ từ kho.');return;}
