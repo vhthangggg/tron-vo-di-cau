@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "policy": "one-image-per-item",
+  "basePath": "/assets/items",
+  "extension": "webp",
+  "categories": {
+    "lines": "lines",
+    "rods": "rods",
+    "hooks": "hooks",
+    "floats": "floats",
+    "baits": "baits",
+    "reels": "reels",
+    "bags": "bags",
+    "accessories": "accessories"
+  },
+  "lines": [
+    {
+      "name": "Sợi chỉ của vợ",
+      "file": "lines/chi-cua-vo.webp"
+    },
+    {
+      "name": "Nylon",
+      "file": "lines/cuoc-nylon.webp"
+    },
+    {
+      "name": "PE",
+      "file": "lines/cuoc-pe.webp"
+    },
+    {
+      "name": "Co-polymer",
+      "file": "lines/cuoc-copolymer.webp"
+    },
+    {
+      "name": "Fluorocarbon",
+      "file": "lines/cuoc-fluorocarbon.webp"
+    },
+    {
+      "name": "Thiên Tơ — Huyền Vũ",
+      "file": "lines/thien-to-huyen-vu.webp"
+    }
+  ]
+}
