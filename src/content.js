@@ -1850,7 +1850,7 @@ export const ACCESSORIES = [
   {
     "id": "fluoro",
     "slot": "line",
-    "name": "Dây fluorocarbon",
+    "name": "Dây fluorocarbon", "assetKey": "fluorocarbon", "breakingStrengthKg": 3.8, "stretchScore": 35, "abrasionScore": 90,
     "price": 16000,
     "diameter": 0.18,
     "power": 0.9,
@@ -1876,6 +1876,12 @@ export const ACCESSORIES = [
     "grace": 0.1,
     "effect": "Cước cân bằng, chịu mài mòn khá; +0,7 sức tải · +0,1 giây chịu lực đỏ.",
     "assetKey": "copolymer", "breakingStrengthKg": 4.2, "stretchScore": 55, "abrasionScore": 75
+  },
+  {
+    "id": "line_carbyne", "slot": "line", "name": "Thiên Tơ — Huyền Vũ 100m",
+    "price": 5000000, "diameter": 0.04, "power": 12, "grace": 2,
+    "effect": "Cước Carbyne giả tưởng siêu mảnh, độ bền vượt trội.",
+    "assetKey": "thien-to-huyen-vu", "breakingStrengthKg": 40, "stretchScore": 4, "abrasionScore": 99
   },
   {
     "id": "hook_basic",
