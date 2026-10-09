@@ -1,40 +1,42 @@
-# Fishing rod images
+# 32 fishing rod assets — authoritative upload naming
 
-Upload transparent WebP images here. This directory is a staging area; existing gameplay rods remain unchanged until the replacement catalog is verified.
+Source: user-provided `Du-lieu-can-cau-Shopee-32-asset.csv` and `Ho-so-can-cau-va-prompt-asset.md` (2026-10-09).
 
-Source: docs/data/items_75.json (30 legacy generic rods). These are NOT the requested 30 verified commercial models.
+Upload **one transparent WebP per rod** to this directory. This list supersedes the earlier provisional generic 30-rod mapping. Files are not yet uploaded and catalog wiring must be completed before game cards display them.
 
-| ID | Existing catalog name | Proposed image filename |
+| ID | Model | Filename |
 |---|---|---|
-| rod_01 | Cần tre ao | rod-01.webp |
-| rod_02 | Cần sợi thủy tinh 3.6 | rod-02.webp |
-| rod_03 | Cần Đài nhập môn 3.6 | rod-03.webp |
-| rod_04 | Cần Đài nhập môn 4.5 | rod-04.webp |
-| rod_05 | Cần Đài nhập môn 5.4 | rod-05.webp |
-| rod_06 | Cần Đài cân bằng 3.6 | rod-06.webp |
-| rod_07 | Cần Đài cân bằng 4.5 | rod-07.webp |
-| rod_08 | Cần Đài cân bằng 5.4 | rod-08.webp |
-| rod_09 | Cần Đài hồ sâu 6.3 | rod-09.webp |
-| rod_10 | Cần Đài hồ sâu 7.2 | rod-10.webp |
-| rod_11 | Cần Đài tốc độ 3.6 | rod-11.webp |
-| rod_12 | Cần Đài chép 4.5 | rod-12.webp |
-| rod_13 | Cần Đài chép 5.4 | rod-13.webp |
-| rod_14 | Cần Đài đại gia 6.3 | rod-14.webp |
-| rod_15 | Cần Đài mạ vàng | rod-15.webp |
-| rod_16 | Lure suối UL 1.8 | rod-16.webp |
-| rod_17 | Lure nhẹ L 2.1 | rod-17.webp |
-| rod_18 | Lure ao ML 2.1 | rod-18.webp |
-| rod_19 | Lure ao ML 2.4 | rod-19.webp |
-| rod_20 | Lure hồ M 2.4 | rod-20.webp |
-| rod_21 | Lure lóc MH 2.1 | rod-21.webp |
-| rod_22 | Lure lóc MH 2.4 | rod-22.webp |
-| rod_23 | Lure H 2.4 | rod-23.webp |
-| rod_24 | Lure thi đấu ML 2.4 | rod-24.webp |
-| rod_25 | Lure đại gia M 2.7 | rod-25.webp |
-| rod_26 | Lure casting MH 2.1 | rod-26.webp |
-| rod_27 | Lure casting H 2.4 | rod-27.webp |
-| rod_28 | Lăng xê M 2.7 | rod-28.webp |
-| rod_29 | Lục hồ 4.2 | rod-29.webp |
-| rod_30 | ISO số 1.5 - 5.3 | rod-30.webp |
+| bamboo | Cần tre ao | can-tre-ao.webp |
+| rod_01 | Handing Hoàng Vũ TH2 | rod_01.webp |
+| rod_02 | Daiwa SWEEPFIRE | rod_02.webp |
+| rod_03 | Handing Toàn Năng Chiến | rod_03.webp |
+| rod_04 | GW Phong Ảnh | rod_04.webp |
+| rod_05 | Handing / Ryuki Phong Kích | rod_05.webp |
+| rod_06 | GW Long Hoa | rod_06.webp |
+| rod_07 | Ryobi SAKURANO | rod_07.webp |
+| rod_08 | Handing Tốc Chiến Cực | rod_08.webp |
+| rod_09 | Handing Chân Đỉnh | rod_09.webp |
+| rod_10 | Handing / Ryuki Bất Phàm | rod_10.webp |
+| rod_11 | Handing Nhất Hào Hắc Khanh TH6 | rod_11.webp |
+| rod_12 | Handing Nhất Hào Hắc Khanh TH7 | rod_12.webp |
+| rod_13 | Daiwa LIBERTY CLUB ISO | rod_13.webp |
+| rod_14 | Handing Hỏa Điểu | rod_14.webp |
+| rod_15 | Handing / Ryuki Thiết Sa | rod_15.webp |
+| rod_16 | Major Craft BASSPARA MOBILE | rod_16.webp |
+| rod_17 | Major Craft FIRSTCAST ROCKFISH | rod_17.webp |
+| rod_18 | Daiwa CROSSFIRE Việt Nam | rod_18.webp |
+| rod_19 | GW CA-Lure | rod_19.webp |
+| rod_20 | Daiwa D-BLUE | rod_20.webp |
+| rod_21 | Daiwa 22 TATULA XT | rod_21.webp |
+| rod_22 | Major Craft BASSPARA | rod_22.webp |
+| rod_23 | Handing Chiến Vũ Lý | rod_23.webp |
+| rod_24 | Shimano 26 ZODIAS | rod_24.webp |
+| rod_25 | Shimano 22 EXPRIDE | rod_25.webp |
+| rod_26 | Shimano WORLD SHAULA BG | rod_26.webp |
+| rod_27 | VuaKong Huyền Vũ RS | rod_27.webp |
+| rod_28 | Daiwa PRIME SURF T | rod_28.webp |
+| rod_29 | Major Craft DAYS CASTING | rod_29.webp |
+| rod_30 | Shimano SCORPION | rod_30.webp |
+| rod_31 | Thiên Trượng — Huyền Vũ | rod_31.webp |
 
-Two additional slots are reserved for the legendary rod and another model, pending exact product identification. Do not upload final 32 images against this provisional mapping.
+Commercial products: rod_01–rod_30. Starter: bamboo. Fictional: rod_31. Do not show a Shopee purchase button for starter/fictional rods. Shopee affiliate URLs are distinct from source listing URLs and require the owner's links.
