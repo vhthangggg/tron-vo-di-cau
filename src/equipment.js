@@ -26,8 +26,9 @@ export const RIG_DEFAULTS = Object.freeze({leaderMm:.16, leaderLength:.25, hookS
 const LINE_SPECS = Object.freeze({
   line_basic:{diameterMm:.15,strengthKg:.5,material:'Chỉ may'},
   line18:{diameterMm:.20,strengthKg:3.5,material:'Nylon'},
-  fluoro:{diameterMm:.26,strengthKg:3.6,material:'Fluorocarbon'},
+  fluoro:{diameterMm:.20,strengthKg:3.8,material:'Fluorocarbon'},
   braid:{diameterMm:null,peSize:1,strengthKg:7.5,material:'PE'},
+  line_carbyne:{diameterMm:.04,strengthKg:40,material:'Carbyne giả tưởng'},
   line_copolymer:{diameterMm:.20,strengthKg:4.2,material:'Co-polymer'},
   leader12:{diameterMm:.12,strengthKg:.9,material:'Nylon'},
   leader16:{diameterMm:.16,strengthKg:1.6,material:'Nylon'}
