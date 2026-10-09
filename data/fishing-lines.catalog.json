@@ -17,9 +17,9 @@
       "priceTier": "free",
       "provisional": true,
       "assets": {
-        "icon": "/assets/items/lines/sewing-thread/icon.webp",
-        "detail": "/assets/items/lines/sewing-thread/detail.webp",
-        "fallbackIcon": "/assets/items/lines/sewing-thread/detail.webp"
+        "icon": "/assets/items/lines/chi-cua-vo.webp",
+        "detail": "/assets/items/lines/chi-cua-vo.webp",
+        "fallbackIcon": "/assets/items/lines/chi-cua-vo.webp"
       },
       "color": "ivory",
       "lineStructure": "spun twisted sewing thread",
@@ -43,9 +43,9 @@
       "handlingScore": 90,
       "provisional": true,
       "assets": {
-        "icon": "/assets/items/lines/nylon/icon.webp",
-        "detail": "/assets/items/lines/nylon/detail.webp",
-        "fallbackIcon": "/assets/items/lines/nylon/detail.webp"
+        "icon": "/assets/items/lines/cuoc-nylon.webp",
+        "detail": "/assets/items/lines/cuoc-nylon.webp",
+        "fallbackIcon": "/assets/items/lines/cuoc-nylon.webp"
       },
       "color": "clear-pearl",
       "lineStructure": "nylon monofilament",
@@ -70,9 +70,9 @@
       "handlingScore": 55,
       "provisional": true,
       "assets": {
-        "icon": "/assets/items/lines/pe/icon.webp",
-        "detail": "/assets/items/lines/pe/detail.webp",
-        "fallbackIcon": "/assets/items/lines/pe/detail.webp"
+        "icon": "/assets/items/lines/cuoc-pe.webp",
+        "detail": "/assets/items/lines/cuoc-pe.webp",
+        "fallbackIcon": "/assets/items/lines/cuoc-pe.webp"
       },
       "color": "green",
       "lineStructure": "braided polyethylene",
@@ -96,9 +96,9 @@
       "handlingScore": 80,
       "provisional": true,
       "assets": {
-        "icon": "/assets/items/lines/copolymer/icon.webp",
-        "detail": "/assets/items/lines/copolymer/detail.webp",
-        "fallbackIcon": "/assets/items/lines/copolymer/detail.webp"
+        "icon": "/assets/items/lines/cuoc-copolymer.webp",
+        "detail": "/assets/items/lines/cuoc-copolymer.webp",
+        "fallbackIcon": "/assets/items/lines/cuoc-copolymer.webp"
       },
       "color": "violet-lavender",
       "lineStructure": "copolymer monofilament",
@@ -108,6 +108,59 @@
       "statSource": "gameplay-provisional",
       "verifiedManufacturerSpec": false,
       "runtimeItemId": "line_copolymer"
+    },
+    {
+      "id": "fluorocarbon",
+      "name": "Cước Fluorocarbon 100m",
+      "material": "polyvinylidene-fluoride",
+      "lengthM": 100,
+      "diameterMm": 0.2,
+      "breakingStrengthKg": 3.8,
+      "stretchScore": 35,
+      "sensitivityScore": 80,
+      "abrasionScore": 90,
+      "handlingScore": 60,
+      "provisional": true,
+      "assets": {
+        "icon": "/assets/items/lines/cuoc-fluorocarbon.webp",
+        "detail": "/assets/items/lines/cuoc-fluorocarbon.webp",
+        "fallbackIcon": "/assets/items/lines/cuoc-fluorocarbon.webp"
+      },
+      "color": "clear-blue",
+      "lineStructure": "PVDF monofilament",
+      "role": "low visibility abrasion resistant",
+      "usage": "Leader and clear-water fishing",
+      "priceCoins": 55000,
+      "statSource": "gameplay-provisional",
+      "verifiedManufacturerSpec": false,
+      "runtimeItemId": "line_fluorocarbon"
+    },
+    {
+      "id": "thien-to-huyen-vu",
+      "name": "Thiên Tơ — Huyền Vũ 100m",
+      "material": "fictional-stabilized-carbyne-composite",
+      "lengthM": 100,
+      "diameterMm": 0.04,
+      "breakingStrengthKg": 40,
+      "stretchScore": 4,
+      "sensitivityScore": 99,
+      "abrasionScore": 99,
+      "handlingScore": 99,
+      "provisional": true,
+      "fictional": true,
+      "assets": {
+        "icon": "/assets/items/lines/thien-to-huyen-vu.webp",
+        "detail": "/assets/items/lines/thien-to-huyen-vu.webp",
+        "fallbackIcon": "/assets/items/lines/thien-to-huyen-vu.webp"
+      },
+      "color": "pearl-black",
+      "lineStructure": "fictional stabilized one-dimensional carbon core",
+      "role": "legendary endgame line",
+      "usage": "Futuristic ultra-thin premium fishing line; fictional properties",
+      "priceCoins": 5000000,
+      "statSource": "fictional-game-balance",
+      "verifiedManufacturerSpec": false,
+      "runtimeItemId": "line_carbyne"
     }
   ],
   "status": "runtime",
