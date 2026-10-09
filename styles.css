@@ -471,3 +471,25 @@ body[data-screen=fishing] #dialog{width:min(660px,calc(100dvw - 32px));max-width
 @media(min-width:701px){.camp-scene{min-height:880px}}
 
 .garden-intro,.garden-stock{color:var(--dim)}.garden-stock b{color:var(--surface)}.garden-stock>a{color:var(--gold-light)}
+
+/* Share each information row across neighbouring cards, including wrapped text.
+   Empty values keep their row; the last row always holds the detail button. */
+.fish-card{display:flex;flex-direction:column}
+.fish-card-copy{display:flex;flex-direction:column;flex:1;min-width:0}
+.fish-card-copy>*{min-width:0}
+.fish-card-copy .species-info{margin-top:auto}
+.fish-card-copy .fish-baits{margin:0;padding-bottom:10px;line-height:1.65}
+.fish-card-copy .species-card-size{margin-bottom:0}
+.fish-card-copy .species-card-strength{margin-top:0;padding-bottom:12px;font-size:12px;line-height:1.6}
+@supports(grid-template-rows:subgrid){
+ .fish-card{display:grid;grid-template-rows:subgrid;grid-row:span 12;row-gap:0}
+ .fish-card-copy{display:grid;grid-template-rows:subgrid;grid-row:span 10;row-gap:0}
+ .fish-card .fish-card-copy>*{margin:0}
+ .fish-card-copy>h2{padding-bottom:5px}
+ .fish-card-copy .species-scientific,.fish-card-copy .fish-encounters{padding-bottom:14px}
+ .fish-card-copy .fish-record{margin-bottom:0}
+ .fish-card-copy .fish-habitat{padding:9px 0 10px;border-bottom:1px solid var(--line)}
+ .fish-card-copy .fish-tips{margin:0;border:0;padding:9px 0 0}
+ .fish-card-copy .species-info{margin:0;align-self:end}
+}
+@media(max-width:700px){.fish-card-copy .species-card-strength{font-size:11px}}
