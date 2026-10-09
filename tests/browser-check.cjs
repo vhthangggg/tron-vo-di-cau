@@ -113,7 +113,7 @@ let server;
  const worms=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).baits.worm);
  assert.equal(await page.locator('#dig,[data-gather]').count(),0);assert(await page.locator('a[href="#garden"]').count());assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).baits.worm),worms);
  checks.push('Unbalanced setup remains playable, calibration reflects load, and instant bait is replaced by a garden link');
- await page.locator('[data-equip="dai"]').click();
+ await page.locator('.workbench-rod-catalog summary').click();await page.locator('[data-equip="dai"]').click();
  assert.equal(await page.locator('[data-shop-category="rod"]').getAttribute('aria-pressed'),'true');
  await page.locator('[data-shop-category="all"]').click();
  checks.push('Locked gear slot opens upgrade shop; rank HUD reflects the real catch');

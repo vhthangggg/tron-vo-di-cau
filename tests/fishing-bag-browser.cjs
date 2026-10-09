@@ -1,3 +1,4 @@
+const {view,part,item}=require('./workbench-actions.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {spawn}=require('node:child_process');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
@@ -9,7 +10,7 @@ const ready=page=>page.locator('.scene[data-loading=ready]').waitFor({state:'att
 const action=(page,label)=>page.locator('#dialog [data-dialog-action]').filter({hasText:label}).click();
 const screen=(page,id)=>page.locator('nav [data-screen="'+id+'"]').click();
 const wait=async page=>{await page.locator('#cast').click();await page.clock.runFor(40000);assert.equal(await page.locator('.scene').getAttribute('data-phase'),'waiting');assert(await page.locator('#quiet-fishing-note').isVisible());};
-const expand=async(page,index)=>{const d=page.locator('.storage-group').nth(index);if(!await d.evaluate(e=>e.open))await d.locator('summary').click();};
+
 let server,browser;
 (async()=>{
  server=spawn(process.execPath,['scripts/serve.mjs','--port','5196'],{cwd:root});await new Promise((ok,no)=>{server.stdout.once('data',ok);server.once('error',no);});
@@ -20,9 +21,9 @@ let server,browser;
   const context=await browser.newContext({viewport,hasTouch:viewport.width<1000,isMobile:viewport.width<1000,reducedMotion:viewport.width===375?'reduce':'no-preference'}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(r.status()+' '+r.url());});
   await page.addInitScript(p=>{if(!localStorage.getItem('tron-vo-di-cau.v01'))localStorage.setItem('tron-vo-di-cau.v01',JSON.stringify(p));},p);await page.route('**/src/engine.js',r=>r.fulfill({status:200,contentType:'application/javascript',body:quietSource}));
   await page.clock.install({time:new Date('2026-10-08T08:00:00Z')});await page.clock.pauseAt(new Date('2026-10-08T08:00:01Z'));await page.goto('http://127.0.0.1:5196/#prepare');assert.match(await page.locator('.bag-capacity').innerText(),/1\/1.*cần/s);
-  await page.locator('.bag-summary-actions a').click();await expand(page,1);await page.locator('[data-transfer-count="corn"]').fill('4');await page.locator('[data-transfer-bait="corn"][data-transfer-to="carried"]').click();assert.equal((await saved(page)).systems.inventory.stored.baits.corn,6);
+  await page.locator('.bag-summary-actions a').click();await item(page,'bait:corn');await page.locator('[data-transfer-count="corn"]').fill('4');await page.locator('[data-transfer-bait="corn"][data-transfer-to="carried"]').click();assert.equal((await saved(page)).systems.inventory.stored.baits.corn,6);
   await screen(page,'shop');await page.locator('[data-shop-category="bag"]').click();await page.locator('[data-buy="bag"][data-id="standard"]').click();assert.equal((await saved(page)).coins,186000);
-  await screen(page,'rig');await page.locator('#bag-select').selectOption('standard');await page.locator('[data-transfer-kind="rods"][data-transfer-id="dai"]').click();await expand(page,1);await page.locator('[data-transfer-count="corn"]').fill('4');await page.locator('[data-transfer-bait="corn"][data-transfer-to="carried"]').click();await expand(page,2);await page.locator('[data-transfer-kind="accessories"][data-transfer-id="leader12"]').click();
+  await screen(page,'rig');await view(page,'packing');await page.locator('#bag-select').selectOption('standard');await item(page,'rod:dai');await page.locator('[data-transfer-kind="rods"][data-transfer-id="dai"][data-transfer-to="carried"]').click();await item(page,'bait:corn');await page.locator('[data-transfer-count="corn"]').fill('4');await page.locator('[data-transfer-bait="corn"][data-transfer-to="carried"]').click();await item(page,'accessory:leader12');await page.locator('[data-transfer-kind="accessories"][data-transfer-id="leader12"][data-transfer-to="carried"]').click();
   let state=await saved(page);assert.deepEqual(state.systems.inventory.carried.rods,['bamboo','dai']);assert.equal(state.systems.inventory.carried.baits.corn,4);assert.equal(state.systems.inventory.stored.baits.corn,2);checks.push(label+': bag capacity, paid upgrade and exact home-to-bag quantities');
   await screen(page,'prepare');await page.locator('#start-fishing').click();await ready(page);await wait(page);state=await saved(page);assert.equal(state.baits.worm,18);const mount=state.systems.mountedBait.mountId;
   await page.locator('#quiet-more').click();await action(page,'Tiếp tục chờ');await page.clock.runFor(40000);assert.equal(await page.locator('.scene').getAttribute('data-phase'),'waiting');state=await saved(page);assert.equal(state.systems.mountedBait.mountId,mount);assert.equal(state.baits.worm,18);assert(!(await page.locator('#quiet-fishing-note').isVisible()));

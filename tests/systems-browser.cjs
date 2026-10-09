@@ -1,3 +1,4 @@
+const {view,part,item}=require('./workbench-actions.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {spawn}=require('node:child_process');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
@@ -38,10 +39,7 @@ async function navigate(page,target){
   assert.equal(await screen(page),target);
   await noOverflow(page,target);
 }
-async function openStorage(page,index){
-  const group=page.locator('.storage-group').nth(index);
-  if(!await group.evaluate(el=>el.open))await group.locator('summary').click();
-}
+async function openStorage(page){await view(page,'packing');}
 async function clickTwiceSameAction(locator){
   // A stale DOM handler models two queued taps with the same reserved action ID.
   const button=await locator.elementHandle();
@@ -110,31 +108,31 @@ async function comparisonRow(page,id,label,previous,next){
     assert.equal(state.systems.inventory.stored.baits.worm,12);
     await navigate(page,'rig');
     await openStorage(page,1);
-    await page.locator('[data-transfer-count="worm"]').fill('6');
+    await item(page,'bait:worm');await page.locator('[data-transfer-count="worm"]').fill('6');
     await page.locator('[data-transfer-bait="worm"][data-transfer-to="carried"]').click();
     state=await saved(page);assert.equal(state.systems.inventory.carried.baits.worm,24);assert.equal(state.baits.worm,30);
     await openStorage(page,1);
     const beforeCapacity=structuredClone(state.systems.inventory);
-    await page.locator('[data-transfer-count="corn"]').fill('6');
+    await item(page,'bait:corn');await page.locator('[data-transfer-count="corn"]').fill('6');
     await page.locator('[data-transfer-bait="corn"][data-transfer-to="carried"]').click();
     assert.deepEqual((await saved(page)).systems.inventory,beforeCapacity,'Cloth bag rejects a third bait type without losing stock');
-    await page.locator('[data-transfer-id="dai"][data-transfer-to="carried"]').click();
+    await item(page,'rod:dai');await page.locator('[data-transfer-id="dai"][data-transfer-to="carried"]').click();
     state=await saved(page);assert.deepEqual(state.systems.inventory.carried.rods,['dai']);assert(state.systems.inventory.stored.rods.includes('bamboo'));
-    await page.locator('[data-transfer-id="bamboo"][data-transfer-to="carried"]').click();
+    await item(page,'rod:bamboo');await page.locator('[data-transfer-id="bamboo"][data-transfer-to="carried"]').click();
     state=await saved(page);assert.equal(state.rod,'bamboo');assert.equal(state.rods.length,3);
 
     await navigate(page,'shop');await page.locator('[data-shop-category="bag"]').click();
     await page.locator('[data-buy="bag"][data-id="standard"]').click();expected-=14000;
     assert.equal((await saved(page)).coins,expected);
-    await navigate(page,'rig');await page.locator('#bag-select').selectOption('standard');
-    await page.locator('[data-transfer-id="dai"][data-transfer-to="carried"]').click();
+    await navigate(page,'rig');await view(page,'packing');await page.locator('#bag-select').selectOption('standard');
+    await item(page,'rod:dai');await page.locator('[data-transfer-id="dai"][data-transfer-to="carried"]').click();
     await page.locator('#bag-select').selectOption('cloth');
     assert.equal(await page.locator('#bag-select').inputValue(),'standard');
     assert.equal((await saved(page)).systems.inventory.carried.rods.length,2,'A smaller bag cannot discard a carried rod');
-    await openStorage(page,1);await page.locator('[data-transfer-count="corn"]').fill('6');
+    await openStorage(page,1);await item(page,'bait:corn');await page.locator('[data-transfer-count="corn"]').fill('6');
     await page.locator('[data-transfer-bait="corn"][data-transfer-to="carried"]').click();
-    await openStorage(page,2);await page.locator('[data-transfer-id="line18"][data-transfer-to="carried"]').click();
-    await page.locator('#gear-line').selectOption('line18');
+    await openStorage(page,2);await item(page,'accessory:line18');await page.locator('[data-transfer-id="line18"][data-transfer-to="carried"]').click();
+    await part(page,'line');await page.locator('#gear-line').selectOption('line18');
     state=await saved(page);assert.equal(state.equipment.line,'line18');assert.equal(state.systems.inventory.carried.baits.corn,6);
     checks.push(label+': purchases are stored and charged once; UI swaps/transfers conserve ownership, enforce cloth limits and reject an undersized bag');
 
@@ -150,15 +148,15 @@ async function comparisonRow(page,id,label,previous,next){
     assert.equal(model.balanced,true);
     assert.match(await page.locator('.calibration-readout strong').innerText(),new RegExp('^'+model.marks.toFixed(1).replace('.','\\.')+' vạch'));
     assert.notEqual(await page.locator('.calibration-readout strong').innerText(),heavyText,'Actual lead changes alter the simulated float');
-    await page.locator('#preset-name').fill('Cần tre sát bờ');await page.locator('#save-rig').click();
+    await view(page,'presets');await page.locator('#preset-name').fill('Cần tre sát bờ');await page.locator('#save-rig').click();
     const preset=(await saved(page)).systems.rigPresets[0];assert(preset);
-    await page.locator('#leader-mm').selectOption('0.12');await page.locator('#hook-size').selectOption('2');
-    await page.locator('[data-load-rig="'+preset.id+'"]').click();
+    await part(page,'leader');await page.locator('#leader-mm').selectOption('0.12');await part(page,'hook');await page.locator('#hook-size').selectOption('2');
+    await view(page,'presets');await page.locator('[data-load-rig="'+preset.id+'"]').click();
     assert.deepEqual((await saved(page)).rig,preset.rig);
     await noOverflow(page,label+' calibration');
     checks.push(label+': instant bait sources are gone; real float balance responds to lead and saved rigs restore technical setup');
 
-    await page.locator('a[href="#garden"]').click();
+    await part(page,'bait');await page.locator('a[href="#garden"]').click();
     await page.locator('#garden-worms-feed').click();await page.locator('#garden-worms-water').click();
     await page.clock.setSystemTime(new Date('2026-10-07T13:00:01Z'));await page.reload();
     await page.locator('#garden-worms-dig').click();
@@ -193,10 +191,10 @@ async function comparisonRow(page,id,label,previous,next){
     checks.push(label+': real MP4, reusable mounted portion through retrieval, natural successful strike spends exactly once, and production two-hand fight lands a keepable fish');
 
     await navigate(page,'rig');state=await saved(page);const tripId=state.systems.trip.id;
-    assert(await page.locator('#bag-select').isDisabled());
-    assert(await page.locator('[data-transfer-id="spinning"][data-transfer-to="carried"]').isDisabled());
-    await rejectStoredSelection(page,'#rod','spinning','bamboo');
-    await rejectStoredSelection(page,'#gear-line','fluoro','line18');
+    await view(page,'packing');assert(await page.locator('#bag-select').isDisabled());
+    await item(page,'rod:spinning');assert(await page.locator('[data-transfer-id="spinning"][data-transfer-to="carried"]').isDisabled());
+    await part(page,'rod');await rejectStoredSelection(page,'#rod','spinning','bamboo');
+    await part(page,'line');await rejectStoredSelection(page,'#gear-line','fluoro','line18');
     state=await saved(page);assert.equal(state.rod,'bamboo');assert.equal(state.equipment.line,'line18');
     assert.equal(state.keptFish[0].id,naturalCatch.id);assert.equal(state.systems.trip.id,tripId);
     await page.reload();state=await saved(page);assert.equal(state.keptFish[0].id,naturalCatch.id);assert.equal(state.systems.trip.id,tripId);

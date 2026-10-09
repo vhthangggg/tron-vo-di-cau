@@ -1,3 +1,4 @@
+import {inventoryEntry,inventorySearchText,rigParts} from './gear-workbench.js';
 import {renderGarden} from './garden-ui.js';
 import {inventoryFor,carriedBaitCount,BAG_TYPES} from './inventory.js';
 import {nextTransactionId} from './economy.js';
@@ -12,7 +13,7 @@ import {rodLoad,stepRodPose,rodGeometry,paintRod} from './fight-physics.js';
 import {MAPS,FISH,RODS,BAITS,ACCESSORIES,ACCESSORY_SLOTS,LESSONS,getMap,getRod,getBait,getFish,getBag,usesFloat,usesReel} from './content.js';
 import {FishingGame,floatMarks,rigError,clamp,FIGHT_ZONE,NO_BITE_HINT} from './engine.js';
 import {loadPlayer,savePlayer} from './save.js';
-import {icon,avatarArt,fishArt,NAV_ITEMS,rankFor,renderHome,renderPrepare,renderFishing,renderRig,renderLearn,journalRows as fishRows,renderJournal,renderShop,renderMapAtlas,renderRigCalibration,renderFieldKit,toolArt,speciesDetailHTML,specimenSummary} from './ui.js';
+import {icon,avatarArt,fishArt,NAV_ITEMS,rankFor,renderHome,renderPrepare,renderFishing,renderRig,renderLearn,journalRows as fishRows,renderJournal,renderShop,renderMapAtlas,renderRigCalibration,renderRigDiagram,renderRigPartFacts,renderInventoryInspector,renderFieldKit,toolArt,speciesDetailHTML,specimenSummary} from './ui.js';
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -22,6 +23,7 @@ let storage;try{storage=window.localStorage;}catch{storage={getItem(){throw Erro
 const loaded=loadPlayer(storage);let player=loaded.player,saveWarning=loaded.warning;
 let screen='home',canvas=null,context=null,sceneObserver=null,toastTimer,previousFocus,dialogPaused=false,lastPhase='idle',lastFrame=0,lastUpdate=0,sceneReady=true,sceneLoader=null,pinSignal=false;
 let rodPose={force:0,bend:0};
+const workbench={view:'setup',part:'rod',item:null,filter:'all',query:'',location:'all'};
 const audio=new GameAudio({getSettings:()=>player.settings});
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 const desktop=matchMedia('(min-width: 1024px) and (pointer: fine)');
@@ -70,7 +72,7 @@ function setSound(enabled){
 function homeHTML(){return renderHome(player,game,saveWarning);}
 function prepareHTML(){return renderPrepare(player,game,saveWarning);}
 function fishingHTML(){return renderFishing(player,game,saveWarning);}
-function rigHTML(){return renderRig(player,game);}
+function rigHTML(){return renderRig(player,game,workbench);}
 function learnHTML(){return renderLearn(player);}
 function journalRows(query='',map='all'){return fishRows(player,query,map);}
 function journalHTML(){return renderJournal(player);}
@@ -169,6 +171,7 @@ function bindWaterCast(){
   };
 }
 function bindScreen(){
+  $$('[data-workbench-link]').forEach(link=>link.onclick=e=>{e.preventDefault();workbench.view=link.dataset.workbenchLink;navigate('rig');});
   $$('[data-open-keepnet]').forEach(button=>button.onclick=()=>showKeepnet());
   $$('[data-open-packing]').forEach(button=>button.onclick=showPacking);
   $$('[data-open-maps]').forEach(button=>button.onclick=showMaps);
@@ -202,16 +205,8 @@ function bindScreen(){
     for(const [id,key] of [['cast','Space'],['strike','Space'],['retrieve','R'],['pause','P Escape']])$('#'+id).setAttribute('aria-keyshortcuts',key);
   }
   if(screen==='rig'){
-    $$('[data-transfer-kind]').forEach(button=>{const tx=nextTransactionId(player,'transfer');button.onclick=()=>{
-      const {transferKind:kind,transferId:id,transferTo:to}=button.dataset;
-      const inv=inventoryFor(player);
-      const ok=kind==='rods'&&to==='carried'&&inv.carried.rods.length>=BAG_TYPES[inv.bagId].rods?game.equip('rod',id):game.moveGear(kind,id,to,tx);
-      if(ok){render();toast(game.message);}else toast(game.message);
-    };});
-    $$('[data-transfer-bait]').forEach(button=>{const tx=nextTransactionId(player,'transfer-bait');button.onclick=()=>{
-      const id=button.dataset.transferBait,count=Number($(`[data-transfer-count="${id}"]`).value);
-      if(game.moveBait(id,count,button.dataset.transferTo,tx)){render();toast(game.message);}else toast(game.message);
-    };});
+    bindRigParts();bindInventoryWorkbench();
+    $$('[data-workbench-view]').forEach(button=>button.onclick=()=>setWorkbenchView(button.dataset.workbenchView));
     const bag=$('#bag-select');if(bag)bag.onchange=e=>{if(game.selectBag(e.target.value)){render();toast(game.message);}else{render();toast(game.message);}};
     $('#save-rig').onclick=()=>{if(game.saveRigPreset($('#preset-name').value)){render();toast(game.message);}else toast(game.message||'Nhập tên và kiểm tra bộ câu.');};
     $$('[data-load-rig]').forEach(button=>button.onclick=()=>{if(game.loadRigPreset(button.dataset.loadRig)){render();toast(game.message);}else toast(game.message);});
@@ -222,8 +217,8 @@ function bindScreen(){
       if(!player.rods.includes(id)){navigate('shop');filterShop('rod');return;}
       if(game.equip('rod',id))render();else toast('Xử lý lượt câu trước khi lắp đồ.');
     });
-    $('#rod').onchange=e=>{if(game.equip('rod',e.target.value)){render();$('#rod').focus();}else render();};
-    $('#bait').onchange=e=>{if(game.equip('bait',e.target.value)){updateRig();$('#bait-note').textContent=getBait(player.bait).note;}else render();};
+    $('#rod').onchange=e=>{if(game.equip('rod',e.target.value)){render();$('#rod').focus();}else{render();toast(game.message||'Chưa thể thay cần đang dùng.');}};
+    $('#bait').onchange=e=>{if(game.equip('bait',e.target.value)){render();$('#bait').focus();}else{render();toast(game.message);}};
     $$('[data-accessory]').forEach(select=>select.onchange=e=>{const id=e.target.id,slot=e.target.dataset.accessory;if(game.equip(slot,e.target.value)){render();$('#'+id).focus();}else{e.target.value=player.equipment[slot];toast(!game.atHome?'Chỉ đổi phụ kiện đã mang theo và hợp bộ cần.':'Phụ kiện chưa có hoặc không hợp bộ cần.');}});
     $('#depth').oninput=e=>{game.setRig('depth',+e.target.value);updateRig();};
     $('#lead').oninput=e=>{game.setRig('lead',+e.target.value);updateRig();};
@@ -236,11 +231,91 @@ function bindScreen(){
   if(screen==='journal'){const filter=()=>$('#fish-results').innerHTML=journalRows($('#fish-search').value,$('#fish-map').value);$('#fish-search').oninput=filter;$('#fish-map').onchange=filter;$('#export').onclick=exportSave;}
   if(screen==='shop'){$$('[data-shop-accessory]').forEach(button=>button.onclick=()=>filterShopAccessory(button.dataset.shopAccessory));$$('[data-line-detail]').forEach(button=>button.onclick=()=>showLineDetail(button.dataset.lineDetail));filterShop(shopCategory);$$('[data-shop-category]').forEach(button=>button.onclick=()=>filterShop(button.dataset.shopCategory));$$('[data-buy]').forEach(b=>{const tx=nextTransactionId(player,'shop');b.onclick=()=>{if(game.buy(b.dataset.buy,b.dataset.id,tx)){render();toast(game.message);}else toast('Chưa mua được. Kiểm tra số xu và bộ đã có.');};});}
 }
+function setWorkbenchView(view){
+ if(!['setup','packing','presets'].includes(view))return;
+ workbench.view=view;render();$(`.workbench-views [data-workbench-view="${view}"]`)?.focus();
+}
+function bindRigParts(){
+ const tune=$('#rig-tune');if(tune)tune.onclick=()=>$('#depth').focus();
+ $$('[data-rig-part]').forEach(button=>button.onclick=()=>{
+  const key=button.dataset.rigPart;if(!rigParts(player,game).some(p=>p.key===key))return;
+  workbench.part=key;workbench.view='setup';const id=button.id;render();
+  if($('.rig-studio')?.clientWidth<=740)$('#rig-part-heading').focus();else $('#'+id)?.focus({preventScroll:true});
+ });
+}
+function filterInventory(){
+ const query=inventorySearchText(workbench.query),grid=$('.inventory-grid');if(!grid)return;
+ let count=0;
+ grid.querySelectorAll('[data-inventory-item]').forEach(card=>{
+  const d=card.dataset,match=(workbench.filter==='all'||d.itemKind===workbench.filter)&&d.itemSearch.includes(query)&&(workbench.location==='all'||Number(d[workbench.location==='stored'?'itemStored':'itemCarried'])>0);
+  card.hidden=!match;if(match)count++;
+ });
+ $$('[data-inventory-filter]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.inventoryFilter===workbench.filter)));
+ $('#inventory-no-results').hidden=count>0;$('#inventory-results').textContent=count+' món';
+}
+function finishInventoryAction(ok){
+ if(ok){render();$('#inventory-item-heading')?.focus({preventScroll:true});}
+ toast(game.message||'Chưa thể chuyển món đồ này.');
+}
+function moveInventory(key,to,{count,tx}={}){
+ const entry=inventoryEntry(player,key);if(!entry||!['stored','carried'].includes(to)){toast('Vật phẩm hoặc ngăn đích không hợp lệ.');return;}
+ workbench.item=key;const {kind,id}=entry,inv=inventoryFor(player);
+ const ok=kind==='bait'?game.moveBait(id,count??entry[to==='carried'?'stored':'carried'],to,tx):kind==='rod'&&to==='carried'&&inv.carried.rods.length>=BAG_TYPES[inv.bagId].rods?game.equip('rod',id):game.moveGear(kind==='rod'?'rods':'accessories',id,to,tx);
+ finishInventoryAction(ok);
+}
+function bindInventoryInspector(){
+ const inspector=$('#inventory-inspector');if(!inspector)return;
+ inspector.querySelectorAll('[data-transfer-kind]').forEach(button=>{
+  const tx=nextTransactionId(player,'transfer');button.onclick=()=>moveInventory(`${button.dataset.transferKind==='rods'?'rod':'accessory'}:${button.dataset.transferId}`,button.dataset.transferTo,{tx});
+ });
+ inspector.querySelectorAll('[data-transfer-bait]').forEach(button=>{
+  const tx=nextTransactionId(player,'transfer-bait');button.onclick=()=>moveInventory('bait:'+button.dataset.transferBait,button.dataset.transferTo,{count:Number($('#inventory-quantity').value),tx});
+ });
+ inspector.querySelectorAll('[data-workbench-equip]').forEach(button=>button.onclick=()=>finishInventoryAction(game.equip(button.dataset.workbenchEquip,button.dataset.workbenchId)));
+}
+function selectInventory(key){
+ if(!inventoryEntry(player,key))return;
+ workbench.item=key;$('#inventory-inspector').innerHTML=renderInventoryInspector(player,game,key);
+ $$('[data-inventory-item]').forEach(button=>{const selected=button.dataset.inventoryItem===key;button.classList.toggle('selected',selected);button.setAttribute('aria-pressed',String(selected));});
+ bindInventoryInspector();
+}
+function bindInventoryWorkbench(){
+ const search=$('#inventory-search');if(!search)return;
+ filterInventory();bindInventoryInspector();
+ search.oninput=e=>{workbench.query=e.target.value;filterInventory();};
+ $('#inventory-location').onchange=e=>{workbench.location=e.target.value;filterInventory();};
+ $$('[data-inventory-filter]').forEach(button=>button.onclick=()=>{workbench.filter=button.dataset.inventoryFilter;filterInventory();});
+ $$('[data-inventory-add]').forEach(button=>button.onclick=()=>{
+  workbench.filter=button.dataset.inventoryAdd;workbench.location='stored';workbench.query='';search.value='';$('#inventory-location').value='stored';filterInventory();$('#inventory-stash-heading').focus();
+ });
+ $$('[data-inventory-item]').forEach(button=>{
+  button.onclick=()=>{selectInventory(button.dataset.inventoryItem);if($('.inventory-workbench')?.clientWidth<1100){$('#inventory-item-heading')?.focus();}};
+  button.ondblclick=()=>{if(!game.atHome||game.busy)return;const key=button.dataset.inventoryItem,entry=inventoryEntry(player,key);if(entry)moveInventory(key,entry.stored?'carried':'stored');};
+  button.ondragstart=e=>{
+   if(!game.atHome||game.busy||button.draggable!==true){e.preventDefault();return;}
+   e.dataTransfer.setData('application/x-tron-item',JSON.stringify({key:button.dataset.inventoryItem,from:button.dataset.itemFrom}));e.dataTransfer.effectAllowed='move';
+  };
+ });
+ $$('[data-inventory-drop]').forEach(zone=>{
+  zone.ondragover=e=>{if(!game.atHome||game.busy||!Array.from(e.dataTransfer.types).includes('application/x-tron-item'))return;e.preventDefault();e.dataTransfer.dropEffect='move';zone.classList.add('drag-over');};
+  zone.ondragleave=e=>{if(!zone.contains(e.relatedTarget))zone.classList.remove('drag-over');};
+  zone.ondrop=e=>{
+   e.preventDefault();zone.classList.remove('drag-over');if(!game.atHome||game.busy)return;
+   let data;try{data=JSON.parse(e.dataTransfer.getData('application/x-tron-item'));}catch{return;}
+   const entry=inventoryEntry(player,data?.key),to=zone.dataset.dropTo;
+   if(!entry||!['stored','carried'].includes(data.from)||data.from===to||zone.dataset.inventoryDrop!=='all'&&entry.kind!==zone.dataset.inventoryDrop){toast('Chọn đúng ngăn cho cần, mồi hoặc phụ kiện.');return;}
+   moveInventory(data.key,to,{tx:nextTransactionId(player,'inventory-drop')});
+  };
+ });
+}
 function updateRig(){
  const error=rigError(player),state=game.float;
  $('#depth-out').textContent=player.rig.depth.toFixed(1)+' m';$('#lead-out').textContent=player.rig.lead.toFixed(2)+' g';$('#lead').value=player.rig.lead;
  $('#rig-state').textContent=error||(usesFloat(game.rod)?`Phao ${state.marks.toFixed(1)} vạch · ${state.warning||'Bộ câu sẵn sàng'}`:'Bộ câu sẵn sàng · Không dùng phao');
  $('#rig-state').classList.toggle('error',!!error);const lab=$('.calibration-lab');if(lab)lab.outerHTML=renderRigCalibration(player,game);
+ const diagram=$('#rig-diagram-live');if(diagram){diagram.innerHTML=renderRigDiagram(player,game,{selected:workbench.part});bindRigParts();}
+ const facts=$('.rig-part-facts');if(facts)facts.outerHTML=renderRigPartFacts(player,game,workbench.part);
+ const parts=rigParts(player,game);$$('.rig-part-nav [data-rig-part]').forEach(b=>{const part=parts.find(p=>p.key===b.dataset.rigPart);b.querySelector('small').textContent=part.active?part.item.name:'Không dùng với bộ này';});
 }
 function clock(v){return `${String(Math.floor(v/60)).padStart(2,'0')}:${String(Math.floor(v%60)).padStart(2,'0')}`;}
 function updateFishing(){
