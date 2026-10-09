@@ -136,3 +136,14 @@ Các mô tả sinh học, tên phân loại và phân bố trong GDD đang chờ
 ## Tài nguyên
 
 10 tranh cảnh được tạo cho dự án; SVG cá, đồ nghề và biểu tượng được viết cho giao diện này. Font DejaVu được subset để có dấu Việt, kèm [giấy phép font](assets/FONT_LICENSE.txt). Thông tin tài nguyên và phương pháp ở [ATTRIBUTIONS.md](ATTRIBUTIONS.md). Repo chưa cấp giấy phép mã nguồn mở cho mã và nội dung gốc.
+
+## Danh mục loài và ảnh 57 ID (09/10/2026)
+
+Có **56 loài câu được**, sử dụng 57 ID ảnh: `fish_55` gộp vào trắm cỏ `fish_07` theo yêu cầu người dùng. Toàn bộ ID và thành tích cũ được giữ. Tôm, cua đồng, ba ba, cua biển, ếch đồng và cá sửu biển đã có dữ liệu gameplay; cua biển và ếch có thể dùng hình dự phòng.
+
+- [Bảng và phương pháp](docs/FISH_CATALOG_57.md), [CSV 57 ID](data/fish-catalog-57.csv), [JSON](data/fish-catalog-57.json). Kích cỡ trong game, chiều dài ước tính và điểm sức kéo là mô phỏng; số liệu tối đa công bố ghi riêng cùng đơn vị TL/SL/FL.
+- Hồ sơ runtime: `src/species-data.js`; thuật toán kích cỡ/sức kéo: `src/species-physics.js`. `npm run export:species` cập nhật bảng khi đổi thông số.
+- Sổ cá có tìm theo tên không dấu/tên khoa học/ID, xem nhận dạng, map, mồi, bốn dải cỡ và nguồn.
+- Upload một file cho mỗi loài vào `public/assets/fish/fish_01.webp`...`fish_57.webp` (PNG cũng được). Không cần icon/detail riêng. Trắm cỏ ưu tiên ảnh `fish_55`, rồi `fish_07`.
+- Build tự phát hiện ảnh đã upload, nên không phải sửa code/manifest bằng tay; thiếu ảnh không tạo hàng loạt yêu cầu 404.
+- Kiểm tra mới: `node --test tests/species-catalog.test.mjs`; UI: `npm run test:browser:species`.

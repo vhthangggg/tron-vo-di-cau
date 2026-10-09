@@ -1,4 +1,5 @@
 import {fishBehavior} from './water-world.js';
+import {specimenStrength,estimatedSpecimenLength} from './species-physics.js';
 
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export const ROD_SCALE=1.44;
@@ -9,7 +10,7 @@ export function fishFightProfile(fish,weight,power=1.2){
   const strength=fishBehavior(fish).strength,mass=Math.max(.015,weight),ratio=mass/Math.max(.1,power);
   const endurance=clamp(2.2+8.5*mass**.68*strength,2.2,75)*(1+Math.min(.55,ratio*.16));
   const burstScale=clamp(.2+.8*Math.min(1,mass/.9)*strength,.2,1.15);
-  return {endurance,burstScale,strength};
+  return {endurance,burstScale,strength,...specimenStrength(fish,weight),estimatedLengthCm:estimatedSpecimenLength(fish,weight)};
 }
 
 export function rodLoad({phase,force=0,tension=0,weight=.1,power=1.2,strength=1}){

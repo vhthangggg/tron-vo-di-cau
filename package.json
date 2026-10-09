@@ -18,7 +18,9 @@
     "test:browser:fights": "node tests/fight-browser.cjs",
     "test:browser:audio": "node tests/audio-browser.cjs",
     "test:browser:bag": "node tests/fishing-bag-browser.cjs",
-    "test:browser:lines": "node tests/lines-browser.cjs"
+    "test:browser:lines": "node tests/lines-browser.cjs",
+    "test:browser:species": "node tests/species-browser.cjs",
+    "export:species": "node scripts/export-fish-catalog.mjs"
   },
   "engines": {
     "node": ">=22"

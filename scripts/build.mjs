@@ -1,3 +1,4 @@
+import {fishAssetModule} from './fish-assets.mjs';
 import {cp,mkdir,rm,stat,readFile,writeFile} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
 import {resolve} from 'node:path';
@@ -6,9 +7,13 @@ const root=resolve(import.meta.dirname,'..');
 await rm(resolve(root,'dist'),{recursive:true,force:true});
 await mkdir(resolve(root,'dist'),{recursive:true});
 await cp(resolve(root,'public/assets/items'),resolve(root,'dist/assets/items'),{recursive:true});
+await cp(resolve(root,'public/assets/fish'),resolve(root,'dist/assets/fish'),{recursive:true});
 for(const file of ['index.html','styles.css','.nojekyll','assets','src'])await cp(resolve(root,file),resolve(root,'dist',file),{recursive:true});
 for(const file of ['assets/ao-lang.webp','assets/viet-sans.woff','assets/viet-bold.woff','assets/viet-serif.woff'])await stat(resolve(root,'dist',file));
 for(const map of MAPS)for(const asset of [map.background,map.thumbnail,...map.spots.flatMap(spot=>spot.video?[spot.video]:[])]){const file=await stat(resolve(root,'dist',asset));if(file.size<1000)throw Error(`Missing landscape for ${map.name}`);}
+await writeFile(resolve(root,'dist/src/fish-assets.js'),await fishAssetModule(root));
+await mkdir(resolve(root,'dist/data'),{recursive:true});
+for(const file of ['fish-catalog-57.csv','fish-catalog-57.json'])await cp(resolve(root,'data',file),resolve(root,'dist/data',file));
 const {version}=JSON.parse(await readFile(resolve(root,'package.json'),'utf8'));
 let commit=process.env.VERCEL_GIT_COMMIT_SHA||process.env.GITHUB_SHA||null;
 if(!commit)try{commit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();}catch{}

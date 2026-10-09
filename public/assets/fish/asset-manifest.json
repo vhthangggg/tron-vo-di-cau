@@ -1,0 +1,465 @@
+{
+  "assetCount": 57,
+  "catchableSpeciesCount": 56,
+  "aliases": {
+    "fish_55": "fish_07"
+  },
+  "entries": [
+    {
+      "assetId": "fish_01",
+      "fishId": "fish_01",
+      "name": "Cá chép",
+      "path": "public/assets/fish/fish_01.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_02",
+      "fishId": "fish_02",
+      "name": "Cá diếc",
+      "path": "public/assets/fish/fish_02.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_03",
+      "fishId": "fish_03",
+      "name": "Cá rô đồng",
+      "path": "public/assets/fish/fish_03.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_04",
+      "fishId": "fish_04",
+      "name": "Cá lóc",
+      "path": "public/assets/fish/fish_04.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_05",
+      "fishId": "fish_05",
+      "name": "Cá trê vàng",
+      "path": "public/assets/fish/fish_05.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_06",
+      "fishId": "fish_06",
+      "name": "Cá rô phi vằn",
+      "path": "public/assets/fish/fish_06.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_07",
+      "fishId": "fish_07",
+      "name": "Cá trắm cỏ",
+      "path": "public/assets/fish/fish_07.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_08",
+      "fishId": "fish_08",
+      "name": "Cá mè trắng",
+      "path": "public/assets/fish/fish_08.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_09",
+      "fishId": "fish_09",
+      "name": "Cá mè hoa",
+      "path": "public/assets/fish/fish_09.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_10",
+      "fishId": "fish_10",
+      "name": "Cá trôi (rohu)",
+      "path": "public/assets/fish/fish_10.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_11",
+      "fishId": "fish_11",
+      "name": "Cá sặc rằn",
+      "path": "public/assets/fish/fish_11.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_12",
+      "fishId": "fish_12",
+      "name": "Cá sặc bướm",
+      "path": "public/assets/fish/fish_12.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_13",
+      "fishId": "fish_13",
+      "name": "Cá trê đen",
+      "path": "public/assets/fish/fish_13.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_14",
+      "fishId": "fish_14",
+      "name": "Cá trê phi",
+      "path": "public/assets/fish/fish_14.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_15",
+      "fishId": "fish_15",
+      "name": "Cá tra",
+      "path": "public/assets/fish/fish_15.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_16",
+      "fishId": "fish_16",
+      "name": "Cá basa",
+      "path": "public/assets/fish/fish_16.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_17",
+      "fishId": "fish_17",
+      "name": "Cá lăng đuôi đỏ",
+      "path": "public/assets/fish/fish_17.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_18",
+      "fishId": "fish_18",
+      "name": "Cá bỗng",
+      "path": "public/assets/fish/fish_18.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_19",
+      "fishId": "fish_19",
+      "name": "Cá chiên",
+      "path": "public/assets/fish/fish_19.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_20",
+      "fishId": "fish_20",
+      "name": "Cá ngạnh",
+      "path": "public/assets/fish/fish_20.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_21",
+      "fishId": "fish_21",
+      "name": "Cá nheo",
+      "path": "public/assets/fish/fish_21.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_22",
+      "fishId": "fish_22",
+      "name": "Cá lóc bông",
+      "path": "public/assets/fish/fish_22.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_23",
+      "fishId": "fish_23",
+      "name": "Cá thát lát",
+      "path": "public/assets/fish/fish_23.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_24",
+      "fishId": "fish_24",
+      "name": "Cá thát lát cườm",
+      "path": "public/assets/fish/fish_24.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_25",
+      "fishId": "fish_25",
+      "name": "Cá bống tượng",
+      "path": "public/assets/fish/fish_25.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_26",
+      "fishId": "fish_26",
+      "name": "Cá bống kèo",
+      "path": "public/assets/fish/fish_26.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_27",
+      "fishId": "fish_27",
+      "name": "Cá chạch bùn",
+      "path": "public/assets/fish/fish_27.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_28",
+      "fishId": "fish_28",
+      "name": "Cá chạch lấu",
+      "path": "public/assets/fish/fish_28.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_29",
+      "fishId": "fish_29",
+      "name": "Cá chày mắt đỏ",
+      "path": "public/assets/fish/fish_29.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_30",
+      "fishId": "fish_30",
+      "name": "Cá mè vinh",
+      "path": "public/assets/fish/fish_30.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_31",
+      "fishId": "fish_31",
+      "name": "Cá trắm đen",
+      "path": "public/assets/fish/fish_31.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_32",
+      "fishId": "fish_32",
+      "name": "Cá trôi mrigal",
+      "path": "public/assets/fish/fish_32.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_33",
+      "fishId": "fish_33",
+      "name": "Cá mè trắng Việt Nam",
+      "path": "public/assets/fish/fish_33.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_34",
+      "fishId": "fish_34",
+      "name": "Cá bống cát",
+      "path": "public/assets/fish/fish_34.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_35",
+      "fishId": "fish_35",
+      "name": "Cá chẽm / vược",
+      "path": "public/assets/fish/fish_35.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_36",
+      "fishId": "fish_36",
+      "name": "Cá đối mục",
+      "path": "public/assets/fish/fish_36.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_37",
+      "fishId": "fish_37",
+      "name": "Cá mú chấm cam",
+      "path": "public/assets/fish/fish_37.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_38",
+      "fishId": "fish_38",
+      "name": "Cá mú mè",
+      "path": "public/assets/fish/fish_38.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_39",
+      "fishId": "fish_39",
+      "name": "Cá hồng bạc",
+      "path": "public/assets/fish/fish_39.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_40",
+      "fishId": "fish_40",
+      "name": "Cá hồng chấm đen",
+      "path": "public/assets/fish/fish_40.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_41",
+      "fishId": "fish_41",
+      "name": "Cá dìa chấm",
+      "path": "public/assets/fish/fish_41.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_42",
+      "fishId": "fish_42",
+      "name": "Cá dìa công",
+      "path": "public/assets/fish/fish_42.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_43",
+      "fishId": "fish_43",
+      "name": "Cá chim vây vàng",
+      "path": "public/assets/fish/fish_43.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_44",
+      "fishId": "fish_44",
+      "name": "Cá tráp vây vàng",
+      "path": "public/assets/fish/fish_44.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_45",
+      "fishId": "fish_45",
+      "name": "Cá tráp đen",
+      "path": "public/assets/fish/fish_45.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_46",
+      "fishId": "fish_46",
+      "name": "Cá nhồng vàng",
+      "path": "public/assets/fish/fish_46.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_47",
+      "fishId": "fish_47",
+      "name": "Cá cháo lớn",
+      "path": "public/assets/fish/fish_47.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_48",
+      "fishId": "fish_48",
+      "name": "Cá măng sữa",
+      "path": "public/assets/fish/fish_48.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_49",
+      "fishId": "fish_49",
+      "name": "Cá đù bạc",
+      "path": "public/assets/fish/fish_49.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_50",
+      "fishId": "fish_50",
+      "name": "Cá đục",
+      "path": "public/assets/fish/fish_50.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_51",
+      "fishId": "fish_51",
+      "name": "Cá sửu vàng",
+      "path": "public/assets/fish/fish_51.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_52",
+      "fishId": "fish_52",
+      "name": "Tôm càng xanh",
+      "path": "public/assets/fish/fish_52.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_53",
+      "fishId": "fish_53",
+      "name": "Cua đồng",
+      "path": "public/assets/fish/fish_53.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_54",
+      "fishId": "fish_54",
+      "name": "Ba ba",
+      "path": "public/assets/fish/fish_54.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_55",
+      "fishId": "fish_07",
+      "name": "Cá trắm cỏ",
+      "path": "public/assets/fish/fish_55.webp",
+      "aliasOf": "fish_07",
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_56",
+      "fishId": "fish_56",
+      "name": "Cua biển",
+      "path": "public/assets/fish/fish_56.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    },
+    {
+      "assetId": "fish_57",
+      "fishId": "fish_57",
+      "name": "Ếch đồng",
+      "path": "public/assets/fish/fish_57.webp",
+      "aliasOf": null,
+      "artStatus": "awaiting_upload"
+    }
+  ]
+}

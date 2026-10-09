@@ -1,3 +1,4 @@
+import {sampleSpecimenWeight} from './species-physics.js';
 import {pointInPolygon} from './scene-geometry.js';
 import {catchRemark,getContainer} from './catch-fate.js';
 import {BAG_TYPES,ensureInventory,syncInventory,inventoryFor,carriedBaitCount,validateDeparture,transferGear,transferBait,swapCarriedRod,bagInventory} from './inventory.js';
@@ -70,7 +71,7 @@ export class FishingGame{
       const def=species[j%species.length],spot=this.map.spots[s];
       const max=Math.min(def.max,s===0?Math.max(def.min+.15,.8):def.max);
       const depth=def.depth==='bottom'?spot.depth:def.depth==='surface'?.4:spot.depth*(def.depth==='cover'?.7:.55);
-      this.fish.push({id:`${this.player.map}-${s}-${j}-${this.castId}`,fishId:def.id,spot:s,x:clamp(spot.x+(this.random()-.5)*.2,.08,.92),y:clamp(spot.y+(this.random()-.5)*.09,.48,.82),weight:+(def.min+this.random()*(max-def.min)).toFixed(2),depth,temper:this.random(),angle:this.random()*Math.PI*2,suspicion:0,caught:false});
+      this.fish.push({id:`${this.player.map}-${s}-${j}-${this.castId}`,fishId:def.id,spot:s,x:clamp(spot.x+(this.random()-.5)*.2,.08,.92),y:clamp(spot.y+(this.random()-.5)*.09,.48,.82),weight:sampleSpecimenWeight(def,this.random,{cap:max}),depth,temper:this.random(),angle:this.random()*Math.PI*2,suspicion:0,caught:false});
     }
   }
   selectMap(id){if(this.busy||!this.player.maps.includes(id))return false;this.player.map=id;this.spot=0;this.resetCastTarget();this.phase='idle';this.target=null;this.hooked=null;this.pulling=false;this.retrieving=false;this.signal='quiet';this.player.rig.depth=this.spotData.depth;this.populate();if(!this.atHome){this.player.systems.trip.mapId=id;this.player.systems.trip.spotId=this.spotData.id||String(this.spot);}this.message=`Đã đến ${this.map.name}. Chọn mồi và điểm câu.`;this.changed();return true;}
@@ -212,11 +213,12 @@ export class FishingGame{
     score*=.55+(1-Math.abs(weightNorm-h.size))*.9;
     if(h.near>.65&&weightNorm>.55)score*=.38;
     if(h.far>.65&&weightNorm>.6)score*=1.65;
+    if(def.fight?.style==='crab'||def.group==='amphibian')score*=1+h.near*2+h.cover;
     return score;
   }
   eligible(f){const def=getFish(f.fishId);return !f.caught&&f.spot===this.spot&&f.suspicion<.6&&def.baits.includes(this.player.bait)&&def.tech.includes(this.rod.tech)&& (this.rod.tech==='lure'||Math.abs(f.depth-this.player.rig.depth)<.65);}
   pickTarget(candidates){
-    const weighted=candidates.map(f=>({f,w:this.habitatAffinity(getFish(f.fishId),f)/(Math.hypot(f.x-this.baitPoint.x,f.y-this.baitPoint.y)+.07)}));
+    const weighted=candidates.map(f=>({f,w:this.habitatAffinity(getFish(f.fishId),f)*(getFish(f.fishId).baitWeights?.[this.player.bait]||1)/(Math.hypot(f.x-this.baitPoint.x,f.y-this.baitPoint.y)+.07)}));
     const total=weighted.reduce((n,v)=>n+v.w,0);let roll=this.random()*total;
     for(const v of weighted){roll-=v.w;if(roll<=0)return v.f;}return weighted[0]?.f||null;
   }
@@ -286,7 +288,7 @@ export class FishingGame{
     pos.x=clamp(pos.x+this.velocity.x*dt,.09,.91);pos.y=clamp(pos.y+this.velocity.y*dt,.09,.91);
     this.updateAccuracy();
     this.offTarget=this.accuracy<.28?this.offTarget+dt:Math.max(0,this.offTarget-dt*2);
-    const stats=this.stats,ratio=this.hooked.weight/stats.power;
+    const stats=this.stats,ratio=this.hooked.weight*profile.strength/stats.power;
     const target=8+this.force*76+Math.min(23,ratio*14)+this.map.current*10*(1-stats.stability)+(this.surge?b.burst*profile.burstScale*(.55+this.force):0)+(this.tracking?(1-this.accuracy)*15:9);
     this.tension=clamp(this.tension+(target-this.tension)*Math.min(1,dt*3.5),0,100);
     this.overload=this.tension>FIGHT_ZONE.red?this.overload+dt:Math.max(0,this.overload-dt*2);

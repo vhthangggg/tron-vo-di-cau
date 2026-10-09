@@ -1,3 +1,4 @@
+import {NEW_CATCHABLE_SPECIES,enrichSpecies,FISH_ASSET_ALIASES} from './species-data.js';
 // Địa điểm, tập tính, khối lượng và giá là mô hình gameplay; không phải dữ liệu khảo sát.
 export const TECHNIQUES = {
   "don": {
@@ -352,7 +353,7 @@ export const MAPS = [
   }
 ];
 
-export const FISH = [
+const ORIGINAL_FISH = [
   {
     "id": "fish_01",
     "name": "Cá chép",
@@ -1486,6 +1487,9 @@ export const FISH = [
   }
 ];
 
+export const FISH = [...ORIGINAL_FISH,...NEW_CATCHABLE_SPECIES].map(enrichSpecies);
+export {FISH_ASSET_ALIASES};
+
 export const RODS = [
   {
     "id": "bamboo",
@@ -2067,7 +2071,7 @@ export const LESSONS = [
 export const getMap = id => MAPS.find(x=>x.id===id) || MAPS[0];
 export const getRod = id => RODS.find(x=>x.id===id) || RODS[0];
 export const getBait = id => BAITS.find(x=>x.id===id) || BAITS[0];
-export const getFish = id => FISH.find(x=>x.id===id);
+export const getFish = id => FISH.find(x=>x.id===(FISH_ASSET_ALIASES[id]||id));
 export const getAccessory = id => ACCESSORIES.find(x=>x.id===id);
 export const getBag = id => BAGS.find(x=>x.id===id) || BAGS[0];
 export const usesFloat = rod => !!TECHNIQUES[rod.tech]?.float;

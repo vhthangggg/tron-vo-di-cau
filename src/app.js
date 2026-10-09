@@ -11,12 +11,12 @@ import {rodLoad,rodGeometry,paintRod} from './fight-physics.js';
 import {MAPS,FISH,RODS,BAITS,ACCESSORIES,ACCESSORY_SLOTS,LESSONS,getMap,getRod,getBait,getFish,getBag,usesFloat,usesReel} from './content.js';
 import {FishingGame,floatMarks,rigError,clamp,FIGHT_ZONE,NO_BITE_HINT} from './engine.js';
 import {loadPlayer,savePlayer} from './save.js';
-import {icon,avatarArt,fishArt,NAV_ITEMS,rankFor,renderHome,renderPrepare,renderFishing,renderRig,renderLearn,journalRows as fishRows,renderJournal,renderShop,renderMapAtlas,renderRigCalibration,renderFieldKit,toolArt} from './ui.js';
+import {icon,avatarArt,fishArt,NAV_ITEMS,rankFor,renderHome,renderPrepare,renderFishing,renderRig,renderLearn,journalRows as fishRows,renderJournal,renderShop,renderMapAtlas,renderRigCalibration,renderFieldKit,toolArt,speciesDetailHTML,specimenSummary} from './ui.js';
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=v=>new Intl.NumberFormat('vi-VN').format(v);
-const kg=v=>new Intl.NumberFormat('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:2}).format(v);
+const kg=v=>new Intl.NumberFormat('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:3}).format(v);
 let storage;try{storage=window.localStorage;}catch{storage={getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}};}
 const loaded=loadPlayer(storage);let player=loaded.player,saveWarning=loaded.warning;
 let screen='home',canvas=null,context=null,sceneObserver=null,toastTimer,previousFocus,dialogPaused=false,lastPhase='idle',lastFrame=0,lastUpdate=0,sceneReady=true,sceneLoader=null,pinSignal=false;
@@ -310,9 +310,23 @@ function showLineDetail(id){
  showDialog(line.name,`<img class="line-detail-image" src="./assets/items/lines/${({'sewing-thread':'chi-cua-vo','nylon':'cuoc-nylon','fluorocarbon':'cuoc-fluorocarbon','pe':'cuoc-pe','copolymer':'cuoc-copolymer','thien-to-huyen-vu':'thien-to-huyen-vu'})[line.assetKey]||line.assetKey}.webp" alt="${esc(line.name)}" data-line-image="${line.assetKey}" data-image-stage="detail"><p>${esc(line.effect)}</p><p class="hint-note">Thông số dùng để cân bằng trong game. ${line.assetKey==='pe'?'PE #1.0 là cỡ dây, không phải đường kính mm.':''}</p>`,[{label:'Đóng',primary:true,action:closeDialog}],{kind:'line-detail'});
 }
 document.addEventListener('error',event=>{
- const img=event.target;if(!(img instanceof HTMLImageElement)||!img.dataset.lineImage)return;
+ const img=event.target;if(!(img instanceof HTMLImageElement))return;
+ if(img.dataset.fishImage){
+   const paths=JSON.parse(img.dataset.fishPaths),next=Number(img.dataset.fishIndex)+1;
+   if(next<paths.length){img.dataset.fishIndex=next;img.src=paths[next];}else{img.closest('.fish-visual')?.classList.remove('has-photo');img.remove();}
+   return;
+ }
+ if(!img.dataset.lineImage)return;
  {img.replaceWith(Object.assign(document.createElement('span'),{className:'line-image-fallback',textContent:'Cuộn cước'}));}
 },true);
+document.addEventListener('load',event=>{
+ if(event.target instanceof HTMLImageElement&&event.target.dataset.fishImage)event.target.closest('.fish-visual')?.classList.add('has-photo');
+},true);
+document.addEventListener('click',event=>{
+ const button=event.target.closest('[data-species-info]');if(!button||player.pending)return;
+ const fish=getFish(button.dataset.speciesInfo);if(!fish)return;
+ showDialog(fish.name,speciesDetailHTML(fish),[{label:'Đóng',primary:true,action:closeDialog}],{kind:'species'});
+});
 function showPacking(){
   if(!game.atHome||game.busy){toast('Về nhà để soạn túi và chuyển đồ từ kho.');return;}
   navigate('rig');
@@ -374,7 +388,7 @@ function showHelp(){showDialog('Một buổi câu, năm nhịp',`<ol class="help
 function containerSelect(id){return `<label class="container-label" for="${id}">Cất cá trong</label><select id="${id}">${CONTAINERS.map(c=>`<option value="${c.id}" ${c.id===player.container?'selected':''}>${c.name}</option>`).join('')}</select>`;}
 function showCatch(){
  const c=player.pending;if(!c)return;const def=getFish(c.fishId),id=c.id,container=getContainer(player.container),capacity=canStoreCatch(player.keptFish,c,player.container),usage=containerUsage(player.keptFish,player.container);
- showDialog('Cá lên bờ!',`<div class="catch-summary"><div class="fish-hero">${fishArt(def)}</div><div><p class="catch-banner">${icon('check')} Đã ghi vào sổ cá</p><h3>${def.name}</h3><p>${kg(c.weight)} kg <span>· ${getMap(c.mapId).name}</span></p></div></div><div class="catch-container">${containerSelect('catch-container')}<button class="small" id="catch-open-keepnet">${usage.count}/${usage.maxCount} con · ${kg(usage.kg)}/${usage.maxKg} kg ${icon('arrow')}</button></div><p class="catch-note">${capacity.ok?(game.atHome?'Cá được cất ở nhà. Sau đó mới chọn bán, nấu ăn hoặc nịnh vợ.':'Cá trong rọ sẽ mang về nhà khi chuyến câu kết thúc.'):'Rọ đã đầy hoặc cá vượt sức chứa. Đổi vật chứa, thả cá hoặc mang rọ về nhà. Cá vừa lên bờ vẫn được giữ nguyên.'}</p>${!capacity.ok?'<button class="small" id="catch-return-home">Về nhà để xử lý cá</button>':''}`,[
+ showDialog('Cá lên bờ!',`<div class="catch-summary"><div class="fish-hero">${fishArt(def)}</div><div><p class="catch-banner">${icon('check')} Đã ghi vào sổ cá</p><h3>${def.name}</h3><p>${kg(c.weight)} kg <span>· ${getMap(c.mapId).name}</span></p><p class="hint-note">${specimenSummary(def,c.weight)} · ước tính trong game</p></div></div><div class="catch-container">${containerSelect('catch-container')}<button class="small" id="catch-open-keepnet">${usage.count}/${usage.maxCount} con · ${kg(usage.kg)}/${usage.maxKg} kg ${icon('arrow')}</button></div><p class="catch-note">${capacity.ok?(game.atHome?'Cá được cất ở nhà. Sau đó mới chọn bán, nấu ăn hoặc nịnh vợ.':'Cá trong rọ sẽ mang về nhà khi chuyến câu kết thúc.'):'Rọ đã đầy hoặc cá vượt sức chứa. Đổi vật chứa, thả cá hoặc mang rọ về nhà. Cá vừa lên bờ vẫn được giữ nguyên.'}</p>${!capacity.ok?'<button class="small" id="catch-return-home">Về nhà để xử lý cá</button>':''}`,[
  {label:'Cho vào '+container.short,decision:'keep',symbol:'bag',copy:catchTeaser(c,'keep',player.container),disabled:!capacity.ok,primary:true,action:()=>finishCatch(id,'keep')},
  {label:'Thả cá',decision:'release',symbol:'leaf',copy:catchTeaser(c,'release'),action:()=>finishCatch(id,'release')}
  ],{kind:'catch'});

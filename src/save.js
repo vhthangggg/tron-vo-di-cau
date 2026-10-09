@@ -1,4 +1,4 @@
-import {FISH, MAPS, RODS, BAITS, ACCESSORIES, ACCESSORY_SLOTS, LESSONS, getRod, getBait, acceptsBait} from './content.js';
+import {FISH, MAPS, RODS, BAITS, ACCESSORIES, ACCESSORY_SLOTS, LESSONS, getRod, getBait, getFish, acceptsBait} from './content.js';
 import {CONTAINERS} from './catch-fate.js';
 import {BAG_TYPES, ensureInventory, carriedBaitCount, migratePacking} from './inventory.js';
 
@@ -33,6 +33,7 @@ function restoredRig(raw,fallback,{strict=false}={}){
  return rig;
 }
 function catchRecord(raw,status){
+ if(record(raw)&&raw.fishId==='fish_55')raw={...raw,fishId:getFish(raw.fishId).id};
  if(!record(raw)||typeof raw.id!=='string'||!/^catch-\d+$/.test(raw.id)||!validInt(Number(raw.id.slice(6)),1)||!FISH.some(f=>f.id===raw.fishId)||!Number.isFinite(raw.weight)||raw.weight<=0||raw.weight>50||!validInt(raw.value)||!MAPS.some(m=>m.id===raw.mapId))return null;
  const fish={id:raw.id,fishId:raw.fishId,weight:raw.weight,value:raw.value,mapId:raw.mapId,status};
  if(validInt(raw.caughtAt,0,1e15)||(typeof raw.caughtAt==='string'&&raw.caughtAt.length<=64&&Number.isFinite(Date.parse(raw.caughtAt))))fish.caughtAt=raw.caughtAt;
@@ -61,6 +62,11 @@ export function validateSave(raw){
  for(const fish of FISH){
   const c=raw.collection?.[fish.id];
   if(record(c)&&validInt(c.count,1)&&Number.isFinite(c.best)&&c.best>0&&c.best<=50)p.collection[fish.id]={count:c.count,best:c.best};
+ }
+ const alias=raw.collection?.fish_55;
+ if(record(alias)&&validInt(alias.count,1)&&Number.isFinite(alias.best)&&alias.best>0&&alias.best<=50){
+  const current=p.collection.fish_07||{count:0,best:0},count=current.count+alias.count;
+  if(validInt(count,1))p.collection.fish_07={count,best:Math.max(current.best,alias.best)};
  }
  p.lessons=[...new Set(array(raw.lessons).filter(id=>LESSONS.some(l=>l.id===id)))];
  if(CONTAINERS.some(c=>c.id===raw.container))p.container=raw.container;

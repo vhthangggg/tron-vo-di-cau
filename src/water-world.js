@@ -26,6 +26,7 @@ export function snagChance(map,spot,depth,tech,habitat){
   return Math.min(.65,waterWorld(map.id).risk[spot]*(tech==='lure'?.55:bottom?1:.12)*local);
 }
 export function fishBehavior(fish){
+  if(fish.fight)return {...fish.fight};
   const base={carp:[.13,17,2.9],catfish:[.12,23,3.5],long:[.22,22,2.2],round:[.17,15,2.6],knife:[.21,18,2.3],grouper:[.19,26,2.8]}[fish.shape] || [.16,20,2.8];
   const id=Number(fish.id.split('_')[1]),variation=.87+(id%7)*.045;
   // Game tuning: quick, darting movement does not imply a strong or enduring fish.

@@ -68,8 +68,8 @@ let server,browser;
  await nav('rig');await page.locator('#rod').selectOption('spinheavy');await page.locator('#bait').selectOption('crank');await nav('fishing');await page.locator('#cast').click();await page.clock.runFor(850);await page.locator('#retrieve').click();assert.equal((await saved()).baits.crank,1);assert.match(await page.locator('#retrieve').innerText(),/Dừng thu mồi/);
  await page.locator('#pause').click();await page.locator('[data-dialog-action="1"]').click();await page.locator('[data-dialog-action="1"]').click();await nav('rig');assert.equal((await saved()).bait,'crank');
  checks.push('Purchased crankbait can cast/retrieve with lure rod and is not consumed');
- await nav('journal');assert.equal(await page.locator('.fish-row').count(),50);await page.locator('#fish-map').selectOption('GHE');const expected= (await import('../src/content.js')).FISH.filter(f=>f.maps.includes('GHE')).length;assert.equal(await page.locator('.fish-row').count(),expected);assert.match(await page.locator('.fish-tips').first().innerText(),/Mồi:/);
- checks.push('50 species journal filters by map and gives bait, technique and depth hints');
+ await nav('journal');assert.equal(await page.locator('.fish-row').count(),56);await page.locator('#fish-map').selectOption('GHE');const expected= (await import('../src/content.js')).FISH.filter(f=>f.maps.includes('GHE')).length;assert.equal(await page.locator('.fish-row').count(),expected);assert.match(await page.locator('.fish-tips').first().innerText(),/Mồi:/);
+ checks.push('56 species journal filters by map and gives bait, technique and depth hints');
  for(const [width,height] of [[375,812],[844,390]]){
   await page.setViewportSize({width,height});await nav('prepare');await page.locator('[data-open-maps]').click();assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));await page.locator('[data-atlas-map="GHE"]').click();await nav('fishing');await page.locator('.scene-bg').evaluate(el=>el.decode());
   assert.equal(await page.locator('#map-heading').innerText(),'Ghềnh Biển');await page.screenshot({path:out+'/expanded-map-'+width+'.png'});
