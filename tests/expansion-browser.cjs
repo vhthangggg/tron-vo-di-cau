@@ -1,3 +1,4 @@
+const {view,part,item}=require('./workbench-actions.cjs');
 const {driveHands,waitForBite}=require('./browser-player.cjs');
 const fs=require('node:fs');
 const path=require('node:path');
@@ -38,7 +39,7 @@ let server,browser;
  let balance=(await saved()).coins;
  for(const id of ['braid','hook_pro','float_sea','reel6000','net_pro']){await page.locator('[data-shop-accessory="'+ACCESSORIES.find(a=>a.id===id).slot+'"]').click();await page.locator('[data-buy="accessory"][data-id="'+id+'"]').click();}
  await page.locator('[data-shop-accessory="line"]').click();assert.equal((await saved()).coins,balance-226000);assert(await page.locator('[data-buy="accessory"][data-id="braid"]').isDisabled());
- await nav('rig');await page.locator('#gear-line').selectOption('braid');await page.locator('#gear-hook').selectOption('hook_pro');await page.locator('#gear-float').selectOption('float_sea');await page.locator('#gear-net').selectOption('net_pro');
+ await nav('rig');await part(page,'line');await page.locator('#gear-line').selectOption('braid');await part(page,'hook');await page.locator('#gear-hook').selectOption('hook_pro');await part(page,'float');await page.locator('#gear-float').selectOption('float_sea');await part(page,'net');await page.locator('#gear-net').selectOption('net_pro');
  assert(await page.locator('#gear-reel').isDisabled());assert.match(await page.locator('#rig-state').innerText(),/Phao [2-7](?:\.\d)? vạch/);assert.equal((await saved()).equipment.line,'braid');
  await page.screenshot({path:out+'/accessories-desktop.png',fullPage:true});
  checks.push('Accessory shop deducts exact prices, rejects duplicates; owned gear equips, balances and blocks incompatible reel');
@@ -46,7 +47,7 @@ let server,browser;
  await page.locator('[data-shop-category="bait"]').click();for(const id of ['crank','spoon','popper','shrimp'])await page.locator('[data-buy="bait"][data-id="'+id+'"]').click();
  assert(await page.locator('[data-buy="bait"][data-id="crank"]').isDisabled());
  await page.locator('[data-shop-category="map"]').click();for(const m of MAPS.filter(m=>m.id!=='AO'))await page.locator('[data-buy="map"][data-id="'+m.id+'"]').click();assert.equal((await saved()).maps.length,10);
- await nav('rig');await page.locator('#rod').selectOption('bottom42');await page.locator('#gear-reel').selectOption('reel6000');
+ await nav('rig');await part(page,'rod');await page.locator('#rod').selectOption('bottom42');await part(page,'reel');await page.locator('#gear-reel').selectOption('reel6000');
  assert(await page.locator('#gear-float').isDisabled());assert(await page.locator('#lead').isDisabled());assert(await page.locator('#depth').isEnabled());assert.equal((await saved()).equipment.reel,'reel6000');
  await page.reload();assert.equal((await saved()).rod,'bottom42');assert.equal((await saved()).equipment.reel,'reel6000');
  checks.push('New rods, reusable lures and all maps purchase; bottom rod activates reel, hides float settings; loadout survives reload');
@@ -65,15 +66,15 @@ let server,browser;
  await driveHands(page);
  assert(await page.locator('#dialog').evaluate(el=>el.open));const caught=await saved();assert.equal(caught.catches,8);assert(caught.pending);await page.locator('[data-catch-decision=release]').click();assert.equal((await saved()).released,2);
  checks.push('Bottom fishing with upgraded loadout: tip signal → strike → controlled fight → net landing → release; map controls remain in preparation');
- await nav('rig');await page.locator('#rod').selectOption('spinheavy');await page.locator('#bait').selectOption('crank');await nav('fishing');await page.locator('#cast').click();await page.clock.runFor(850);await page.locator('#retrieve').click();assert.equal((await saved()).baits.crank,1);assert.match(await page.locator('#retrieve').innerText(),/Dừng thu mồi/);
+ await nav('rig');await part(page,'rod');await page.locator('#rod').selectOption('spinheavy');await part(page,'bait');await page.locator('#bait').selectOption('crank');await nav('fishing');await page.locator('#cast').click();await page.clock.runFor(850);await page.locator('#retrieve').click();assert.equal((await saved()).baits.crank,1);assert.match(await page.locator('#retrieve').innerText(),/Dừng thu mồi/);
  await page.locator('#pause').click();await page.locator('[data-dialog-action="1"]').click();await page.locator('[data-dialog-action="1"]').click();await nav('rig');assert.equal((await saved()).bait,'crank');
  checks.push('Purchased crankbait can cast/retrieve with lure rod and is not consumed');
- await nav('journal');assert.equal(await page.locator('.fish-row').count(),56);await page.locator('#fish-map').selectOption('GHE');const expected= (await import('../src/content.js')).FISH.filter(f=>f.maps.includes('GHE')).length;assert.equal(await page.locator('.fish-row').count(),expected);assert.match(await page.locator('.fish-tips').first().innerText(),/Mồi:/);
+ await nav('journal');assert.equal(await page.locator('.fish-row').count(),56);await page.locator('#fish-map').selectOption('GHE');const expected= (await import('../src/content.js')).FISH.filter(f=>f.maps.includes('GHE')).length;assert.equal(await page.locator('.fish-row').count(),expected);assert.match(await page.locator('.fish-baits').first().innerText(),/Mồi:/);
  checks.push('56 species journal filters by map and gives bait, technique and depth hints');
  for(const [width,height] of [[375,812],[844,390]]){
   await page.setViewportSize({width,height});await nav('prepare');await page.locator('[data-open-maps]').click();assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));await page.locator('[data-atlas-map="GHE"]').click();await nav('fishing');await page.locator('.scene-bg').evaluate(el=>el.decode());
   assert.equal(await page.locator('#map-heading').innerText(),'Ghềnh Biển');await page.screenshot({path:out+'/expanded-map-'+width+'.png'});
-  await nav('rig');assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));await page.locator('#gear-line').selectOption('line_basic');assert.equal((await saved()).equipment.line,'line_basic');
+  await nav('rig');assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1));await part(page,'line');await page.locator('#gear-line').selectOption('line_basic');assert.equal((await saved()).equipment.line,'line_basic');
  }
  checks.push('Map atlas and accessory controls work at 375×812 and 844×390');
  assert.deepEqual(errors,[]);assert.deepEqual(requests,[]);

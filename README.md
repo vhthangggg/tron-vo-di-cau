@@ -1,6 +1,6 @@
 # Trốn Vợ Đi Câu
 
-Một buổi câu bên bờ nước Việt Nam. Bản web **v0.4** chơi trực tiếp trên trình duyệt: chuẩn bị túi đồ, lắp mồi, đọc phao, dẫn cá rồi thả hoặc mang thành quả về nhà.
+Một buổi câu bên bờ nước Việt Nam. Bản web **v0.5** chơi trực tiếp trên trình duyệt: chuẩn bị túi đồ, lắp mồi, đọc phao, dẫn cá rồi thả hoặc mang thành quả về nhà.
 
 ![Trang nhà trong bản web v0.1](docs/preview.webp)
 
@@ -100,6 +100,7 @@ npm run test:browser:garden
 npm run test:browser:audio
 npm run test:browser:fights
 npm run test:browser:bag
+npm run test:browser:workbench
 npm run test:browser:lines
 ```
 
@@ -167,3 +168,11 @@ Có **56 loài câu được**, sử dụng 57 ID ảnh: `fish_55` gộp vào tr
 - Upload một file cho mỗi loài vào `public/assets/fish/fish_01.webp`...`fish_57.webp` (PNG cũng được). Không cần icon/detail riêng. Trắm cỏ ưu tiên ảnh `fish_55`, rồi `fish_07`.
 - Build tự phát hiện ảnh đã upload, nên không phải sửa code/manifest bằng tay; thiếu ảnh không tạo hàng loạt yêu cầu 404.
 - Kiểm tra mới: `node --test tests/species-catalog.test.mjs`; UI: `npm run test:browser:species`.
+
+## Đồ nghề v0.5
+
+Đồ nghề tách thành **Lắp bộ câu**, **Túi & kho** và **Bộ đã lưu**. Sơ đồ đánh số cho phép chọn cần, dây trục, máy, phao, chì, thẻo, lưỡi, mồi hoặc vợt. Độ sâu mồi, chì, chiều dài thẻo và số vạch phao lấy từ mô phỏng hiện tại; bộ lure và câu đáy không hiển thị phao đang hoạt động. Sơ đồ dùng một lưỡi theo hệ thống câu hiện có, không bổ sung lưỡi đôi hoặc các chỉ số giả từ bản mẫu.
+
+Túi hiển thị từng ngăn theo đúng loại túi đang sở hữu. Kho có tìm kiếm không dấu, lọc loại và vị trí; chọn món để xem thông số, chuyển số lượng mồi hoặc lắp đồ. PC có kéo thả: chuyển toàn bộ số phần ở nguồn sang ngăn phù hợp. Nút chuyển đồ hỗ trợ điện thoại và bàn phím. Túi đầy, đích sai, đồ đang lắp và chuyển đồ khi ở bờ đều bị chặn; sở hữu vẫn dùng cùng bản lưu, không đổi schema hay cấp thêm vật phẩm.
+
+Kiểm tra: `npm run test:browser:workbench` cùng kiểm thử kho/túi và các luồng chơi hiện có.
