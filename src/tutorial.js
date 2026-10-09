@@ -1,8 +1,8 @@
 export const STARTER_STEPS = Object.freeze([
   {id: 'prepare', title: 'Chuẩn bị đi câu', event: 'DEPARTURE_VALIDATED', reward: 120,
     hint: 'Mang cần, mồi và những bộ phận cần thiết trong túi; kiểm tra trước khi rời nhà.'},
-  {id: 'bait', title: 'Kiếm mồi miễn phí', event: 'BAIT_COLLECTED', reward: 160,
-    hint: 'Đào giun ở đất ẩm hoặc chuẩn bị mồi bột, ngô khi ở nhà.'},
+  {id: 'bait', title: 'Thu mồi từ vườn', event: 'BAIT_COLLECTED', reward: 160,
+    hint: 'Chăm Ruộng vườn tại nhà, rồi đào giun hoặc thu hoạch ngô; mồi bột mua ở Chợ bến.'},
   {id: 'rig', title: 'Lắp bộ câu', event: 'RIG_VALIDATED', reward: 200,
     hint: 'Lắp các bộ phận tương thích với kỹ thuật đang dùng và kiểm tra bộ câu.'},
   {id: 'float', title: 'Cân bộ câu', event: 'FLOAT_CALIBRATED', reward: 240,

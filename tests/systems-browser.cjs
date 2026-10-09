@@ -66,7 +66,7 @@ async function comparisonRow(page,id,label,previous,next){
   server=spawn(process.execPath,['scripts/serve.mjs','--port','5197'],{cwd:root});
   await new Promise((resolve,reject)=>{server.stdout.once('data',resolve);server.once('error',reject);server.once('exit',code=>{if(code)reject(Error('Server exit '+code));});});
   browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_EXECUTABLE?{executablePath:process.env.CHROMIUM_EXECUTABLE}:{}),...(process.env.CHROMIUM_ARGS?{args:JSON.parse(process.env.CHROMIUM_ARGS)}:{})});
-  const {newPlayer}=await import('../src/save.js');
+  const {newPlayer,SCHEMA_VERSION}=await import('../src/save.js');
   const {RODS,ACCESSORIES,BAITS,MAPS}=await import('../src/content.js');
   const {floatState}=await import('../src/rig-physics.js');
   const {STARTER_STEPS}=await import('../src/tutorial.js');
@@ -76,7 +76,7 @@ async function comparisonRow(page,id,label,previous,next){
     const legacy={version:1,coins:200000,baits:{worm:18,dough:6,corn:6},rods:['bamboo'],maps:['AO'],rod:'bamboo',bait:'worm',map:'AO',rig:{depth:1.8,lead:1.08},catches:7,released:1,sold:6,casts:10,collection:{fish_04:{count:7,best:1.7}},lessons:['signal'],pending:null,serial:7,settings:{assist:true,sound:false,deadline:0}};
     const {page,context}=await makeScenario(viewport,legacy,label);
     let state=await saved(page);
-    assert.equal(state.schemaVersion,2);assert.equal(state.coins,legacy.coins);
+    assert.equal(state.schemaVersion,SCHEMA_VERSION);assert.equal(state.coins,legacy.coins);
     assert.deepEqual(state.collection,legacy.collection);assert.deepEqual(state.lessons,legacy.lessons);
     assert.equal(state.baits.corn,6);assert.equal(state.systems.inventory.stored.baits.corn,6);
     assert.deepEqual(state.systems.inventory.carried.rods,['bamboo']);
@@ -139,9 +139,9 @@ async function comparisonRow(page,id,label,previous,next){
     checks.push(label+': purchases are stored and charged once; UI swaps/transfers conserve ownership, enforce cloth limits and reject an undersized bag');
 
     const balance=state.coins,stock={...state.baits};
-    await page.locator('#dig').click();await page.locator('[data-gather="home"]').click();await page.locator('[data-gather="garden"]').click();
+    assert.equal(await page.locator('#dig,[data-gather]').count(),0);assert(await page.locator('a[href="#garden"]').count());
     state=await saved(page);assert.equal(state.coins,balance);
-    assert.equal(state.baits.worm,stock.worm+6);assert.equal(state.baits.dough,stock.dough+4);assert.equal(state.baits.corn,stock.corn+4);
+    assert.deepEqual(state.baits,stock);
     await page.locator('#lead').fill('3.5');
     const heavyText=await page.locator('.calibration-readout strong').innerText();
     assert.equal((await saved(page)).rig.lead,3.5);
@@ -156,8 +156,14 @@ async function comparisonRow(page,id,label,previous,next){
     await page.locator('[data-load-rig="'+preset.id+'"]').click();
     assert.deepEqual((await saved(page)).rig,preset.rig);
     await noOverflow(page,label+' calibration');
-    checks.push(label+': all three free bait sources work without spending; real float balance responds to lead and saved rigs restore technical setup');
+    checks.push(label+': instant bait sources are gone; real float balance responds to lead and saved rigs restore technical setup');
 
+    await page.locator('a[href="#garden"]').click();
+    await page.locator('#garden-worms-feed').click();await page.locator('#garden-worms-water').click();
+    await page.clock.setSystemTime(new Date('2026-10-07T13:00:01Z'));await page.reload();
+    await page.locator('#garden-worms-dig').click();
+    assert.equal((await saved(page)).baits.worm,stock.worm+3);
+    assert.equal((await saved(page)).coins,balance);
     await navigate(page,'learn');assert.equal(await page.locator('.tutorial-step').count(),10);
     const preReward=(await saved(page)).coins;
     await clickTwiceSameAction(page.locator('[data-tutorial-claim="bait"]'));
@@ -198,8 +204,8 @@ async function comparisonRow(page,id,label,previous,next){
     assert(await page.locator('[data-buy="bait"][data-id="worm"]').isDisabled());
     assert.match(await page.locator('[data-buy="bait"][data-id="worm"]').innerText(),/Về nhà để mua/);
     assert(await page.locator('[data-buy]').evaluateAll(buttons=>buttons.every(button=>button.disabled)),'The shop cannot buy equipment while at the bank');
-    await comparisonRow(page,'fluoro','Đường kính','0,20 mm','0,26 mm');
-    await comparisonRow(page,'fluoro','Tải dây (game)','3,5 kg','3,6 kg');
+    await comparisonRow(page,'fluoro','Đường kính','0,20 mm','0,20 mm');
+    await comparisonRow(page,'fluoro','Tải dây (game)','3,5 kg','3,8 kg');
     await navigate(page,'learn');const prepReward=(await saved(page)).coins;
     await page.locator('[data-tutorial-claim="prepare"]').click();assert.equal((await saved(page)).coins,prepReward+120);
     await navigate(page,'fishing');await navigate(page,'home');state=await saved(page);

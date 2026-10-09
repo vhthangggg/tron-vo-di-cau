@@ -111,8 +111,8 @@ let server;
  await nav('prepare');assert(await page.locator('#start-fishing').isEnabled());await nav('rig');
  await page.locator('#balance').click();const calibrated=Number((await page.locator('#rig-state').innerText()).match(/Phao ([\d.]+) vạch/)[1]);assert(Math.abs(calibrated-4)<=.2,'Quantized lead should balance near four marks');
  const worms=await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).baits.worm);
- await page.locator('#dig').click();assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).baits.worm),worms+6);
- checks.push('Unbalanced setup remains playable, calibration reflects load, and free bait recovers');
+ assert.equal(await page.locator('#dig,[data-gather]').count(),0);assert(await page.locator('a[href="#garden"]').count());assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('tron-vo-di-cau.v01')).baits.worm),worms);
+ checks.push('Unbalanced setup remains playable, calibration reflects load, and instant bait is replaced by a garden link');
  await page.locator('[data-equip="dai"]').click();
  assert.equal(await page.locator('[data-shop-category="rod"]').getAttribute('aria-pressed'),'true');
  await page.locator('[data-shop-category="all"]').click();
@@ -123,9 +123,9 @@ let server;
  await page.locator('#settings').click();for(let i=0;i<12;i++){await page.keyboard.press('Tab');assert(await page.evaluate(()=>document.querySelector('#dialog').contains(document.activeElement)));}
  await page.keyboard.press('Escape');assert(await page.locator('#settings').evaluate(el=>el===document.activeElement));
  checks.push('Purchases persisted; modal traps and restores focus');
- await nav('journal');await page.locator('#fish-search').fill('lóc');assert.equal(await page.locator('.fish-row').count(),2);
+ await nav('journal');await page.locator('#fish-search').fill('lóc');assert.equal(await page.locator('.fish-row').count(),3);
  await page.locator('#fish-map').selectOption('AO');assert.equal(await page.locator('.fish-row').count(),1);
- await page.locator('#fish-map').selectOption('all');await page.locator('#fish-search').fill('');assert.equal(await page.locator('.fish-row').count(),50);
+ await page.locator('#fish-map').selectOption('all');await page.locator('#fish-search').fill('');assert.equal(await page.locator('.fish-row').count(),56);
  checks.push('Journal filter');
  for(const [width,height,label] of [[375,812,'mobile'],[844,390,'landscape'],[640,360,'small-landscape'],[768,1024,'tablet']]){
    await page.setViewportSize({width,height});

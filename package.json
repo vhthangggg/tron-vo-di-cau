@@ -1,6 +1,6 @@
 {
   "name": "tron-vo-di-cau",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Game câu cá Việt Nam, hai tay và môi trường động",
@@ -23,7 +23,8 @@
     "test:browser:species": "node tests/species-browser.cjs",
     "test:browser:desktop": "node tests/desktop-browser.cjs",
     "test:browser:fish-images": "node tests/fish-images-browser.cjs",
-    "export:species": "node scripts/export-fish-catalog.mjs"
+    "export:species": "node scripts/export-fish-catalog.mjs",
+    "test:browser:garden": "node tests/garden-browser.cjs"
   },
   "engines": {
     "node": ">=22"

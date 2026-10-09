@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {KEEP_CAPACITY, containerUsage, canStoreCatch, keepCatch, disposeCatch, shipHome} from '../src/catch-inventory.js';
-import {GATHER_SOURCES, mountBait, resolveBait, digWorms, gatherBait} from '../src/bait-system.js';
+import {mountBait, resolveBait} from '../src/bait-system.js';
 import {STARTER_STEPS, advanceTutorial, claimTutorial} from '../src/tutorial.js';
 
 const fish = (id, weight = 1) => ({id, weight, fishId: 'ro', value: 3000, mapId: 'AO'});
@@ -135,25 +135,6 @@ test('invalid bait actions and a consumed mount cannot subtract stock', () => {
   assert.equal(resolveBait(stock, mounted, 'wait'), null);
   assert.equal(resolveBait(stock, {...mounted, consumed: true}, 'lost').stock.worm, 2);
   assert.equal(resolveBait({worm: 0}, mounted, 'lost'), null);
-});
-
-test('free bait limits never destroy purchased portions and zero bait always recovers', () => {
-  assert.equal(digWorms({worm: 59}).worm, 60);
-  assert.equal(digWorms({worm: 83}).worm, 83);
-  assert.equal(digWorms({worm: 0}).worm, 6);
-  assert.equal(digWorms({worm: -1}), null);
-  for (const source of Object.values(GATHER_SOURCES)) {
-    const empty = Object.freeze({[source.baitId]: 0});
-    const recovered = gatherBait(empty, source.id);
-    assert.equal(recovered.ok, true);
-    assert.equal(recovered.gained, source.yieldCount);
-    assert.equal(recovered.stock[source.baitId], source.yieldCount);
-    assert.equal(empty[source.baitId], 0);
-    const overCap = {[source.baitId]: source.limit + 30};
-    assert.equal(gatherBait(overCap, source.id).stock, overCap);
-    assert.equal(gatherBait(overCap, source.id).gained, 0);
-  }
-  assert.equal(gatherBait({}, 'constructor').ok, false);
 });
 
 test('the ten practical lesson IDs preserve progress and reject failed or UI-only actions', () => {
