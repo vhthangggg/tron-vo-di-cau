@@ -19,6 +19,14 @@ export function rodLoad({phase,force=0,tension=0,weight=.1,power=1.2,strength=1}
   return clamp(tension/80*resistance*(.4+clamp(force,0,1)*.6),0,1);
 }
 
+// Input releases immediately in the engine; the visible hand and blank take time
+// to settle. Exponential easing stays consistent across frame rates, without recoil.
+export function stepRodPose(pose,target,dt,{reducedMotion=false}={}){
+  const seconds=Math.max(0,dt),speed=reducedMotion?2:1;
+  const ease=(from,to,rate)=>from+(to-from)*(1-Math.exp(-seconds*rate*speed));
+  return {force:ease(pose.force,clamp(target.force,0,1),target.force>pose.force?14:6),bend:ease(pose.bend,clamp(target.bend,0,1),9)};
+}
+
 // A stiff butt and progressively softer tip. The line pulls the tip perpendicular
 // to the unloaded rod; cubic flex keeps the handle tangent anchored in the hand.
 export function rodGeometry(w,h,{force=0,bend=0,end={x:w*.5,y:h*.6},bite=0}={}){

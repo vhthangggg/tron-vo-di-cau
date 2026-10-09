@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {FishingGame} from '../src/engine.js';
 import {newPlayer} from '../src/save.js';
 import {getFish} from '../src/content.js';
-import {fishFightProfile,rodLoad,rodGeometry,paintRod,ROD_SCALE} from '../src/fight-physics.js';
+import {fishFightProfile,rodLoad,stepRodPose,rodGeometry,paintRod,ROD_SCALE} from '../src/fight-physics.js';
 import {guideFish} from './control-player.mjs';
 
 function hook(fishId,weight,seed=1,rod='bamboo'){
@@ -58,6 +58,23 @@ test('Rod flex follows tension, right-hand force, fish load and rod stiffness, a
   assert(rodLoad({...state,weight:2})>rodLoad({...state,weight:.05}));assert(rodLoad({...state,power:6.5})<low);
   assert(rodLoad({...state,phase:'snag'})>0);
   for(const phase of ['idle','casting','waiting','bite','landed','failed'])assert.equal(rodLoad({...state,phase}),0);
+});
+test('Releasing input stops pulling immediately while the visible rod settles without a snap',()=>{
+  const game=hook('fish_01',2);game.setForce(.8);game.tension=65;
+  const before={force:.8,bend:rodLoad({...game,weight:2,power:game.rod.power})};
+  game.releaseHands();assert.equal(game.force,0);assert.equal(game.pulling,false);
+  const target={force:game.force,bend:rodLoad({...game,weight:2,power:game.rod.power})};
+  let pose=stepRodPose(before,target,1/60);assert(pose.force>.7&&pose.force<.8);assert(pose.bend>target.bend);
+  for(let i=0;i<44;i++){const next=stepRodPose(pose,target,1/60);assert(next.force<=pose.force&&next.force>=0);pose=next;}
+  assert(pose.force<.01);assert(Math.abs(pose.bend-target.bend)<.002);
+  const regripped=stepRodPose(pose,{force:.6,bend:.7},1/60);assert(regripped.force>pose.force&&regripped.force<.6);
+});
+test('Rod settling is consistent at 30/60/120 FPS; reduced motion shortens the movement',()=>{
+  const start={force:.8,bend:.9},target={force:0,bend:.2},poses=[];
+  for(const fps of [30,60,120]){let pose=start;for(let i=0;i<fps/2;i++)pose=stepRodPose(pose,target,1/fps);poses.push(pose);}
+  for(const pose of poses){assert(Math.abs(pose.force-poses[0].force)<1e-12);assert(Math.abs(pose.bend-poses[0].bend)<1e-12);}
+  assert.deepEqual(stepRodPose(start,target,0),start);
+  const reduced=stepRodPose(start,target,.5,{reducedMotion:true});assert(reduced.force<poses[0].force);
 });
 test('Bent rods anchor the handle, keep shaft length, bend toward the line and share one exact tip',()=>{
   for(const [w,h] of [[844,390],[1280,720],[375,812]]){
