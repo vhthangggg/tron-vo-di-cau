@@ -6,6 +6,7 @@
 .camp-rank-link:hover{background:#2c5542;color:var(--gold-light)}
 .fishing-board-link{width:100%;margin:0 0 24px;font-size:13px;flex-wrap:wrap}
 .leaderboard-page{max-width:1360px;margin:12px auto 0;padding:30px;background:linear-gradient(125deg,#234632f7,#122e25fc);border:1px solid #8c8d60;border-radius:18px;color:var(--surface)}
+.leaderboard-page .online-heading h1,.leaderboard-page .fishing-board-heading h2{font-family:Viet,Arial,sans-serif;font-weight:700}
 .leaderboard-intro{font-size:14px;line-height:1.6;margin:12px 0 0;color:var(--dim)}
 .leaderboard-toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
 .leaderboard-periods{display:flex;gap:8px;flex-wrap:wrap}
