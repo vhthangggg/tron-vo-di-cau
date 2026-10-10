@@ -2,6 +2,7 @@ import {FISH, MAPS, RODS, BAITS, ACCESSORIES, ACCESSORY_SLOTS, LESSONS, getRod, 
 import {CONTAINERS} from './catch-fate.js';
 import {BAG_TYPES, ensureInventory, carriedBaitCount, migratePacking} from './inventory.js';
 import {newGarden,normalizeGarden} from './garden.js';
+import {normalizeFishingStats} from './fishing-stats.js';
 
 // The existing storage key and v1 marker stay readable; schemaVersion is additive.
 export const SAVE_KEY='tron-vo-di-cau.v01';
@@ -19,7 +20,7 @@ const protect=(storage,state)=>{if(storage&&(typeof storage==='object'||typeof s
 export function newPlayer({now=Date.now()}={}){
  const base=ACCESSORIES.filter(a=>a.price===0);
  const player={version:1,schemaVersion:SCHEMA_VERSION,coins:12000,baits:{...Object.fromEntries(BAITS.map(b=>[b.id,0])),worm:18,dough:6,corn:6},rods:['bamboo'],maps:['AO'],accessories:base.map(a=>a.id),equipment:Object.fromEntries(base.map(a=>[a.slot,a.id])),rod:'bamboo',bait:'worm',map:'AO',rig:{depth:MAPS[0].spots[0].depth,lead:1.08,leaderMm:.16,leaderLength:.25,hookSize:4,sinkerDistance:.25},catches:0,released:0,sold:0,gifted:0,cooked:0,container:'keepnet',keptFish:[],homeFish:[],casts:0,collection:{},lessons:[],pending:null,serial:0,settings:{assist:true,sound:true,music:.45,effects:.7,deadline:0},systems:{inventory:null,flags:{inventory:true,economy:true,bait:true,rig:true,tutorial:true,catch:true},tutorial:{},transactions:[],sequence:0,bags:['cloth'],mountedBait:null,rigPresets:[],trip:null,gearInstances:[]}};
- player.systems.garden=newGarden(now);ensureInventory(player);
+ player.systems.garden=newGarden(now);player.systems.fishingStats=[];ensureInventory(player);
  return player;
 }
 
@@ -76,6 +77,7 @@ export function validateSave(raw,{now=Date.now()}={}){
  p.settings.deadline=[0,180,300].includes(raw.settings?.deadline)?raw.settings.deadline:0;
 
  const s=record(raw.systems)?raw.systems:{};
+ p.systems.fishingStats=normalizeFishingStats(s.fishingStats,{now,catches:p.catches,released:p.released,collection:p.collection});
  p.systems.garden=normalizeGarden(s.garden,now);
  p.systems.flags=Object.fromEntries(Object.keys(p.systems.flags).map(key=>[key,s.flags?.[key]!==false]));
  p.systems.bags=[...new Set(['cloth',...array(s.bags).filter(id=>Object.hasOwn(BAG_TYPES,id))])];

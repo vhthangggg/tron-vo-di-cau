@@ -1,4 +1,5 @@
 import {sampleSpecimenWeight} from './species-physics.js';
+import {recordFishingCatch,recordFishingRelease} from './fishing-stats.js';
 import {pointInPolygon} from './scene-geometry.js';
 import {catchRemark,getContainer} from './catch-fate.js';
 import {BAG_TYPES,ensureInventory,syncInventory,inventoryFor,carriedBaitCount,validateDeparture,transferGear,transferBait,swapCarriedRod,bagInventory} from './inventory.js';
@@ -46,7 +47,7 @@ export class FishingGame{
   error(message){this.message=message;this.changed();return false;}
   transact(id,mutate){const result=applyTransaction(this.player,id,draft=>{if(mutate(draft)===false)return false;syncInventory(draft);return true;});return result.ok;}
   beginTrip(){
-    if(this.player.pending)return this.error('Cho cá vào rọ hoặc thả cá trước khi đi câu.');
+    if(this.player.pending)return this.error('Cho cá vào rọ hoặc phóng sinh cá trước khi đi câu.');
     const rig=rigError(this.player),bag=this.enabled('inventory')?validateDeparture(this.player):{ok:true};
     if(rig||!bag.ok)return this.error(rig||bag.reason);
     if(!this.atHome)return true;
@@ -356,17 +357,17 @@ export class FishingGame{
     const f=this.hooked;f.caught=true;const def=getFish(f.fishId),p=this.player;
     p.serial++;p.pending={id:`catch-${p.serial}`,fishId:f.fishId,weight:f.weight,value:Math.round(def.price*f.weight),mapId:p.map};
     p.catches++;const c=p.collection[f.fishId]||{count:0,best:0};p.collection[f.fishId]={count:c.count+1,best:Math.max(c.best,f.weight)};
-    p.pending.status='landed';p.pending.caughtAt=Date.now();this.event('FISH_LANDED',{success:true});this.phase='landed';this.releaseHands();this.message=`Đã đưa ${def.name.toLocaleLowerCase('vi')} lên bờ.`;this.changed();
+    p.pending.status='landed';p.pending.caughtAt=this.wallClock();recordFishingCatch(p,p.pending,p.pending.caughtAt);this.event('FISH_LANDED',{success:true});this.phase='landed';this.releaseHands();this.message=`Đã đưa ${def.name.toLocaleLowerCase('vi')} lên bờ.`;this.changed();
   }
   resolveCatch(id,decision){
     const p=this.player,c=p.pending,legacy=!this.enabled('catch');
     if(!c||c.id!==id||!(legacy?['sell','release','gift','keep']:['release','keep']).includes(decision))return false;
-    if(decision==='keep'){const capacity=canStoreCatch(p.keptFish,c,p.container);if(!capacity.ok)return this.error('Rọ đã đầy hoặc con cá vượt sức chứa. Thả cá, đổi vật chứa hoặc mang rọ về nhà; cá vừa câu vẫn được giữ.');}
+    if(decision==='keep'){const capacity=canStoreCatch(p.keptFish,c,p.container);if(!capacity.ok)return this.error('Rọ đã đầy hoặc con cá vượt sức chứa. Phóng sinh, đổi vật chứa hoặc mang rọ về nhà; cá vừa câu vẫn được giữ.');}
     const ok=this.transact('catch:'+id+':resolve',draft=>{
       if(decision==='keep'){
         const stored=keepCatch(draft.keptFish,{...c,status:'kept'},draft.container);if(!stored.ok)return false;
         if(this.atHome){const shipped=shipHome(stored.catches,draft.homeFish);if(!shipped.ok)return false;draft.homeFish=shipped.home.map(f=>({...f,status:'home'}));draft.keptFish=[];}else draft.keptFish=stored.catches;
-      }else if(decision==='release')draft.released++;
+      }else if(decision==='release'){draft.released++;recordFishingRelease(draft,this.wallClock());}
       else if(decision==='sell'){draft.coins+=c.value;draft.sold++;}else draft.gifted++;
       draft.pending=null;return true;
     });
@@ -380,7 +381,7 @@ export class FishingGame{
     if(!c||(!this.atHome&&decision!=='release')||(!home&&decision!=='release'&&this.enabled('catch')))return false;
     const ok=this.transact('fish:'+id+':dispose',draft=>{
       const source=home?'homeFish':'keptFish';draft[source]=draft[source].filter(f=>f.id!==id);
-      if(decision==='sell'){draft.coins+=c.value;draft.sold++;}else if(decision==='gift')draft.gifted++;else if(decision==='cook')draft.cooked++;else draft.released++;
+      if(decision==='sell'){draft.coins+=c.value;draft.sold++;}else if(decision==='gift')draft.gifted++;else if(decision==='cook')draft.cooked++;else {draft.released++;recordFishingRelease(draft,this.wallClock());}
       return true;
     });
     if(!ok)return false;

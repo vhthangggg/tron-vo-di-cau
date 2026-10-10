@@ -184,4 +184,6 @@ Mở **Hội cần thủ** từ trang nhà hoặc bấm hồ sơ trên đầu tr
 
 **Cần kích hoạt backend trước khi đăng nhập và thi online:** [ONLINE_PLAYERS.md](docs/ONLINE_PLAYERS.md) ghi migration SQL, env Vercel, Google/SMTP, tiêu chí kiểm chứng và phần chưa xác minh live. Khi dịch vụ chưa được cấu hình, game thông báo đúng trạng thái và tiếp tục hỗ trợ chơi khách. Không có bảng điểm mẫu trong production.
 
+Nút **Bảng xếp hạng** trên trang nhà mở `/#leaderboard`: top 10 câu nhiều cá, top 10 phóng sinh và top 3 cá lớn nhất; lọc ngày/tuần/toàn thời gian theo giờ Việt Nam. Thành tích buổi câu thông thường được ghi theo ngày trên máy, rồi đồng bộ vào Supabase khi backend được kích hoạt. Bảng thử thách 3 phút vẫn nằm trong Hội cần thủ. Kiểm tra: `npm run test:browser:leaderboards`.
+
 Kiểm tra mới: `npm run test:browser:online`; migration và xác minh dữ liệu nằm trong `npm test`. API `/api/online` do Vercel Functions phục vụ; bản GitHub Pages thuần tĩnh chỉ có chế độ chơi khách.

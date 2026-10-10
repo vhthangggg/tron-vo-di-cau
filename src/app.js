@@ -1,6 +1,7 @@
 import {OnlineClient} from './online-client.js';
 import {renderOnline,bindOnline} from './online-ui.js';
 import {renderRanked,bindRanked} from './ranked-ui.js';
+import {renderLeaderboard,bindLeaderboard} from './leaderboard-ui.js';
 import {inventoryEntry,inventorySearchText,rigParts} from './gear-workbench.js';
 import {renderGarden} from './garden-ui.js';
 import {inventoryFor,carriedBaitCount,BAG_TYPES} from './inventory.js';
@@ -27,7 +28,7 @@ const deviceStorage=storage;
 const online=new OnlineClient({storage:deviceStorage});
 await online.initialize();
 storage=online.playerStorage;
-let onlineView=null,rankedView=null,rankedSession=null;
+let onlineView=null,rankedView=null,rankedSession=null,leaderboardView=null;
 const loaded=loadPlayer(storage);let player=loaded.player,saveWarning=loaded.warning;
 let screen='home',canvas=null,context=null,sceneObserver=null,toastTimer,previousFocus,dialogPaused=false,lastPhase='idle',lastFrame=0,lastUpdate=0,sceneReady=true,sceneLoader=null,pinSignal=false;
 let rodPose={force:0,bend:0};
@@ -100,9 +101,9 @@ function filterShop(category){
   filterShopAccessory(shopAccessoryCategory);
 }
 
-const renderers={home:homeHTML,prepare:prepareHTML,fishing:fishingHTML,rig:rigHTML,learn:learnHTML,journal:journalHTML,shop:shopHTML,garden:()=>renderGarden(player,game),online:()=>renderOnline(online),ranked:renderRanked};
+const renderers={home:homeHTML,prepare:prepareHTML,fishing:fishingHTML,rig:rigHTML,learn:learnHTML,journal:journalHTML,shop:shopHTML,garden:()=>renderGarden(player,game),online:()=>renderOnline(online),ranked:renderRanked,leaderboard:renderLeaderboard};
 function render(){
-  onlineView?.destroy();onlineView=null;rankedView?.destroy();rankedView=null;
+  onlineView?.destroy();onlineView=null;rankedView?.destroy();rankedView=null;leaderboardView?.destroy();leaderboardView=null;
   if(screen==='ranked'&&!rankedSession)screen='online';
   clearRodHold();sceneLoader?.cancel();sceneLoader=null;sceneObserver?.disconnect();canvas=null;context=null;
   sceneReady=screen!=='fishing'||!game.spotData.video;
@@ -184,6 +185,7 @@ function bindWaterCast(){
 function bindScreen(){
   if(screen==='online')onlineView=bindOnline($('#main'),online,{toast,exportSave,importSave,startRanked});
   if(screen==='ranked')rankedView=bindRanked($('#main'),online,rankedSession,{leave:()=>changeScreen('online'),toast});
+  if(screen==='leaderboard')leaderboardView=bindLeaderboard($('#main'),online,player);
   $$('[data-workbench-link]').forEach(link=>link.onclick=e=>{e.preventDefault();workbench.view=link.dataset.workbenchLink;navigate('rig');});
   $$('[data-open-keepnet]').forEach(button=>button.onclick=()=>showKeepnet());
   $$('[data-open-packing]').forEach(button=>button.onclick=showPacking);
@@ -515,13 +517,13 @@ function showPause(){
   bindAudioOptions('pause');
   updateFishing();announce('Buổi câu đã tạm dừng.');
 }
-function showHelp(){showDialog('Một buổi câu, năm nhịp',`<ol class="help-steps"><li><b>Chuẩn bị trước khi đi câu.</b> Chọn map, góc bờ, cần và mồi rồi bấm Bắt đầu đi câu. Bản đồ có ${MAPS.length} vùng; sổ cá ghi cách tìm ${FISH.length} loài.</li><li><b>Thả câu.</b> Chờ cá đến mồi. Lure phải bật thu mồi; mồi giả dùng lại, mồi tự nhiên giữ qua thu cần, chỉ tiêu hao khi bị cá ăn, mất hoặc thay mới.</li><li><b>Giật đúng tín hiệu.</b> Câu phao: chờ chìm rõ. Câu đáy/lure: chờ đầu cần cong, dây căng. Giữ vùng tay phải để đóng lưỡi; tay trái bám theo dấu cá. Nhịp cơ bản 2,8 giây; lưỡi tốt tăng thời gian.</li><li><b>Dẫn trong vùng xanh.</b> Tay phải kéo lên để tăng lực, hạ xuống khi cá bứt. Tay trái phải di chuyển theo dấu cá; lệch quá lâu sẽ mất cá. Tiến độ đạt 100% sẽ tự vớt cá. Dây tăng sức tải, máy tăng tốc dẫn, phao giảm lực nước, vợt giúp vớt sớm.</li><li><b>Cá lên bờ.</b> Cho vào rọ hoặc thả cá. Về nhà với rọ để bán, nấu ăn hoặc nịnh vợ. Mỗi con cá chỉ dùng một lần. Xu và sổ cá lưu tự động. Tạm dừng → Chuẩn bị lại để đổi điểm câu, bộ cần hoặc mua thêm đồ.</li></ol><p class="hint-note">Cảm ứng: giữ hai vùng bằng hai ngón độc lập. Máy tính: chuột bám cá + giữ Space, phím ↑ ↓ chỉnh lực; hoặc W A S D bám cá + chuột giữ cần. P / Esc tạm dừng. Mắc đáy: bám điểm gỡ và giữ lực cần 15–35% trong vài giây.</p>`,[{label:screen==='fishing'?'Tiếp tục câu':'Chuẩn bị đi câu',primary:true,action:()=>{closeDialog();if(screen!=='fishing')navigate('prepare');}}]);}
+function showHelp(){showDialog('Một buổi câu, năm nhịp',`<ol class="help-steps"><li><b>Chuẩn bị trước khi đi câu.</b> Chọn map, góc bờ, cần và mồi rồi bấm Bắt đầu đi câu. Bản đồ có ${MAPS.length} vùng; sổ cá ghi cách tìm ${FISH.length} loài.</li><li><b>Thả câu.</b> Chờ cá đến mồi. Lure phải bật thu mồi; mồi giả dùng lại, mồi tự nhiên giữ qua thu cần, chỉ tiêu hao khi bị cá ăn, mất hoặc thay mới.</li><li><b>Giật đúng tín hiệu.</b> Câu phao: chờ chìm rõ. Câu đáy/lure: chờ đầu cần cong, dây căng. Giữ vùng tay phải để đóng lưỡi; tay trái bám theo dấu cá. Nhịp cơ bản 2,8 giây; lưỡi tốt tăng thời gian.</li><li><b>Dẫn trong vùng xanh.</b> Tay phải kéo lên để tăng lực, hạ xuống khi cá bứt. Tay trái phải di chuyển theo dấu cá; lệch quá lâu sẽ mất cá. Tiến độ đạt 100% sẽ tự vớt cá. Dây tăng sức tải, máy tăng tốc dẫn, phao giảm lực nước, vợt giúp vớt sớm.</li><li><b>Cá lên bờ.</b> Cho vào rọ hoặc phóng sinh cá. Về nhà với rọ để bán, nấu ăn hoặc nịnh vợ. Mỗi con cá chỉ dùng một lần. Xu và sổ cá lưu tự động. Tạm dừng → Chuẩn bị lại để đổi điểm câu, bộ cần hoặc mua thêm đồ.</li></ol><p class="hint-note">Cảm ứng: giữ hai vùng bằng hai ngón độc lập. Máy tính: chuột bám cá + giữ Space, phím ↑ ↓ chỉnh lực; hoặc W A S D bám cá + chuột giữ cần. P / Esc tạm dừng. Mắc đáy: bám điểm gỡ và giữ lực cần 15–35% trong vài giây.</p>`,[{label:screen==='fishing'?'Tiếp tục câu':'Chuẩn bị đi câu',primary:true,action:()=>{closeDialog();if(screen!=='fishing')navigate('prepare');}}]);}
 function containerSelect(id){return `<label class="container-label" for="${id}">Cất cá trong</label><select id="${id}">${CONTAINERS.map(c=>`<option value="${c.id}" ${c.id===player.container?'selected':''}>${c.name}</option>`).join('')}</select>`;}
 function showCatch(){
  const c=player.pending;if(!c)return;const def=getFish(c.fishId),id=c.id,container=getContainer(player.container),capacity=canStoreCatch(player.keptFish,c,player.container),usage=containerUsage(player.keptFish,player.container);
- showDialog('Cá lên bờ!',`<div class="catch-summary"><div class="fish-hero">${fishArt(def)}</div><div><p class="catch-banner">${icon('check')} Đã ghi vào sổ cá</p><h3>${def.name}</h3><p>${kg(c.weight)} kg <span>· ${getMap(c.mapId).name}</span></p><p class="hint-note">${specimenSummary(def,c.weight)} · ước tính trong game</p></div></div><div class="catch-container">${containerSelect('catch-container')}<button class="small" id="catch-open-keepnet">${usage.count}/${usage.maxCount} con · ${kg(usage.kg)}/${usage.maxKg} kg ${icon('arrow')}</button></div><p class="catch-note">${capacity.ok?(game.atHome?'Cá được cất ở nhà. Sau đó mới chọn bán, nấu ăn hoặc nịnh vợ.':'Cá trong rọ sẽ mang về nhà khi chuyến câu kết thúc.'):'Rọ đã đầy hoặc cá vượt sức chứa. Đổi vật chứa, thả cá hoặc mang rọ về nhà. Cá vừa lên bờ vẫn được giữ nguyên.'}</p>${!capacity.ok?'<button class="small" id="catch-return-home">Về nhà để xử lý cá</button>':''}`,[
+ showDialog('Cá lên bờ!',`<div class="catch-summary"><div class="fish-hero">${fishArt(def)}</div><div><p class="catch-banner">${icon('check')} Đã ghi vào sổ cá</p><h3>${def.name}</h3><p>${kg(c.weight)} kg <span>· ${getMap(c.mapId).name}</span></p><p class="hint-note">${specimenSummary(def,c.weight)} · ước tính trong game</p></div></div><div class="catch-container">${containerSelect('catch-container')}<button class="small" id="catch-open-keepnet">${usage.count}/${usage.maxCount} con · ${kg(usage.kg)}/${usage.maxKg} kg ${icon('arrow')}</button></div><p class="catch-note">${capacity.ok?(game.atHome?'Cá được cất ở nhà. Sau đó mới chọn bán, nấu ăn hoặc nịnh vợ.':'Cá trong rọ sẽ mang về nhà khi chuyến câu kết thúc.'):'Rọ đã đầy hoặc cá vượt sức chứa. Đổi vật chứa, phóng sinh cá hoặc mang rọ về nhà. Cá vừa lên bờ vẫn được giữ nguyên.'}</p>${!capacity.ok?'<button class="small" id="catch-return-home">Về nhà để xử lý cá</button>':''}`,[
  {label:'Cho vào '+container.short,decision:'keep',symbol:'bag',copy:catchTeaser(c,'keep',player.container),disabled:!capacity.ok,primary:true,action:()=>finishCatch(id,'keep')},
- {label:'Thả cá',decision:'release',symbol:'leaf',copy:catchTeaser(c,'release'),action:()=>finishCatch(id,'release')}
+ {label:'Phóng sinh',decision:'release',symbol:'leaf',copy:catchTeaser(c,'release'),action:()=>finishCatch(id,'release')}
  ],{kind:'catch'});
  $('#catch-container').onchange=e=>{if(!game.setContainer(e.target.value))toast(game.message);showCatch();};
  $('#catch-open-keepnet').onclick=()=>showKeepnet(true);
@@ -532,7 +534,7 @@ function finishCatch(id,decision){if(game.resolveCatch(id,decision)){audio.cue(d
 function showKeepnet(backToCatch=false){
  if(game.busy&&!player.pending){toast('Thu cần rồi mình xem cá trong rọ nhé.');return;}
  const home=game.atHome,container=getContainer(player.container),usage=containerUsage(player.keptFish,player.container),list=home?player.homeFish:player.keptFish,value=list.reduce((sum,c)=>sum+c.value,0);
- const fishActions=c=>home?`<button data-kept="${c.id}" data-fate="sell" aria-label="Bán cá, ${money(c.value)} xu">${icon('coin')} ${money(c.value)} xu</button><button data-kept="${c.id}" data-fate="cook">Nấu ăn</button><button data-kept="${c.id}" data-fate="gift">Nịnh vợ</button>`:`<button data-kept="${c.id}" data-fate="release">${icon('leaf')} Thả cá</button>`;
+ const fishActions=c=>home?`<button data-kept="${c.id}" data-fate="sell" aria-label="Bán cá, ${money(c.value)} xu">${icon('coin')} ${money(c.value)} xu</button><button data-kept="${c.id}" data-fate="cook">Nấu ăn</button><button data-kept="${c.id}" data-fate="gift">Nịnh vợ</button>`:`<button data-kept="${c.id}" data-fate="release">${icon('leaf')} Phóng sinh</button>`;
  showDialog(home?'Thành quả ở nhà':container.name,`<div class="keepnet-heading"><span>${list.length} con · ${money(value)} xu</span><span>${home?player.cooked+' đã nấu / '+player.gifted+' đã nịnh vợ':usage.count+'/'+usage.maxCount+' con · '+kg(usage.kg)+'/'+usage.maxKg+' kg'}</span></div>${!home?`<div class="catch-container">${containerSelect('keepnet-container')}</div>`:''}${list.length?`<div class="keepnet-list">${list.map(c=>{const f=getFish(c.fishId);return `<article class="keepnet-fish"><span class="keepnet-art">${fishArt(f)}</span><div><strong>${f.name}</strong><small>${kg(c.weight)} kg · ${getMap(c.mapId).name}</small></div><div class="keepnet-fish-actions">${fishActions(c)}</div></article>`;}).join('')}</div>`:`<p class="keepnet-empty">${home?'Chưa có cá mang về nhà.':'Rọ chưa có cá. Khi cá lên bờ, chọn cho vào rọ.'}</p>`}${!home?'<p class="hint-note">Về nhà để bán, nấu ăn hoặc nịnh vợ. Cá trong rọ không mất khi tải lại.</p>':''}`,[
  ...(home&&list.length?[{label:'Bán toàn bộ · '+money(value)+' xu',action:()=>{if(game.sellKeptFish()){audio.cue('sell');refreshCatchUI();showKeepnet(backToCatch);toast(game.message);}}}]:[]),
  ...(!home?[{label:'Mang rọ về nhà',action:()=>{if(game.returnHome()){closeDialog();changeScreen('home');if(player.pending)showCatch();else showKeepnet();}}}]:[]),

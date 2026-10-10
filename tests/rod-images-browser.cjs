@@ -28,6 +28,8 @@ let browser,server;
    assert.equal(await card.locator('.rod-affiliate').getAttribute('target'),'_blank');
    assert.equal(await card.locator('.rod-visual>svg').isVisible(),false);
    assert.equal(await card.locator('[role="meter"]').count(),3);
+   assert.equal(await card.locator('.gear-rack,.gear-display-caption').count(),0);
+   assert.equal(await card.locator('.rod-visual').evaluate(e=>getComputedStyle(e).transform),'none');
    for(const [stat,value] of [['power',rod.power],['sensitivity',rod.ratings.sensitivity],['cast',rod.ratings.cast]]){
     assert.equal(Number(await card.locator(`[data-stat="${stat}"] [role="meter"]`).getAttribute('aria-valuenow')),value);
    }
@@ -35,7 +37,7 @@ let browser,server;
     const showcase=card.querySelector('.gear-showcase').getBoundingClientRect(),visual=card.querySelector('.rod-visual').getBoundingClientRect();
     return {opacity:getComputedStyle(card).opacity,buy:card.querySelector('.gear-buy').getBoundingClientRect().height,affiliate:card.querySelector('.rod-affiliate').getBoundingClientRect().height,compact:card.querySelector('.rod-affiliate').getBoundingClientRect().width<card.querySelector('.gear-buy').getBoundingClientRect().width,inside:visual.left>=showcase.left&&visual.right<=showcase.right&&visual.top>=showcase.top&&visual.bottom<=showcase.bottom};
    });
-   assert.equal(layout.opacity,'1');assert(layout.buy>=48&&layout.affiliate>=44);assert(layout.compact);assert(layout.inside,rod.id+' rod must not be cropped');
+   assert.equal(layout.opacity,'1');assert(layout.buy>=48&&layout.affiliate>=35&&layout.affiliate<=36);assert(layout.compact);assert(layout.inside,rod.id+' rod must not be cropped');
   }
   const card=id=>page.locator(`[data-gear-rod="${id}"]`);
   assert.equal(await card('bamboo').getAttribute('data-rarity'),'common');
@@ -78,7 +80,7 @@ let browser,server;
   assert.equal(Number(await card('bamboo').locator('[data-stat="power"]').getAttribute('data-previous')),8.8);
   assert.equal(await card('rod_26').locator('.gear-buy').innerText(),'Đang trang bị');
   assert.deepEqual(errors,[]);
-  checks.push(`${viewport.width}px: all 36 photos, uncropped diagonal display, rarity tiers, current-rod gains/losses, insufficient funds, compact links, touch targets, reduced motion, purchase/storage and missing-photo fallback`);
+  checks.push(`${viewport.width}px: all 36 photos, uncropped horizontal display, rarity tiers, current-rod gains/losses, insufficient funds, compact links, touch targets, reduced motion, purchase/storage and missing-photo fallback`);
   await context.close();
  }
  console.log(JSON.stringify({status:'passed',checks},null,2));

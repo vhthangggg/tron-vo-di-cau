@@ -3,6 +3,7 @@ import {validateSave} from '../src/save.js';
 import {FISH} from '../src/content.js';
 import {RANKED_RULES,RANKED_SECONDS,seasonKey,seasonSeed,replayRanked} from '../src/ranked-challenge.js';
 import {OnlineError} from './supabase.js';
+import {fishingDay} from '../src/fishing-stats.js';
 const uuid=x=>typeof x==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(x);
 export function createOnlineService(db,{now=Date.now,newId=randomUUID}={}){
  return async function service(action,{method='GET',user=null,body={},query={}}={}){
@@ -37,6 +38,11 @@ export function createOnlineService(db,{now=Date.now,newId=randomUUID}={}){
      return db.rpc('online_finish_session',{p_user:user.id,p_id:body.sessionId,p_result:result});
    }
    const board=query.board||'weekly',species=query.species||null,page=Number(query.page||0);
+   if(board==='fishing'){
+     const period=query.period||'all';
+     if(!['day','week','all'].includes(period))throw new OnlineError(400,'Khoảng thời gian không hợp lệ.');
+     return db.rpc('online_fishing_leaderboard',{p_period:period,p_day:fishingDay(now()),p_user:user?.id||null});
+   }
    if(!['weekly','species','collection'].includes(board)||!Number.isInteger(page)||page<0||page>20||board==='species'&&!FISH.some(f=>f.id===species))throw new OnlineError(400,'Bảng xếp hạng không hợp lệ.');
    return db.rpc('online_leaderboard',{p_board:board,p_season:seasonKey(now()),p_species:species,p_offset:page*25,p_user:user?.id||null});
  };

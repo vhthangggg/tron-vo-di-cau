@@ -2,11 +2,25 @@
 
 ## Phạm vi
 
-Mở **Hội cần thủ** ở trang nhà, hồ sơ trên đầu trang hoặc trong Tùy chọn. Có đăng nhập email/mật khẩu, đăng ký, đặt lại mật khẩu và Google khi nhà vận hành bật provider. Supabase Auth quản lý mật khẩu và phiên đăng nhập; API xác thực access token qua `/auth/v1/user`.
+Mở **Bảng xếp hạng** bằng nút cạnh Xách cần đi câu trên trang nhà, hoặc đường dẫn `/#leaderboard`. **Hội cần thủ** (`/#online`) quản lý tài khoản, đồng bộ và thử thách. Có đăng nhập email/mật khẩu, đăng ký, đặt lại mật khẩu và Google khi nhà vận hành bật provider. Supabase Auth quản lý mật khẩu và phiên đăng nhập; API xác thực access token qua `/auth/v1/user`.
 
 Bản lưu cá nhân gồm toàn bộ schema hiện hành: xu, đồ, mồi, kho/túi, cá, vườn, bộ câu đã lưu và hướng dẫn. Bản chơi khách và mỗi tài khoản có khóa riêng trong localStorage. Lưu trên máy tức thì, đẩy online sau khoảng 4 giây không có thay đổi. Bản lưu dùng số phiên bản và mã yêu cầu; thiết bị khác đã ghi bản mới thì hiện lựa chọn, không tự ghi đè. Mất phản hồi sau một lần ghi vẫn có thể gửi lại cùng mã. Đổi bản lưu giữ bản trước trên máy; nút tải bản dự phòng và nhập JSON cho phép phục hồi. Xóa dữ liệu trình duyệt vẫn xóa các bản chưa đồng bộ.
 
 Bản lưu cloud là bản sao tiến độ cá nhân, **không phải dữ liệu kinh tế được máy chủ xác thực**. Nó không được dùng để ghi điểm thi, cấp đồ thi hoặc làm bằng chứng chống gian lận. Ruộng vườn trong chế độ cá nhân vẫn dùng logic thời gian hiện tại; chưa chuyển toàn bộ gameplay cá nhân lên server.
+
+## Bảng xếp hạng các buổi câu thông thường
+
+- Top 10 người câu được nhiều cá nhất.
+- Top 10 người phóng sinh nhiều cá nhất.
+- Top 3 người câu được cá lớn nhất, lấy trọng lượng một con cá, mỗi người xuất hiện một lần.
+
+Cả ba bảng có bộ lọc **Ngày / Tuần / Toàn thời gian**. Ngày bắt đầu lúc 00:00 giờ Việt Nam; tuần bắt đầu thứ Hai. API lấy ngày hiện tại từ đồng hồ server. Bằng điểm thì thứ tự được giữ ổn định; mỗi bảng giới hạn số người đúng 10/10/3.
+
+Game lưu các bộ đếm cộng dồn theo ngày trong `systems.fishingStats`. Cá lên bờ tăng số cá đã câu và cập nhật cá lớn nhất trong ngày. Phóng sinh cá vừa câu hoặc cá trong rọ tăng bộ đếm của ngày thực hiện hành động. Giao dịch cũ không được phát lại để tăng phóng sinh. Dữ liệu bắt đầu từ bản cập nhật này; không suy diễn ngày câu từ tổng số cá của bản lưu cũ.
+
+Khi đăng nhập và đồng bộ, trigger của `online_saves` ghi các bộ đếm vào `online_fishing_days` trong cùng transaction. Nó lấy giá trị lớn nhất đã nhận cho từng ngày, không cộng lại số đã đồng bộ; gửi lại receipt hay ghi một bản cũ không nhân đôi thành tích. SQL tổng hợp các ngày nằm trong kỳ và chọn ba người có cá lớn nhất. RPC `online_fishing_leaderboard` chỉ trả tên hiển thị, hạng, số cá/trọng lượng và loài; không công khai email, UUID hoặc bản lưu.
+
+Đây là bảng **tiến độ cá nhân đã đồng bộ**, khác với kết quả thử thách được chạy lại trên server ở phần dưới. Chưa xác minh mọi thao tác của gameplay cá nhân. Trang có trạng thái chờ kết nối rõ ràng khi online chưa kích hoạt, không dựng người chơi mẫu. Phần Thành tích của bạn trên máy vẫn hiển thị dữ liệu cá nhân theo bộ lọc.
 
 ## Thử thách và xác minh
 
@@ -23,7 +37,7 @@ Khi sửa engine/content/physics ảnh hưởng kết quả, phải đổi `RANK
 ## Kích hoạt dịch vụ thật
 
 1. Tạo hoặc chọn một dự án Supabase thuộc chủ sở hữu game. Chọn region gần backend Vercel.
-2. Chạy nguyên migration `supabase/migrations/202610090001_online_players.sql` trong Supabase SQL Editor. Hoặc liên kết Supabase CLI rồi chạy `supabase db push`. Không chạy reset trên dữ liệu production.
+2. Chạy lần lượt hai migration `supabase/migrations/202610090001_online_players.sql` và `supabase/migrations/202610100001_fishing_leaderboards.sql` trong Supabase SQL Editor. Nếu migration đầu đã chạy thì chỉ cần migration thứ hai. Hoặc liên kết Supabase CLI rồi chạy `supabase db push`. Không chạy reset trên dữ liệu production.
 3. Trong đúng project Vercel `tron-vo-di-cau` (`prj_gFVV5JRtnaGnerNDNfoAeA8w6Pzq`), thêm:
 
 | Biến | Giá trị |
@@ -46,10 +60,13 @@ Quyền: các bảng bật RLS và không cấp quyền trực tiếp cho `anon`
 
 - `npm test`: regression của gameplay cùng kiểm thử mới: replay, input giả, session/timing, dữ liệu PostgreSQL qua PGlite, quyền role, save CAS, receipts, account isolation và phục hồi khi mất phản hồi.
 - `npm run test:browser:online`: giao diện PC/mobile, chế độ chưa cấu hình, nhập JSON, đăng nhập bằng Supabase SDK đã bundle, nhận bản cloud, giữ bản khách, một lượt thi hoàn chỉnh bằng điều khiển UI và chạy lại trace bằng code production. HTTP của provider/API trong bài browser này dùng fixture kiểm thử; không thay cho kiểm chứng Google/SMTP/Supabase hosted thật.
+- `npm run test:browser:leaderboards`: nút truy cập trên trang nhà, trạng thái thiếu backend, top 10/10/3, bộ lọc và phản hồi mạng về muộn, thành tích trên máy, nút Phóng sinh, giao diện 1440/375 px. Dữ liệu công khai trong bài trình duyệt là HTTP fixture; phép tổng hợp SQL được chạy riêng trên PostgreSQL PGlite trong `npm test`.
 - `npm run test:browser` và `npm run test:browser:workbench`: hồi quy chơi thường và bộ câu.
 - `npm run build`: đóng gói frontend và bundle Supabase SDK cục bộ. API ở `api/online.js` được Vercel đóng gói riêng; thư mục `server`, SQL và khóa bí mật không được copy vào `dist`.
 
 Tại thời điểm triển khai code, connector đọc cấu hình Vercel của scope `vhthang843-2267` trả 403 và CLI không có credential. Chưa tạo Supabase project, chưa chạy migration hosted, chưa cấu hình Google/SMTP, chưa xác nhận live cloud. Cần hoàn tất quyền truy cập và các bước trên để mở online.
+
+Cập nhật 10/10/2026: `/api/online?action=config` trên production vẫn trả `enabled:false`; connector đọc env đúng project/team tiếp tục trả 403 và môi trường làm việc không có CLI Vercel. Giao diện, API, migration và kiểm thử ba bảng mới đã được triển khai; kích hoạt và kiểm chứng dữ liệu Supabase thật vẫn là bước còn thiếu.
 
 Ghi chú hồi quy trình duyệt: bài `browser-check.cjs` hiện mất cá trong bước `driveHands` sau khi đổi kích thước màn hình ở cả bản nền `895b1ff` và bản cập nhật, với Chromium dùng trong môi trường này. Bài bộ câu riêng đã đạt ở sáu kích thước màn hình; không ghi nhận bài chơi thường là đã đạt.
 
