@@ -10,7 +10,7 @@ const fullPlayer=()=>{const p=newPlayer();p.coins=10000000;p.maps=MAPS.map(m=>m.
 const bite=g=>{assert.ok(g.cast());if(g.rod.tech==='lure')g.toggleRetrieve();tickUntil(g,()=>g.phase==='bite');};
 
 test('All 10 maps have unique packaged landscape art and valid playable content',async()=>{
- assert.equal(MAPS.length,10);assert.equal(FISH.length,56);assert.equal(RODS.length,36);assert.equal(new Set(RODS.map(r=>r.id)).size,RODS.length);assert.equal(BAITS.length,15);
+ assert.equal(MAPS.length,10);assert.equal(FISH.length,56);assert.equal(RODS.length,36);assert.equal(new Set(RODS.map(r=>r.id)).size,RODS.length);assert.equal(BAITS.length,27); // 15 legacy baits (including 3 for old saves) + 12 new catalog lures
  // New equipment is additive: validate the original IDs instead of freezing the catalog size.
  const legacyAccessories={line:['line_basic','line18','fluoro','braid'],hook:['hook_basic','hook_barb','hook_wide','hook_pro'],float:['float_basic','float_canal','float_slender','float_sea'],reel:['reel_basic','reel2000','reel4000','reel6000'],net:['net_basic','net_fold','net_long','net_pro']};
  assert.equal(new Set(ACCESSORIES.map(a=>a.id)).size,ACCESSORIES.length,'Accessory IDs must remain unique');
