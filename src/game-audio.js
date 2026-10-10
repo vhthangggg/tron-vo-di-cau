@@ -99,7 +99,7 @@ export function fillMaterialLineSound(samples,rate,profile){
     const texture=(noise-pink)*profile.roughness*.23+pink*profile.air*.26;
     const filament=Math.sin(phase)*(.06+.075*profile.air);
     const flutter=1-profile.flutter*.19*(.5+.5*Math.sin(t*37));
-    samples[i]=(texture+filament)*flutter;
+    samples[i]=(texture+filament)*flutter*2;
   }
   const edge=Math.min(Math.floor(rate*.006),Math.floor(samples.length/2));
   for(let i=0;i<edge;i++){const fade=i/edge;samples[i]*=fade;samples[samples.length-1-i]*=fade;}
