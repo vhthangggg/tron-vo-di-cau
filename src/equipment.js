@@ -43,7 +43,19 @@ export function getEquipmentSpecs(kind,id){
   if(!item)return [];
   const row=(key,label,value,unit='',digits=1)=>({key,label,value,unit,digits});
   if(kind==='rod')return [row('power','Sức cần',item.power)];
-  if(kind==='bait')return [row('mass','Tải mồi',item.mass,'g',2),row('amount','Phần / gói',item.amount,'',0)];
+  if(kind==='bait'){
+    if(item.lureProfile){
+      const g=item.lureProfile;
+      return [
+        row('minDepth','Độ sâu từ (game)',g.minDepthM,'m'),
+        row('maxDepth','Độ sâu tới (game)',g.maxDepthM,'m'),
+        row('attraction','Sức hút (game)',g.attraction,'/100',0),
+        row('durability','Độ bền (game)',g.durability,'/100',0),
+        row('snagRisk','Nguy cơ vướng',g.snagRisk,'/100',0)
+      ];
+    }
+    return [row('mass','Tải mồi',item.mass,'g',2),row('amount','Phần / gói',item.amount,'',0)];
+  }
   if(item.slot==='line'){
     const spec=LINE_SPECS[id]||LINE_SPECS.line_basic;
     return [spec.peSize?row('peSize','Cỡ PE',spec.peSize,'#'):row('diameter','Đường kính',spec.diameterMm,'mm',2),row('strength','Tải dây (game)',spec.strengthKg,'kg'),row('power','Thêm sức bộ',item.power),row('grace','Chịu lực đỏ',.75+item.grace,'giây',2)];
