@@ -46,7 +46,7 @@ export function getEquipmentSpecs(kind,id){
   if(kind==='bait'){
     if(item.lureProfile){
       const g=item.lureProfile;
-      rreturn [
+      return [
   row('minDepth','Độ sâu từ',g.minDepthM,'m'),
   row('maxDepth','Độ sâu tới',g.maxDepthM,'m'),
   row('attraction','Sức hút',g.attraction,'/100',0),
