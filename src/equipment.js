@@ -46,13 +46,13 @@ export function getEquipmentSpecs(kind,id){
   if(kind==='bait'){
     if(item.lureProfile){
       const g=item.lureProfile;
-      return [
-        row('minDepth','Độ sâu từ (game)',g.minDepthM,'m'),
-        row('maxDepth','Độ sâu tới (game)',g.maxDepthM,'m'),
-        row('attraction','Sức hút (game)',g.attraction,'/100',0),
-        row('durability','Độ bền (game)',g.durability,'/100',0),
-        row('snagRisk','Nguy cơ vướng',g.snagRisk,'/100',0)
-      ];
+      rreturn [
+  row('minDepth','Độ sâu từ',g.minDepthM,'m'),
+  row('maxDepth','Độ sâu tới',g.maxDepthM,'m'),
+  row('attraction','Sức hút',g.attraction,'/100',0),
+  row('durability','Độ bền',g.durability,'/100',0),
+  row('snagRisk','Nguy cơ vướng',g.snagRisk,'/100',0)
+];
     }
     return [row('mass','Tải mồi',item.mass,'g',2),row('amount','Phần / gói',item.amount,'',0)];
   }
