@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {RODS,getRod,usesReel} from '../src/content.js';
 import {fightSoundState,fillFightSound} from '../src/game-audio.js';
 
-const fight=(rod='dai54',extra={})=>({phase:'fight',rod:getRod(rod),tension:55,surge:false,velocity:{x:.1,y:.06},hooked:{weight:.7},...extra});
+const fight=(rod='rod_23',extra={})=>({phase:'fight',rod:getRod(rod),tension:55,surge:false,velocity:{x:.1,y:.06},hooked:{weight:.7},...extra});
 
 test('Every hand rod has taut-line friction; every reel rod has a payout drag sound',()=>{
   for(const rod of RODS){
@@ -16,12 +16,12 @@ test('Every hand rod has taut-line friction; every reel rod has a payout drag so
   assert(fightSoundState(fight(reel,{tension:80})).level>0,'High tension slips the spool');
 });
 test('Fighting sound follows pressure and movement, fades on slack and stops outside a fight',()=>{
-  const soft=fightSoundState(fight('dai54',{tension:36,hooked:{weight:.05}}));
-  const hard=fightSoundState(fight('dai54',{tension:78,surge:true,velocity:{x:.3,y:-.15},hooked:{weight:2}}));
+  const soft=fightSoundState(fight('rod_23',{tension:36,hooked:{weight:.05}}));
+  const hard=fightSoundState(fight('rod_23',{tension:78,surge:true,velocity:{x:.3,y:-.15},hooked:{weight:2}}));
   assert(hard.level>soft.level);assert(hard.rate>soft.rate);assert(hard.frequency>soft.frequency);
-  assert.equal(fightSoundState(fight('dai54',{tension:16})).level,0);
-  assert.equal(fightSoundState(fight('dai54',{paused:true})),null);
-  for(const phase of ['idle','casting','waiting','nibble','bite','snag','landed','failed'])assert.equal(fightSoundState(fight('dai54',{phase})),null);
+  assert.equal(fightSoundState(fight('rod_23',{tension:16})).level,0);
+  assert.equal(fightSoundState(fight('rod_23',{paused:true})),null);
+  for(const phase of ['idle','casting','waiting','nibble','bite','snag','landed','failed'])assert.equal(fightSoundState(fight('rod_23',{phase})),null);
 });
 test('Friction is continuous and drag is a distinct impulsive, bounded loop',()=>{
   const shapes=[];
@@ -41,7 +41,7 @@ test('Friction is continuous and drag is a distinct impulsive, bounded loop',()=
 });
 
 test('Bamboo has softer fibre friction while carbon poles sing and reels use ratchet drag',()=>{
- const bamboo=fightSoundState(fight('bamboo')),carbon=fightSoundState(fight('dai54'));
+ const bamboo=fightSoundState(fight('bamboo')),carbon=fightSoundState(fight('rod_23'));
  assert.equal(bamboo.timbre,'bamboo');assert.equal(carbon.timbre,'carbon');assert(bamboo.frequency<carbon.frequency);assert(bamboo.level<carbon.level);
  const a=new Float32Array(48000),b=new Float32Array(48000);fillFightSound(a,24000,'bamboo');fillFightSound(b,24000,'line');assert.notDeepEqual(a,b);assert(a.every(v=>Number.isFinite(v)&&Math.abs(v)<=1));
 });

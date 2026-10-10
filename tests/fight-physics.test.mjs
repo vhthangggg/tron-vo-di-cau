@@ -29,7 +29,7 @@ test('Larger fish of the same species take longer; weak and strong species diffe
   assert(weak<medium&&strong>medium*1.2);
 });
 test('A suitable stronger rod reduces fighting time without skipping the two-hand interaction',()=>{
-  assert(land('fish_01',2,1,'dai54')<land('fish_01',2));
+  assert(land('fish_01',2,1,'rod_23')<land('fish_01',2));
   for(const hand of ['left','right','off-target']){
     const g=hook('fish_27',.05);
     for(let i=0;i<80&&g.phase==='fight';i++){

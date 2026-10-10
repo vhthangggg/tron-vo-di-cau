@@ -22,9 +22,9 @@ test('inventory rendering is pure and sync places new ownership home without res
  const p=newPlayer();
  const packed=transferBait(p.systems.inventory,p,'worm',10,'stored');assert.ok(packed);p.systems.inventory=packed;
  const before=JSON.stringify(p);inventoryFor(p);assert.equal(JSON.stringify(p),before);
- p.rods.push('dai');p.accessories.push('line18');p.baits.worm+=12;
+ p.rods.push('rod_01');p.accessories.push('line18');p.baits.worm+=12;
  syncInventory(p);assert.equal(carriedBaitCount(p,'worm'),8);assert.equal(p.systems.inventory.stored.baits.worm,22);
- assert.deepEqual(p.systems.inventory.carried.rods,['bamboo']);assert.ok(p.systems.inventory.stored.rods.includes('dai'));
+ assert.deepEqual(p.systems.inventory.carried.rods,['bamboo']);assert.ok(p.systems.inventory.stored.rods.includes('rod_01'));
  assert.ok(p.systems.inventory.stored.accessories.includes('line18'));assert.equal(reconcileInventory(p.systems.inventory,p),true);
 });
 
@@ -47,36 +47,36 @@ test('transfers require a real source and never duplicate inventory, mounted acc
 });
 
 test('bag downgrades repack only when explicitly chosen at home and preserve all assets',()=>{
- const p=newPlayer();p.systems.bags.push('standard');p.rods.push('dai');syncInventory(p);
- p.systems.inventory=bagInventory(p,'standard');p.systems.inventory=transferGear(p.systems.inventory,p,'rods','dai');
+ const p=newPlayer();p.systems.bags.push('standard');p.rods.push('rod_01');syncInventory(p);
+ p.systems.inventory=bagInventory(p,'standard');p.systems.inventory=transferGear(p.systems.inventory,p,'rods','rod_01');
  assert.equal(bagInventory(p,'cloth'),null);
- const small=bagInventory(p,'cloth',{storeExcess:true});assert.ok(small);assert.equal(small.carried.rods.length,1);assert.ok(small.stored.rods.includes('dai'));
+ const small=bagInventory(p,'cloth',{storeExcess:true});assert.ok(small);assert.equal(small.carried.rods.length,1);assert.ok(small.stored.rods.includes('rod_01'));
  assert.equal(reconcileInventory(small,p),true);
  p.systems.trip={id:'trip-1',mapId:'AO',spotId:'ben-cau-tre',active:true};assert.equal(bagInventory(p,'cloth',{storeExcess:true}),null);
 });
 
 test('derived instances retain stable identity and durability across storage and reload',()=>{
- const p=newPlayer();p.rods.push('dai');syncInventory(p);
- const rod=p.systems.gearInstances.find(i=>i.instanceId==='rod-dai');rod.durability=72;
- p.systems.bags.push('standard');p.systems.inventory=bagInventory(p,'standard');p.systems.inventory=transferGear(p.systems.inventory,p,'rods','dai');syncInventory(p);
- const restored=validateSave(p),instance=restored.systems.gearInstances.find(i=>i.instanceId==='rod-dai');
+ const p=newPlayer();p.rods.push('rod_01');syncInventory(p);
+ const rod=p.systems.gearInstances.find(i=>i.instanceId==='rod-rod_01');rod.durability=72;
+ p.systems.bags.push('standard');p.systems.inventory=bagInventory(p,'standard');p.systems.inventory=transferGear(p.systems.inventory,p,'rods','rod_01');syncInventory(p);
+ const restored=validateSave(p),instance=restored.systems.gearInstances.find(i=>i.instanceId==='rod-rod_01');
  assert.equal(instance.durability,72);assert.equal(instance.location,'bag');assert.equal(new Set(restored.systems.gearInstances.map(i=>i.instanceId)).size,restored.systems.gearInstances.length);
 });
 
 test('malformed optional location records cannot throw or erase authoritative assets',()=>{
  for(const inventory of [null,[],{bagId:'missing'},{bagId:'cloth',carried:{rods:[]},stored:{rods:null}}, {bagId:'cloth',carried:{rods:['ghost','bamboo','bamboo'],baits:{worm:-1},accessories:['ghost']},stored:{rods:[],baits:{},accessories:[]}}]){
-  const p=newPlayer();p.coins=98500;p.rods.push('dai');p.systems.inventory=inventory;
-  const restored=validateSave(p);assert.equal(restored.coins,98500);assert.ok(restored.rods.includes('dai'));assert.equal(reconcileInventory(restored.systems.inventory,restored),true);
+  const p=newPlayer();p.coins=98500;p.rods.push('rod_01');p.systems.inventory=inventory;
+  const restored=validateSave(p);assert.equal(restored.coins,98500);assert.ok(restored.rods.includes('rod_01'));assert.equal(reconcileInventory(restored.systems.inventory,restored),true);
  }
 });
 
 test('a damaged storage section retains valid carried choices while rebuilding missing locations',()=>{
- const p=newPlayer();p.rods.push('dai');syncInventory(p);
+ const p=newPlayer();p.rods.push('rod_01');syncInventory(p);
  p.systems.inventory=transferBait(p.systems.inventory,p,'worm',16,'stored');
  p.systems.inventory.stored=null;
  const restored=validateSave(p);
  assert.equal(carriedBaitCount(restored,'worm'),2);assert.equal(restored.systems.inventory.stored.baits.worm,16);
- assert.ok(restored.systems.inventory.stored.rods.includes('dai'));assert.equal(reconcileInventory(restored.systems.inventory,restored),true);
+ assert.ok(restored.systems.inventory.stored.rods.includes('rod_01'));assert.equal(reconcileInventory(restored.systems.inventory,restored),true);
 });
 
 test('departure identifies equipment and bait left home',()=>{
@@ -87,7 +87,7 @@ test('departure identifies equipment and bait left home',()=>{
 
 test('player transaction uses a draft, rejects partial failures, and preserves root identity',()=>{
  const p=newPlayer(),root=p,before=structuredClone(p);
- assert.equal(applyTransaction(p,'failed-purchase',draft=>{draft.coins=0;draft.rods.push('dai');return false;}).ok,false);assert.deepEqual(p,before);
+ assert.equal(applyTransaction(p,'failed-purchase',draft=>{draft.coins=0;draft.rods.push('rod_01');return false;}).ok,false);assert.deepEqual(p,before);
  assert.equal(applyTransaction(p,'overdraft',draft=>{draft.coins=-1;return true;}).ok,false);assert.deepEqual(p,before);
  assert.equal(applyTransaction(p,'bad-stock',draft=>{draft.baits.worm=-1;return true;}).ok,false);assert.deepEqual(p,before);
  assert.equal(applyTransaction(p,'purchase-1',draft=>{draft.coins-=1000;draft.baits.worm+=12;syncInventory(draft);return true;}).ok,true);assert.equal(p,root);
@@ -146,9 +146,9 @@ test('corrupt save is retained and overwrite stays blocked without a verified ba
 });
 
 test('corrupt current save recovers a verified backup, preserving its wallet and assets',()=>{
- const backup=newPlayer();backup.coins=84332;backup.rods.push('dai');ensureInventory(backup);
+ const backup=newPlayer();backup.coins=84332;backup.rods.push('rod_01');ensureInventory(backup);
  const storage=memoryStorage({[SAVE_KEY]:'{broken',[SAVE_BACKUP_KEY]:JSON.stringify(backup)}),loaded=loadPlayer(storage);
- assert.equal(loaded.player.coins,84332);assert.ok(loaded.player.rods.includes('dai'));assert.match(loaded.warning,/khôi phục/);
+ assert.equal(loaded.player.coins,84332);assert.ok(loaded.player.rods.includes('rod_01'));assert.match(loaded.warning,/khôi phục/);
  assert.ok(savePlayer(storage,loaded.player));assert.equal(storage.values.get(SAVE_CORRUPT_KEY),'{broken');
  assert.deepEqual(loadPlayer(storage).player,loaded.player);
 });

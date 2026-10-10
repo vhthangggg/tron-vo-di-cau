@@ -2,15 +2,15 @@ import {guideFish,freeSnag} from './control-player.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {stat,readFile} from 'node:fs/promises';
-import {MAPS,FISH,RODS,ALL_RODS,BAITS,ACCESSORIES,TECHNIQUES,loadoutStats,usesFloat,acceptsBait} from '../src/content.js';
+import {MAPS,FISH,RODS,BAITS,ACCESSORIES,TECHNIQUES,loadoutStats,usesFloat,acceptsBait} from '../src/content.js';
 import {FishingGame,floatMarks,balancedLead} from '../src/engine.js';
 import {newPlayer,validateSave} from '../src/save.js';
 const tickUntil=(g,predicate,max=60)=>{for(let i=0;i<max*10;i++){freeSnag(g);g.step(.1);if(predicate())return;}assert.fail(g.message+' / '+g.phase);};
-const fullPlayer=()=>{const p=newPlayer();p.coins=10000000;p.maps=MAPS.map(m=>m.id);p.rods=ALL_RODS.map(r=>r.id);p.accessories=ACCESSORIES.map(a=>a.id);p.baits=Object.fromEntries(BAITS.map(b=>[b.id,b.reusable?1:100]));p.systems.inventory=null;return p;};
+const fullPlayer=()=>{const p=newPlayer();p.coins=10000000;p.maps=MAPS.map(m=>m.id);p.rods=RODS.map(r=>r.id);p.accessories=ACCESSORIES.map(a=>a.id);p.baits=Object.fromEntries(BAITS.map(b=>[b.id,b.reusable?1:100]));p.systems.inventory=null;return p;};
 const bite=g=>{assert.ok(g.cast());if(g.rod.tech==='lure')g.toggleRetrieve();tickUntil(g,()=>g.phase==='bite');};
 
 test('All 10 maps have unique packaged landscape art and valid playable content',async()=>{
- assert.equal(MAPS.length,10);assert.equal(FISH.length,56);assert.equal(RODS.length,36);assert.equal(new Set(ALL_RODS.map(r=>r.id)).size,ALL_RODS.length);assert.equal(BAITS.length,15);
+ assert.equal(MAPS.length,10);assert.equal(FISH.length,56);assert.equal(RODS.length,36);assert.equal(new Set(RODS.map(r=>r.id)).size,RODS.length);assert.equal(BAITS.length,15);
  // New equipment is additive: validate the original IDs instead of freezing the catalog size.
  const legacyAccessories={line:['line_basic','line18','fluoro','braid'],hook:['hook_basic','hook_barb','hook_wide','hook_pro'],float:['float_basic','float_canal','float_slender','float_sea'],reel:['reel_basic','reel2000','reel4000','reel6000'],net:['net_basic','net_fold','net_long','net_pro']};
  assert.equal(new Set(ACCESSORIES.map(a=>a.id)).size,ACCESSORIES.length,'Accessory IDs must remain unique');
@@ -21,7 +21,7 @@ test('All 10 maps have unique packaged landscape art and valid playable content'
 });
 
 test('Old v0.1 save migrates without losing money, owned gear, catch or pending sale',()=>{
- const old={version:1,coins:43210,baits:{worm:7,dough:5,corn:1,cloudbait:4},rods:['bamboo','spinning'],maps:['AO','HO'],rod:'spinning',bait:'lure',map:'HO',rig:{depth:2.6,lead:1.08},catches:8,released:3,sold:4,casts:25,collection:{fish_04:{count:2,best:1.92}},lessons:['signal'],serial:8,pending:{id:'catch-8',fishId:'fish_04',weight:1.92,value:92160,mapId:'HO'},settings:{assist:false,sound:false,deadline:300}};
+ const old={version:1,coins:43210,baits:{worm:7,dough:5,corn:1,cloudbait:4},rods:['bamboo','rod_02'],maps:['AO','HO'],rod:'rod_02',bait:'lure',map:'HO',rig:{depth:2.6,lead:1.08},catches:8,released:3,sold:4,casts:25,collection:{fish_04:{count:2,best:1.92}},lessons:['signal'],serial:8,pending:{id:'catch-8',fishId:'fish_04',weight:1.92,value:92160,mapId:'HO'},settings:{assist:false,sound:false,deadline:300}};
  const p=validateSave(old);for(const key of ['coins','catches','released','sold','casts','rod','map','collection','lessons'])assert.deepEqual(p[key],old[key]);
  assert.deepEqual(p.settings,{...old.settings,music:.45,effects:.7});assert.equal(p.gifted,0);assert.deepEqual(p.keptFish,[]);
  assert.deepEqual(p.pending,{...old.pending,status:'landed'});assert.equal(p.baits.lure,1);assert.equal(p.baits.shrimp,0);assert.equal(p.accessories.length,5);assert.equal(p.equipment.line,'line_basic');
@@ -38,8 +38,8 @@ test('Accessory purchases/equips reject invalid, unaffordable, duplicate and mid
 });
 
 test('Reusable purchased lures consume one purchase and zero portions across casts and reload',()=>{
- const p=newPlayer();p.coins=100000;const g=new FishingGame(p);assert.ok(g.buy('rod','spinning'));assert.equal(p.baits.lure,1);assert.ok(g.buy('bait','crank'));const coins=p.coins;
- assert.equal(g.buy('bait','crank'),false);assert.equal(p.coins,coins);assert.ok(g.equip('rod','spinning'));assert.ok(g.equip('bait','crank'));
+ const p=newPlayer();p.coins=100000;const g=new FishingGame(p);assert.ok(g.buy('rod','rod_02'));assert.equal(p.baits.lure,1);assert.ok(g.buy('bait','crank'));const coins=p.coins;
+ assert.equal(g.buy('bait','crank'),false);assert.equal(p.coins,coins);assert.ok(g.equip('rod','rod_02'));assert.ok(g.equip('bait','crank'));
  for(let i=0;i<3;i++){assert.ok(g.cast());g.retrieve();assert.equal(p.baits.crank,1);}
  const restored=validateSave(p);assert.equal(restored.bait,'crank');assert.equal(restored.baits.crank,1);assert.equal(restored.coins,coins);
 });
@@ -47,10 +47,10 @@ test('Reusable purchased lures consume one purchase and zero portions across cas
 test('Float capacity balances automatically, reel works only on compatible rods, upgraded gear survives reload',()=>{
  const p=fullPlayer(),g=new FishingGame(p);assert.ok(g.equip('float','float_sea'));assert.equal(floatMarks(p),4);assert(p.rig.lead>1.8);
  assert.equal(g.equip('reel','reel6000'),false);const handPower=loadoutStats(p).power;
- assert.ok(g.equip('rod','iso53'));assert.ok(g.equip('reel','reel6000'));assert(loadoutStats(p).power>handPower);
+ assert.ok(g.equip('rod','rod_13'));assert.ok(g.equip('reel','reel6000'));assert(loadoutStats(p).power>handPower);
  assert.ok(g.equip('line','braid'));assert.ok(g.equip('hook','hook_pro'));assert.ok(g.equip('net','net_pro'));
  const restored=validateSave(p);assert.deepEqual(restored.equipment,p.equipment);assert.deepEqual(new Set(restored.accessories),new Set(p.accessories));assert.equal(floatMarks(restored),4);
- assert.ok(g.equip('rod','bottom42'));assert.equal(g.equip('float','float_basic'),false);assert.equal(floatMarks(p),0);assert.ok(g.setRig('depth',2.6));assert.equal(g.setRig('depth',99),false);
+ assert.ok(g.equip('rod','rod_28'));assert.equal(g.equip('float','float_basic'),false);assert.equal(floatMarks(p),0);assert.ok(g.setRig('depth',2.6));assert.equal(g.setRig('depth',99),false);
 });
 
 test('Better hooks extend the actual bite window and an equipped net finishes the fight early',()=>{
@@ -61,7 +61,7 @@ test('Better hooks extend the actual bite window and an equipped net finishes th
 });
 
 test('Upgraded line, reel and float improve the simulated fight against current',()=>{
- const run=upgraded=>{const p=fullPlayer();p.map='GHE';p.rod='iso53';p.bait='shrimp';p.rig.depth=2.4;if(upgraded){p.equipment.line='braid';p.equipment.reel='reel6000';p.equipment.float='float_sea';}p.rig.lead=balancedLead(p);
+ const run=upgraded=>{const p=fullPlayer();p.map='GHE';p.rod='rod_13';p.bait='shrimp';p.rig.depth=2.4;if(upgraded){p.equipment.line='braid';p.equipment.reel='reel6000';p.equipment.float='float_sea';}p.rig.lead=balancedLead(p);
  const g=new FishingGame(p,{seed:7});bite(g);assert.ok(g.holdRod());g.hooked.weight=8;g.nextSurge=100;g.setPulling(true);for(let i=0;i<50;i++){g.setTracking(true,g.fishPosition.x,g.fishPosition.y);g.step(.1);}return g;};
  const base=run(false),up=run(true);assert.equal(base.phase,'fight');assert.equal(up.phase,'fight');assert(up.energy<base.energy,'Faster reel should drain more energy');assert(up.tension<base.tension,'Stronger line and stable float should reduce tension');
 });

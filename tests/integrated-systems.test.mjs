@@ -55,13 +55,13 @@ test('integrated recovery with zero money and zero bait remains playable before 
 
 test('new purchases stay home until packed; capacity failures preserve every owned asset',()=>{
  const p=newPlayer();p.coins=200000;const g=new FishingGame(p);
- assert.equal(g.buy('rod','dai','buy:dai:once'),true);assert.equal(g.buy('accessory','line18','buy:line:once'),true);assert.equal(g.buy('bait','worm','buy:worm:once'),true);
- let inv=inventoryFor(p);assert(inv.stored.rods.includes('dai'));assert(inv.stored.accessories.includes('line18'));assert.equal(inv.carried.baits.worm,18);assert.equal(inv.stored.baits.worm,12);
- const before=assets(p);assert.equal(g.moveGear('rods','dai','carried'),false);assert.equal(g.moveBait('corn',6,'carried'),false);assert.deepEqual(assets(p),before);
- assert.equal(g.buy('bag','standard','buy:bag:once'),true);assert.equal(g.selectBag('standard'),true);assert.equal(g.moveGear('rods','dai','carried'),true);assert.equal(g.moveBait('corn',6,'carried'),true);
+ assert.equal(g.buy('rod','rod_01','buy:dai:once'),true);assert.equal(g.buy('accessory','line18','buy:line:once'),true);assert.equal(g.buy('bait','worm','buy:worm:once'),true);
+ let inv=inventoryFor(p);assert(inv.stored.rods.includes('rod_01'));assert(inv.stored.accessories.includes('line18'));assert.equal(inv.carried.baits.worm,18);assert.equal(inv.stored.baits.worm,12);
+ const before=assets(p);assert.equal(g.moveGear('rods','rod_01','carried'),false);assert.equal(g.moveBait('corn',6,'carried'),false);assert.deepEqual(assets(p),before);
+ assert.equal(g.buy('bag','standard','buy:bag:once'),true);assert.equal(g.selectBag('standard'),true);assert.equal(g.moveGear('rods','rod_01','carried'),true);assert.equal(g.moveBait('corn',6,'carried'),true);
  assert.equal(reconcileInventory(p.systems.inventory,p),true);inv=inventoryFor(p);assert.equal(inv.carried.rods.length,2);assert.equal(inv.carried.baits.corn,6);
  const full=assets(p);assert.equal(g.selectBag('cloth'),false);assert.deepEqual(assets(p),full);
- assert.equal(g.moveGear('rods','dai','stored'),true);assert.equal(g.moveBait('corn',6,'stored'),true);assert.equal(g.selectBag('cloth'),true);
+ assert.equal(g.moveGear('rods','rod_01','stored'),true);assert.equal(g.moveBait('corn',6,'stored'),true);assert.equal(g.selectBag('cloth'),true);
  assert.equal(g.equip('line','line18'),true);assert.equal(inventoryFor(p).stored.accessories.includes('line_basic'),true);assert.equal(reconcileInventory(p.systems.inventory,p),true);
 });
 
@@ -113,7 +113,7 @@ test('long idle waiting does not spend bait or reset its mount, and a wrong floa
 
 test('rig preset restores all fields in one visible commit and failed load leaves the active setup untouched',()=>{
  const p=newPlayer();p.coins=250000;let observed=[];const g=new FishingGame(p,{onChange:()=>observed.push({rod:p.rod,bait:p.bait,equipment:{...p.equipment},rig:{...p.rig}})});
- assert.equal(g.buy('rod','dai'),true);assert.equal(g.equip('rod','dai'),true);assert.equal(g.equip('bait','corn'),true);assert.equal(g.setRig('leaderMm',.2),true);assert.equal(g.setRig('hookSize',6),true);
+ assert.equal(g.buy('rod','rod_01'),true);assert.equal(g.equip('rod','rod_01'),true);assert.equal(g.equip('bait','corn'),true);assert.equal(g.setRig('leaderMm',.2),true);assert.equal(g.setRig('hookSize',6),true);
  assert.equal(g.saveRigPreset('Bộ ngô bờ ao'),true);const preset=structuredClone(p.systems.rigPresets[0]);
  assert.equal(g.equip('rod','bamboo'),true);assert.equal(g.equip('bait','worm'),true);assert.equal(g.setRig('leaderMm',.16),true);observed=[];
  assert.equal(g.loadRigPreset(preset.id),true);assert.equal(observed.length,1);assert.deepEqual(observed[0],{rod:preset.rod,bait:preset.bait,equipment:preset.equipment,rig:preset.rig});

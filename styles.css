@@ -604,3 +604,12 @@ body[data-screen=fishing] #dialog{width:min(660px,calc(100dvw - 32px));max-width
  .prepare-spot-list strong,.prepare-spot-list small{display:block}
  .prepare-spot-list small{margin:3px 0 0;white-space:nowrap}
 }
+
+/* One uploaded product image is reused in the shop and every equipment view. */
+.rod-visual{display:block;position:relative;width:100%;height:100%;min-width:0}
+.rod-visual>.rod-image{display:block;width:100%;height:100%;max-width:100%;object-fit:contain}
+.rod-visual>svg{display:none;width:100%;height:100%}
+.rod-visual.image-missing>.rod-image{display:none}
+.rod-visual.image-missing>svg{display:block}
+.product-icon>.rod-visual{position:absolute;inset:0}
+.rod-affiliate{margin-top:8px;width:100%;font-size:12px;text-align:center}

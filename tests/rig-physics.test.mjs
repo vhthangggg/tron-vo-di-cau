@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ACCESSORIES,BAITS,ALL_RODS as RODS} from '../src/content.js';
+import {ACCESSORIES,BAITS,RODS} from '../src/content.js';
 import {RIG_DEFAULTS,RIG_OPTIONS,getRigStats,validateRig,validatePreset} from '../src/equipment.js';
 import {balancedLead,floatState} from '../src/rig-physics.js';
 
@@ -67,8 +67,8 @@ test('line tension and moving water affect the equilibrium; a stable float damps
 });
 
 test('lure and bottom fishing do not require a float or calibration',()=>{
-  for(const rod of ['spinning','bottom36']){
-    const player=fullyOwned();player.rod=rod;player.bait=rod==='spinning'?'lure':'worm';
+  for(const rod of ['rod_02','rod_28']){
+    const player=fullyOwned();player.rod=rod;player.bait=rod==='rod_02'?'lure':'worm';
     delete player.equipment.float;player.rig.lead=3.5;
     const state=floatState(player,{bottomDepth:1});
     assert.equal(state.visibleMarks,0);assert.equal(state.balanced,true);assert.equal(state.requiresCalibration,false);
@@ -81,7 +81,7 @@ test('rig validation blocks missing ownership and incompatible parts, while allo
   assert.equal(floatState(player).balanced,false);assert.equal(validateRig(player).ok,true);
   player.equipment.line='braid';assert.equal(validateRig(player).ok,false);
   player.equipment.line='hook_basic';assert.equal(validateRig(player).ok,false);
-  player.equipment.line='line_basic';player.rod='iso53';assert.equal(validateRig(player).ok,false);
+  player.equipment.line='line_basic';player.rod='rod_13';assert.equal(validateRig(player).ok,false);
   player.rod='bamboo';player.bait='lure';assert.equal(validateRig(player).ok,false);
   player.bait='worm';player.rig.leaderMm=NaN;assert.equal(validateRig(player).ok,false);
   player.rig.leaderMm=.16;player.rig.hookSize=4.5;assert.equal(validateRig(player).ok,false);
@@ -96,7 +96,7 @@ test('old equipment records use starter parts and leader choices expose real rig
 
 test('presets validate the selected technique and dimensions without mutating the active setup',()=>{
   const player=fullyOwned(),before=JSON.stringify(player);
-  const preset={rod:'dai',bait:'corn',technique:'dai',equipment:{float:'float_slender'},rig:{depth:1.2,lead:1.5,leaderMm:.12,hookSize:2}};
+  const preset={rod:'rod_01',bait:'corn',technique:'dai',equipment:{float:'float_slender'},rig:{depth:1.2,lead:1.5,leaderMm:.12,hookSize:2}};
   const result=validatePreset(player,preset);assert.equal(result.ok,true);assert.equal(result.rig.leaderMm,.12);
   assert.equal(result.equipment.float,'float_slender');assert.equal(JSON.stringify(player),before);
   assert.equal(validatePreset(starter(),preset).ok,false);

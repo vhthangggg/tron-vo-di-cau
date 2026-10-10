@@ -441,6 +441,7 @@ function showLineDetail(id){
 }
 document.addEventListener('error',event=>{
  const img=event.target;if(!(img instanceof HTMLImageElement))return;
+ if(img.dataset.rodImage){img.closest('.rod-visual')?.classList.add('image-missing');return;}
  if(img.dataset.fishImage){
    const paths=JSON.parse(img.dataset.fishPaths),next=Number(img.dataset.fishIndex)+1;
    if(next<paths.length){img.dataset.fishIndex=next;img.src=paths[next];}else{img.closest('.fish-visual')?.classList.remove('has-photo');img.remove();}

@@ -11,7 +11,7 @@ import {floatState,balancedLead as physicsLead} from './rig-physics.js';
 import {validateRig,validatePreset,getRigStats} from './equipment.js';
 import {fishBehavior,snagChance,castHabitat} from './water-world.js';
 import {fishFightProfile} from './fight-physics.js';
-import {FISH,MAPS,ALL_RODS as RODS,BAITS,BAGS,ACCESSORIES,LESSONS,getMap,getRod,getBait,getFish,getBag,usesFloat,usesReel,acceptsBait,loadoutStats} from './content.js';
+import {FISH,MAPS,RODS,BAITS,BAGS,ACCESSORIES,LESSONS,getMap,getRod,getBait,getFish,getBag,usesFloat,usesReel,acceptsBait,loadoutStats} from './content.js';
 export const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 export const FIGHT_ZONE=Object.freeze({min:30,max:76,red:90});
 export const NO_BITE_HINT='Cá chưa cắn. Có thể vị trí hoặc mồi chưa hợp, hay hôm nay cá ít hoạt động. Thử đổi vị trí, đổi mồi, dùng thẻo nhỏ hơn hoặc về chơi với vợ.';

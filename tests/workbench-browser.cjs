@@ -26,7 +26,7 @@ async function dragItem(page,key,kind){
  const {newPlayer}=await import('../src/save.js'),{floatState}=await import('../src/rig-physics.js'),{MAPS}=await import('../src/content.js');
  const viewports=process.env.WORKBENCH_ORIGIN?[[1440,900],[390,844]]:[[1440,900],[1024,768],[768,1024],[390,844],[320,640],[844,390]];
  for(const [width,height] of viewports){
-  const p=newPlayer();p.rods.push('dai','spinning','bottom42');p.accessories.push('line18','float_slender','hook_pro');p.baits.lure=1;p.baits.pellet=12;p.systems.bags.push('standard');p.settings.sound=false;
+  const p=newPlayer();p.rods.push('rod_01','rod_02','rod_28');p.accessories.push('line18','float_slender','hook_pro');p.baits.lure=1;p.baits.pellet=12;p.systems.bags.push('standard');p.settings.sound=false;
   const ctx=await browser.newContext({viewport:{width,height},hasTouch:width<1000,isMobile:width<1000,ignoreHTTPSErrors:true,reducedMotion:width<500?'reduce':'no-preference'}),page=await ctx.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(r.status()+' '+r.url());});
   await page.addInitScript(({key,p})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(p));},{key,p});
@@ -67,11 +67,11 @@ async function dragItem(page,key,kind){
    await page.locator('#inventory-location').selectOption('stored');assert.equal(await page.locator('.inventory-grid [data-inventory-item="bait:corn"]').getAttribute('data-item-from'),'stored');
    await dragItem(page,'bait:corn','bait');assert.equal((await saved(page)).systems.inventory.carried.baits.corn,6);await page.locator('#inventory-location').selectOption('all');
   }
-  await item(page,'rod:dai');await page.locator('[data-transfer-id="dai"][data-transfer-to="carried"]').click();
+  await item(page,'rod:rod_01');await page.locator('[data-transfer-id="rod_01"][data-transfer-to="carried"]').click();
   const beforeSmall=(await saved(page)).systems.inventory;await page.locator('#bag-select').selectOption('cloth');assert.deepEqual((await saved(page)).systems.inventory,beforeSmall);assert.equal(await page.locator('#bag-select').inputValue(),'standard');
-  await item(page,'rod:bottom42');await page.locator('[data-transfer-id="bottom42"][data-transfer-to="carried"]').click();state=await saved(page);assert.equal(state.rod,'bottom42');assert.equal(state.systems.inventory.carried.rods.length,2);assert(state.systems.inventory.stored.rods.includes('bamboo'));
+  await item(page,'rod:rod_28');await page.locator('[data-transfer-id="rod_28"][data-transfer-to="carried"]').click();state=await saved(page);assert.equal(state.rod,'rod_28');assert.equal(state.systems.inventory.carried.rods.length,2);assert(state.systems.inventory.stored.rods.includes('bamboo'));
   await view(page,'setup');assert.equal(await page.locator('#rig-node-float').count(),0);assert.equal(await page.locator('#rig-node-reel').count(),1);assert(await page.locator('#lead').isDisabled());
-  await part(page,'rod');await page.locator('#rod').selectOption('spinning');assert.equal(await page.locator('#rig-node-float').count(),0);assert.equal(await page.locator('#rig-node-sinker').count(),0);assert(await page.locator('#depth').isDisabled());
+  await part(page,'rod');await page.locator('#rod').selectOption('rod_02');assert.equal(await page.locator('#rig-node-float').count(),0);assert.equal(await page.locator('#rig-node-sinker').count(),0);assert(await page.locator('#depth').isDisabled());
   await page.locator('#rod').selectOption('bamboo');assert.deepEqual(owned(await saved(page)),baseline);
   await item(page,'bait:worm');await page.locator('#inventory-quantity').fill('1');
   const startWorm=(await saved(page)).systems.inventory.carried.baits.worm;
@@ -82,8 +82,8 @@ async function dragItem(page,key,kind){
   await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await page.screenshot({path:path.join(out,'workbench-bag-'+width+'.png'),fullPage:true});
   state=await saved(page);await page.reload();assert.deepEqual(owned(await saved(page)),owned(state));assert.deepEqual((await saved(page)).systems.inventory,state.systems.inventory);
   await page.locator('.page-head a[href="#prepare"]').click();await page.locator('.prepare-rig-preview summary').click();assert(await page.locator('.prepare-rig-preview .rig-diagram').isVisible());await page.locator('#start-fishing').click();await page.locator('.scene[data-loading="ready"]').waitFor();
-  await page.evaluate(()=>location.hash='rig');await page.locator('body[data-screen="rig"]').waitFor();await item(page,'rod:spinning');assert(await page.locator('[data-transfer-id="spinning"][data-transfer-to="carried"]').isDisabled());assert(await page.locator('#bag-select').isDisabled());
-  const trip=(await saved(page)).systems.trip;await part(page,'rod');await page.locator('#rod').selectOption('spinning');assert.equal((await saved(page)).rod,'bamboo');assert.equal((await saved(page)).systems.trip.id,trip.id);assert.deepEqual(owned(await saved(page)),baseline);
+  await page.evaluate(()=>location.hash='rig');await page.locator('body[data-screen="rig"]').waitFor();await item(page,'rod:rod_02');assert(await page.locator('[data-transfer-id="rod_02"][data-transfer-to="carried"]').isDisabled());assert(await page.locator('#bag-select').isDisabled());
+  const trip=(await saved(page)).systems.trip;await part(page,'rod');await page.locator('#rod').selectOption('rod_02');assert.equal((await saved(page)).rod,'bamboo');assert.equal((await saved(page)).systems.trip.id,trip.id);assert.deepEqual(owned(await saved(page)),baseline);
   assert.deepEqual(errors,[]);console.log('PASS '+width+'×'+height+': schematic/keyboard, physics, presets, search, exact transfers, drag/drop, capacity, swaps, photos, replay, reload and trip guards');await ctx.close();
  }
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{await browser?.close();server?.kill();});

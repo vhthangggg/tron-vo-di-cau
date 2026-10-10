@@ -82,7 +82,7 @@ test('Zero-money, zero-bait recovery takes real care and time, then explicit pac
  assert(game.moveBait('worm',3,'carried'));assert(game.cast());
 });
 test('Schema 2 migration keeps all assets, depleted lures, rig and tutorial while granting one garden kit',()=>{
- const p=newPlayer({now:START});p.schemaVersion=2;delete p.systems.garden;p.rods.push('spinning');p.baits.lure=0;p.coins=8700;p.rig.depth=1.8;p.systems.tutorial.bait={completed:true,claimed:true};
+ const p=newPlayer({now:START});p.schemaVersion=2;delete p.systems.garden;p.rods.push('rod_02');p.baits.lure=0;p.coins=8700;p.rig.depth=1.8;p.systems.tutorial.bait={completed:true,claimed:true};
  const q=validateSave(p,{now:START});assert.equal(q.schemaVersion,SCHEMA_VERSION);assert.equal(q.coins,8700);assert.equal(q.baits.lure,0);assert.equal(q.rig.depth,1.8);assert.deepEqual(q.systems.tutorial.bait,p.systems.tutorial.bait);assert.deepEqual(q.baits,p.baits);assert.equal(q.systems.garden.supplies.corn_seed,3);
  q.systems.garden.supplies.compost=0;q.systems.garden.supplies.corn_seed=0;assert.deepEqual(validateSave(q,{now:START+D}).systems.garden.supplies,{corn_seed:0,compost:0});
 });

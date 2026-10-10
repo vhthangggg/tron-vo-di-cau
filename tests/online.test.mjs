@@ -12,7 +12,7 @@ function play(seed){const run=new RankedChallenge(seed);while(!run.finished){con
 test('Ranked server replay derives identical catches from controls, rejecting arbitrary state edits',()=>{
  const run=play(123456),result=replayRanked(123456,run.events);assert(run.catches.length>0);assert.deepEqual(result.catches,run.catches);assert.equal(result.scoreGrams,run.scoreGrams);
  assert.equal(replayRanked(123456,[]).scoreGrams,0);
- for(const trace of [[[1,'buy','rod','spinheavy']],[[0,'setForce',Infinity,true]],[[2,'cast'],[1,'cast']],[[3600,'cast']],[[0,'land']],Array.from({length:65},()=>[0,'cast'])])assert.throws(()=>validateTrace(trace));
+ for(const trace of [[[1,'buy','rod','rod_26']],[[0,'setForce',Infinity,true]],[[2,'cast'],[1,'cast']],[[3600,'cast']],[[0,'land']],Array.from({length:65},()=>[0,'cast'])])assert.throws(()=>validateTrace(trace));
  assert.equal(seasonKey(Date.parse('2026-10-11T16:59:00Z')),'2026-10-05');assert.equal(seasonKey(Date.parse('2026-10-11T17:00:00Z')),'2026-10-12');
 });
 test('Ranked controls clamp keyboard movement at pad edges and coalesce high-frequency pointer events',()=>{

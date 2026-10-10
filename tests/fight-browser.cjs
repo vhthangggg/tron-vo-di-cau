@@ -26,7 +26,7 @@ async function bow(page){return page.evaluate(()=>{
  await new Promise((ok,no)=>{server.stdout.once('data',ok);server.once('error',no);});
  browser=await chromium.launch({headless:true,args:['--no-sandbox','--disable-dev-shm-usage'],...(process.env.CHROMIUM_EXECUTABLE?{executablePath:process.env.CHROMIUM_EXECUTABLE}:{})});
  const {newPlayer}=await import('../src/save.js');
- for(const [label,fishId,weight,width,height,max,rod='bamboo'] of [['loach','fish_27',.05,844,390,5],['crucian','fish_02',.1,375,812,6],['carp','fish_01',.5,844,390,12],['snakehead','fish_04',.5,844,390,16],['large','fish_01',2,844,390,40],['dai-line','fish_01',2,844,390,40,'dai54'],['reel-drag','fish_01',2,844,390,40,'bottom36']]){
+ for(const [label,fishId,weight,width,height,max,rod='bamboo'] of [['loach','fish_27',.05,844,390,5],['crucian','fish_02',.1,375,812,6],['carp','fish_01',.5,844,390,12],['snakehead','fish_04',.5,844,390,16],['large','fish_01',2,844,390,40],['dai-line','fish_01',2,844,390,40,'rod_23'],['reel-drag','fish_01',2,844,390,40,'rod_28']]){
   const context=await browser.newContext({viewport:{width,height},hasTouch:true,isMobile:true}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(r.status()+' '+r.url());});
   const player=newPlayer();player.settings.music=0;player.rods=[...new Set(['bamboo',rod])];player.rod=rod;
@@ -69,7 +69,7 @@ async function bow(page){return page.evaluate(()=>{
    const surge=(await page.locator('#fight-hint').innerText()).startsWith('Cá bứt');
    await hands(page,cdp,surge?.22:.52);await page.clock.runFor(200);elapsed+=.2;
    const sound=await page.evaluate(()=>window.__fightAudio?.fightVoice?.kind);
-   if(sound){assert.equal(sound,rod==='bottom36'?'drag':'line');heard=true;}
+   if(sound){assert.equal(sound,rod==='rod_28'?'drag':'line');heard=true;}
   }
   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
   assert.equal(await page.locator('.scene').getAttribute('data-phase'),'landed');assert(elapsed<max,label+' took '+elapsed);

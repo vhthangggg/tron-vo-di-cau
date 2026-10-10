@@ -26,7 +26,8 @@
     "export:species": "node scripts/export-fish-catalog.mjs",
     "test:browser:garden": "node tests/garden-browser.cjs",
     "test:browser:workbench": "node tests/workbench-browser.cjs",
-    "test:browser:online": "node tests/online-browser.cjs"
+    "test:browser:online": "node tests/online-browser.cjs",
+    "test:browser:rod-images": "node tests/rod-images-browser.cjs"
   },
   "engines": {
     "node": ">=22"

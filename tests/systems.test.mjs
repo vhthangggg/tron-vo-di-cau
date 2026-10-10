@@ -5,7 +5,7 @@ import {transact} from '../src/economy.js';
 import {mountBait,resolveBait} from '../src/bait-system.js';
 import {keepCatch,disposeCatch} from '../src/catch-inventory.js';
 import {advanceTutorial,claimTutorial} from '../src/tutorial.js';
-test('starter bag capacity and ownership',()=>{const i=makeInventory(),owned={rods:['bamboo'],accessories:[],baits:{worm:18}};assert.equal(validateBag(i,owned).ok,true);i.carried.rods.push('dai');assert.equal(validateBag(i,owned).ok,false);});
+test('starter bag capacity and ownership',()=>{const i=makeInventory(),owned={rods:['bamboo'],accessories:[],baits:{worm:18}};assert.equal(validateBag(i,owned).ok,true);i.carried.rods.push('rod_01');assert.equal(validateBag(i,owned).ok,false);});
 test('bait transfer rejects missing source',()=>{const i=makeInventory(),owned={rods:['bamboo'],accessories:[],baits:{worm:18}};assert.equal(transferBait(i,owned,'worm',1),null);});
 test('transaction cannot replay or overdraft',()=>{const w={balance:100,applied:[]},r=transact(w,'purchase-1',{delta:-80});assert.equal(r.ok,true);assert.equal(transact(r.wallet,'purchase-1',{delta:-80}).reason,'duplicate');assert.equal(transact(r.wallet,'purchase-2',{delta:-80}).reason,'funds');});
 test('bait survives retrieval and is consumed once on loss',()=>{const s={worm:2},m=mountBait(s,'worm');assert.equal(resolveBait(s,m,'retrieved').stock.worm,2);const lost=resolveBait(s,m,'lost');assert.equal(lost.stock.worm,1);});
@@ -33,26 +33,26 @@ test('malformed optional systems never discards legacy wallet',()=>{
 
 test('legacy gear projects into bag and storage without losing ownership',async()=>{
  const {inventoryFromLegacy,reconcileInventory}=await import('../src/inventory.js');
- const p=newPlayer();p.rods.push('dai');p.baits.worm=17;p.baits.dough=9;
+ const p=newPlayer();p.rods.push('rod_01');p.baits.worm=17;p.baits.dough=9;
  const inv=inventoryFromLegacy(p);
- assert.ok(inv);assert.equal(inv.carried.rods.length,1);assert.ok(inv.stored.rods.includes('dai'));
+ assert.ok(inv);assert.equal(inv.carried.rods.length,1);assert.ok(inv.stored.rods.includes('rod_01'));
  assert.equal(reconcileInventory(inv,p),true);
  const restored=validateSave({...p,systems:{inventory:inv,tutorial:{},transactions:[]}});
  assert.equal(reconcileInventory(restored.systems.inventory,restored),true);
 });
 test('tampered inventory cannot erase stored equipment on reload',()=>{
- const p=newPlayer();p.rods.push('dai');
+ const p=newPlayer();p.rods.push('rod_01');
  const q=validateSave({...p,systems:{inventory:{bagId:'cloth',carried:{rods:['bamboo'],baits:{worm:18},accessories:[]},stored:{rods:[],baits:{},accessories:[]}},tutorial:{},transactions:[]}});
- assert.ok(q.rods.includes('dai'));assert.ok(q.systems.inventory.stored.rods.includes('dai'));
+ assert.ok(q.rods.includes('rod_01'));assert.ok(q.systems.inventory.stored.rods.includes('rod_01'));
 });
 
 test('rod transfers enforce capacity and retain ownership',async()=>{
  const {inventoryFromLegacy,transferGear,reconcileInventory}=await import('../src/inventory.js');
- const p=newPlayer();p.rods.push('dai');const inv=inventoryFromLegacy(p);
+ const p=newPlayer();p.rods.push('rod_01');const inv=inventoryFromLegacy(p);
  const owned={rods:p.rods,accessories:p.accessories,baits:p.baits};
- assert.equal(transferGear(inv,owned,'rods','dai','carried'),null);
+ assert.equal(transferGear(inv,owned,'rods','rod_01','carried'),null);
  const stowed=transferGear(inv,owned,'rods','bamboo','stored');
- assert.ok(stowed);const moved=transferGear(stowed,owned,'rods','dai','carried');
+ assert.ok(stowed);const moved=transferGear(stowed,owned,'rods','rod_01','carried');
  assert.ok(moved);assert.equal(reconcileInventory(moved,p),true);
 });
 test('bag summary renderer does not mutate player state',async()=>{
@@ -64,9 +64,9 @@ test('bag summary renderer does not mutate player state',async()=>{
 
 test('swap carried rod with stored rod preserves exact ownership',async()=>{
  const {inventoryFromLegacy,swapCarriedRod,reconcileInventory}=await import('../src/inventory.js');
- const p=newPlayer();p.rods.push('dai');
- const before=inventoryFromLegacy(p),after=swapCarriedRod(before,p,'bamboo','dai');
- assert.ok(after);assert.deepEqual(after.carried.rods,['dai']);assert.ok(after.stored.rods.includes('bamboo'));
+ const p=newPlayer();p.rods.push('rod_01');
+ const before=inventoryFromLegacy(p),after=swapCarriedRod(before,p,'bamboo','rod_01');
+ assert.ok(after);assert.deepEqual(after.carried.rods,['rod_01']);assert.ok(after.stored.rods.includes('bamboo'));
  assert.equal(reconcileInventory(after,p),true);
- assert.equal(swapCarriedRod(after,p,'bamboo','dai'),null);
+ assert.equal(swapCarriedRod(after,p,'bamboo','rod_01'),null);
 });

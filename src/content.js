@@ -1,4 +1,3 @@
-import {LEGACY_RODS} from './legacy-rods.js';
 import {NEW_CATCHABLE_SPECIES,enrichSpecies,FISH_ASSET_ALIASES} from './species-data.js';
 // Địa điểm, tập tính, khối lượng và giá là mô hình gameplay; không phải dữ liệu khảo sát.
 export const TECHNIQUES = {
@@ -1498,7 +1497,7 @@ export const RODS = [
     "tech": "don",
     "power": 1.2,
     "price": 0,
-    "note": "Cần câu đáy; chỉ số sức cần là cân bằng game.",
+    "note": "Cần tay khởi đầu. Nhẹ, hợp cá nhỏ và giun ở bờ gần.",
     "label": "Câu đơn",
     "asset": "/assets/items/rods/can-tre-ao.webp",
     "marketPrice": null,
@@ -2297,9 +2296,6 @@ export const RODS = [
   }
 ];
 
-// Storefront catalog stays at 36; saved equipment can also use retired rods.
-export const ALL_RODS = [...RODS,...LEGACY_RODS];
-
 export const BAITS = [
   {
     "id": "worm",
@@ -2768,7 +2764,7 @@ export const LESSONS = [
 ];
 
 export const getMap = id => MAPS.find(x=>x.id===id) || MAPS[0];
-export const getRod = id => ALL_RODS.find(x=>x.id===id) || RODS[0];
+export const getRod = id => RODS.find(x=>x.id===id) || RODS[0];
 export const getBait = id => BAITS.find(x=>x.id===id) || BAITS[0];
 export const getFish = id => FISH.find(x=>x.id===(FISH_ASSET_ALIASES[id]||id));
 export const getAccessory = id => ACCESSORIES.find(x=>x.id===id);

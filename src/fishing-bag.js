@@ -1,4 +1,4 @@
-import {BAGS,ALL_RODS as RODS,BAITS,ACCESSORIES,ACCESSORY_SLOTS,getBag,getRod,usesFloat,usesReel,acceptsBait,slotItem} from './content.js';
+import {BAGS,RODS,BAITS,ACCESSORIES,ACCESSORY_SLOTS,getBag,getRod,usesFloat,usesReel,acceptsBait,slotItem} from './content.js';
 
 export const PACK_LABELS={rods:'cần',baits:'loại mồi',accessories:'phụ kiện'};
 const definitions={rods:RODS,baits:BAITS,accessories:ACCESSORIES};

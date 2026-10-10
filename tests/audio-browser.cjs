@@ -14,7 +14,7 @@ let server,browser;
   await page.evaluate(async()=>{
     const {GameAudio}=await import('/src/game-audio.js'),{getRod}=await import('/src/content.js');
     window.mix={sound:true,music:0,effects:.7};window.a=new GameAudio({getSettings:()=>window.mix});
-    window.f={phase:'fight',rod:getRod('dai54'),tension:58,surge:false,velocity:{x:.1,y:-.1},hooked:{weight:1.2}};
+    window.f={phase:'fight',rod:getRod('rod_23'),tension:58,surge:false,velocity:{x:.1,y:-.1},hooked:{weight:1.2}};
     const b=document.createElement('button');b.id='unlock-test';b.textContent='Unlock';b.onclick=()=>a.unlock();document.body.prepend(b);
   });
   assert.equal(await page.evaluate(()=>!!a.ctx),false);await page.locator('#unlock-test').click();
@@ -69,7 +69,7 @@ let server,browser;
   await page.evaluate(()=>a.fishing(f));await page.waitForFunction(()=>a.voices.size===1);
   checks.push('Pause, effects=0, mute and background stop loops; return resumes only when fishing runs');
 
-  await page.evaluate(async()=>{f.rod=(await import('/src/content.js')).getRod('bottom36');f.surge=true;a.fishing(f);});
+  await page.evaluate(async()=>{f.rod=(await import('/src/content.js')).getRod('rod_28');f.surge=true;a.fishing(f);});
   await page.waitForFunction(()=>a.voices.size===1&&a.fightVoice?.kind==='drag');await page.waitForFunction(()=>rms()>.001);
   assert(await page.evaluate(()=>a.fightVoice.source.buffer!==first.source.buffer));
   await page.evaluate(()=>{window.drag=a.fightVoice;f.tension=55;f.surge=false;f.velocity={x:0,y:.1};a.fishing(f);});await page.waitForFunction(()=>a.fightVoice.gain.gain.value<.001);

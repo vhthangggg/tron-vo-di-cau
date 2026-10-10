@@ -38,7 +38,7 @@ async function noOverflow(page){assert(await page.evaluate(()=>document.document
   assert.deepEqual(errors,[]);console.log('PASS '+width+'px: home garden, real shop purchases, soil prep, sowing, 12h worms/compost, 24h cooldown, 3-day cared crop, harvest into home storage and reload; no instant bait, no overflow/errors.');await context.close();
  }
  // Existing schema-2 saves receive a garden once, without losing caught fish or a depleted lure.
- const p=newPlayer({now:start+1000});p.schemaVersion=2;delete p.systems.garden;p.coins=8130;p.collection.fish_01={count:2,best:.7};p.catches=2;p.rods.push('spinning');p.baits.lure=0;
+ const p=newPlayer({now:start+1000});p.schemaVersion=2;delete p.systems.garden;p.coins=8130;p.collection.fish_01={count:2,best:.7};p.catches=2;p.rods.push('rod_02');p.baits.lure=0;
  const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage();await page.addInitScript(p=>{if(!localStorage.getItem('tron-vo-di-cau.v01'))localStorage.setItem('tron-vo-di-cau.v01',JSON.stringify(p));},p);
  await page.goto(origin+'/#garden');let migrated=await saved(page);assert.equal(migrated.schemaVersion,3);assert.equal(migrated.coins,p.coins);assert.deepEqual(migrated.collection,p.collection);assert.equal(migrated.baits.lure,0);
  await page.locator('#garden-corn-feed').click();await page.reload();assert.equal((await saved(page)).systems.garden.supplies.compost,1);assert.equal((await saved(page)).coins,p.coins);await context.close();console.log('PASS live UI migration schema 2 → 3: assets, achievements and depleted lure conserved; starter supplies granted once.');

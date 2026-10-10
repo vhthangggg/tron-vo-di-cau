@@ -32,6 +32,7 @@ jobs:
           echo "CHROMIUM_EXECUTABLE=$RUNNER_TEMP/chrome-headless-shell-linux64/chrome-headless-shell" >> "$GITHUB_ENV"
       - name: Verify the production release journeys
         run: |
+          npm run test:browser:rod-images
           npm run test:browser:audio
           npm run test:browser:fights
           npm run test:browser:experience
