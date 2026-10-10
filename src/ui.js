@@ -110,11 +110,17 @@ export function toolArt(kind,id=''){
  if(kind==='bait'){
   const current=BAITS.find(bait=>bait.id===id);
   if(current?.asset){
-   // SVG remains visible when the user has not uploaded the matching WebP yet.
-   const fallback='<svg viewBox="0 0 140 110" aria-hidden="true"><path d="M15 54Q51 19 107 48l17-12-4 30-15-11Q53 85 15 54Z" fill="#789c85" stroke="#4c766d" stroke-width="3"/><circle cx="91" cy="47" r="5" fill="#f2e8c5"/><path d="M55 70v20q0 12-12 3m50-26v24q0 8-9 4" fill="none" stroke="#547a73" stroke-width="3"/></svg>';
-   return '<span class="lure-item-art" style="position:relative;display:grid;place-items:center;width:100%;min-height:110px;height:100%">'+fallback+'<img class="lure-image" src=".'+esc(current.asset)+'" alt="'+esc(current.name)+'" loading="lazy" decoding="async" onerror="this.style.display=\'none\'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain" /></span>';
+    return `<img
+      class="lure-image"
+      src=".${esc(current.asset)}"
+      alt="${esc(current.name)}"
+      loading="lazy"
+      decoding="async"
+      width="320"
+      height="180"
+    >`;
   }
- }
+}
  if(id==='livefish')return fishArt({color:'#809b8d',shape:'long',pattern:'scales'});
  const baits={
   corn:'<path d="M46 88q-13-48 18-58 29-6 30 25T46 88" fill="#dfb753" stroke="#a38030" stroke-width="2"/><path d="m57 35 17 52M71 31l15 43M48 52l40-12M46 66l45-13M49 80l38-11" stroke="#f9dc87" stroke-width="3"/><path d="M42 65q-17 22 6 35l29-9" fill="#78924e"/>',
