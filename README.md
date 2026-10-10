@@ -155,6 +155,8 @@ Giao diện PC tự bật từ 1024 px với chuột: thanh điều hướng tr�
 
 Ảnh cá đã được giới hạn trong khung trên sổ cá, thông tin loài, màn cá lên bờ và rọ; giữ nguyên tỷ lệ và nền trong suốt. Kiểm tra PC: `npm run test:browser:desktop`; ảnh thật: `npm run test:browser:fish-images`.
 
+Chợ có [12 rọng đựng cá](docs/FISH_KEEPERS.md), với ảnh WebP và link thực tế từ bảng chủ dự án cung cấp. Mua, đổi rọng, sức chứa, chiều dài cá, hao mòn, sửa rọng và tình trạng cá được lưu tự động. Bản lưu cũ được đổi sang rọng tương đương mà giữ toàn bộ cá và xu. [Upload 12 ảnh đúng tên file](https://github.com/vhthangggg/tron-vo-di-cau/upload/main/public/assets/items/fish-keepers); kiểm tra: `npm run test:browser:keepers`.
+
 Khi nhả tay/phím Space, lực kéo được nhả ngay, còn cần hạ và hết cong dần; không nhảy về tư thế ban đầu. Cần tre có tiếng ma sát dây rõ hơn ở âm lượng mặc định, kể cả dây chỉ may; nhạc nền giảm nhẹ trong lúc dây căng và trở lại khi dây chùng. Tạm dừng, tắt tiếng hoặc rời tab dừng hiệu ứng. Kiểm tra: `npm run test:browser:audio`, `npm run test:browser:rod-release`, `npm run test:browser:fights`.
 
 ## Danh mục loài và ảnh 57 ID (09/10/2026)

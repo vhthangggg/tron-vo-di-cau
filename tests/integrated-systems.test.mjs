@@ -172,17 +172,17 @@ test('an oversized legacy pending fish cannot bypass container weight capacity b
 });
 
 test('normal net limit uses both count and mass, with alternate handling that cannot silently remove fish',()=>{
- const p=landedFixture(100);p.container='bucket';p.keptFish=Array.from({length:KEEP_CAPACITY.bucket.count},(_,i)=>fish(i+1,'kept'));
- const g=new FishingGame(p);assert.equal(g.resolveCatch('catch-100','keep'),false);assert.equal(p.pending.id,'catch-100');assert.equal(p.keptFish.length,KEEP_CAPACITY.bucket.count);
- assert.equal(g.resolveKeptCatch('catch-1','release'),true);assert.equal(g.resolveCatch('catch-100','keep'),true);assert.equal(p.keptFish.length,KEEP_CAPACITY.bucket.count);
+ const p=landedFixture(100);p.container='fish_keeper_03';p.fishKeepers.push('fish_keeper_03');p.keptFish=Array.from({length:KEEP_CAPACITY.fish_keeper_03.count},(_,i)=>fish(i+1,'kept'));
+ const g=new FishingGame(p);assert.equal(g.resolveCatch('catch-100','keep'),false);assert.equal(p.pending.id,'catch-100');assert.equal(p.keptFish.length,KEEP_CAPACITY.fish_keeper_03.count);
+ assert.equal(g.resolveKeptCatch('catch-1','release'),true);assert.equal(g.resolveCatch('catch-100','keep'),true);assert.equal(p.keptFish.length,KEEP_CAPACITY.fish_keeper_03.count);
  assert.equal(new Set(p.keptFish.map(f=>f.id)).size,p.keptFish.length);assert.equal(p.released,1);
 });
 
-test('a bucket can be full by weight before its fish-count limit',()=>{
- const p=landedFixture(100);p.container='bucket';p.keptFish=Array.from({length:4},(_,i)=>fish(i+1,'kept',{fishId:'fish_07',weight:3,value:72000}));
- const g=new FishingGame(p);assert(p.keptFish.length<KEEP_CAPACITY.bucket.count);assert.equal(g.resolveCatch('catch-100','keep'),false);
- assert.equal(p.pending.id,'catch-100');assert.equal(p.keptFish.length,4);assert.equal(g.resolveKeptCatch('catch-1','release'),true);
- assert.equal(g.resolveCatch('catch-100','keep'),true);assert.equal(p.keptFish.length,4);assert.equal(p.keptFish.reduce((sum,f)=>sum+f.weight,0),9.3);
+test('a keeper can be full by weight before its fish-count limit',()=>{
+ const p=landedFixture(100);p.container='fish_keeper_05';p.fishKeepers.push('fish_keeper_05');p.keptFish=Array.from({length:8},(_,i)=>fish(i+1,'kept',{fishId:'fish_01',weight:1.875,value:72000}));
+ const g=new FishingGame(p);assert(p.keptFish.length<KEEP_CAPACITY.fish_keeper_05.count);assert.equal(g.resolveCatch('catch-100','keep'),false);
+ assert.equal(p.pending.id,'catch-100');assert.equal(p.keptFish.length,8);assert.equal(g.resolveKeptCatch('catch-1','release'),true);
+ assert.equal(g.resolveCatch('catch-100','keep'),true);assert.equal(p.keptFish.length,8);assert.equal(p.keptFish.reduce((sum,f)=>sum+f.weight,0),13.425);
 });
 
 test('return transfer merges a matching replay uniquely and conflicts fail without changing player assets',()=>{

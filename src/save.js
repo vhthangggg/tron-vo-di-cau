@@ -1,5 +1,5 @@
 import {FISH, MAPS, RODS, BAITS, ACCESSORIES, ACCESSORY_SLOTS, LESSONS, getRod, getBait, getFish, acceptsBait} from './content.js';
-import {CONTAINERS} from './catch-fate.js';
+import {STARTER_KEEPER,normalizeKeeperState,normalizeFishCare} from './fish-keepers.js';
 import {BAG_TYPES, ensureInventory, carriedBaitCount, migratePacking} from './inventory.js';
 import {newGarden,normalizeGarden} from './garden.js';
 import {normalizeFishingStats} from './fishing-stats.js';
@@ -20,6 +20,7 @@ const protect=(storage,state)=>{if(storage&&(typeof storage==='object'||typeof s
 export function newPlayer({now=Date.now()}={}){
  const base=ACCESSORIES.filter(a=>a.price===0);
  const player={version:1,schemaVersion:SCHEMA_VERSION,coins:12000,baits:{...Object.fromEntries(BAITS.map(b=>[b.id,0])),worm:18,dough:6,corn:6},rods:['bamboo'],maps:['AO'],accessories:base.map(a=>a.id),equipment:Object.fromEntries(base.map(a=>[a.slot,a.id])),rod:'bamboo',bait:'worm',map:'AO',rig:{depth:MAPS[0].spots[0].depth,lead:1.08,leaderMm:.16,leaderLength:.25,hookSize:4,sinkerDistance:.25},catches:0,released:0,sold:0,gifted:0,cooked:0,container:'keepnet',keptFish:[],homeFish:[],casts:0,collection:{},lessons:[],pending:null,serial:0,settings:{assist:true,sound:true,music:.45,effects:.7,deadline:0},systems:{inventory:null,flags:{inventory:true,economy:true,bait:true,rig:true,tutorial:true,catch:true},tutorial:{},transactions:[],sequence:0,bags:['cloth'],mountedBait:null,rigPresets:[],trip:null,gearInstances:[]}};
+ player.fishKeepers=[STARTER_KEEPER];player.container=STARTER_KEEPER;normalizeKeeperState(player);
  player.systems.garden=newGarden(now);player.systems.fishingStats=[];ensureInventory(player);
  return player;
 }
@@ -37,7 +38,7 @@ function restoredRig(raw,fallback,{strict=false}={}){
 function catchRecord(raw,status){
  if(record(raw)&&raw.fishId==='fish_55')raw={...raw,fishId:getFish(raw.fishId).id};
  if(!record(raw)||typeof raw.id!=='string'||!/^catch-\d+$/.test(raw.id)||!validInt(Number(raw.id.slice(6)),1)||!FISH.some(f=>f.id===raw.fishId)||!Number.isFinite(raw.weight)||raw.weight<=0||raw.weight>50||!validInt(raw.value)||!MAPS.some(m=>m.id===raw.mapId))return null;
- const fish={id:raw.id,fishId:raw.fishId,weight:raw.weight,value:raw.value,mapId:raw.mapId,status};
+ const fish={id:raw.id,fishId:raw.fishId,weight:raw.weight,value:raw.value,mapId:raw.mapId,status,...normalizeFishCare(raw)};
  if(validInt(raw.caughtAt,0,1e15)||(typeof raw.caughtAt==='string'&&raw.caughtAt.length<=64&&Number.isFinite(Date.parse(raw.caughtAt))))fish.caughtAt=raw.caughtAt;
  return fish;
 }
@@ -71,7 +72,7 @@ export function validateSave(raw,{now=Date.now()}={}){
   if(validInt(count,1))p.collection.fish_07={count,best:Math.max(current.best,alias.best)};
  }
  p.lessons=[...new Set(array(raw.lessons).filter(id=>LESSONS.some(l=>l.id===id)))];
- if(CONTAINERS.some(c=>c.id===raw.container))p.container=raw.container;
+ normalizeKeeperState(p,raw);
  p.settings.assist=raw.settings?.assist!==false;p.settings.sound=raw.settings?.sound!==false;
  for(const key of ['music','effects'])if(Number.isFinite(raw.settings?.[key]))p.settings[key]=Math.max(0,Math.min(1,raw.settings[key]));
  p.settings.deadline=[0,180,300].includes(raw.settings?.deadline)?raw.settings.deadline:0;

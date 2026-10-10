@@ -2,11 +2,12 @@ import {sampleSpecimenWeight} from './species-physics.js';
 import {recordFishingCatch,recordFishingRelease} from './fishing-stats.js';
 import {pointInPolygon} from './scene-geometry.js';
 import {catchRemark,getContainer} from './catch-fate.js';
+import {FISH_KEEPERS,findFishKeeper,resolveKeeperId,normalizeKeeperState,keeperDurability,keeperRepairCost,initialFishCare,advanceFishKeeping,catchSaleValue,isLivingCatch} from './fish-keepers.js';
 import {BAG_TYPES,ensureInventory,syncInventory,inventoryFor,carriedBaitCount,validateDeparture,transferGear,transferBait,swapCarriedRod,bagInventory} from './inventory.js';
 import {applyTransaction,nextTransactionId} from './economy.js';
 import {mountBait,resolveBait} from './bait-system.js';
 import {newGarden,gardenAction,gardenPurchase} from './garden.js';
-import {keepCatch,canStoreCatch,containerUsage,shipHome} from './catch-inventory.js';
+import {keepCatch,canStoreCatch,containerUsage,shipHome,fitsKeeperLength} from './catch-inventory.js';
 import {advanceTutorial,claimTutorial,STARTER_STEPS} from './tutorial.js';
 import {floatState,balancedLead as physicsLead} from './rig-physics.js';
 import {validateRig,validatePreset,getRigStats} from './equipment.js';
@@ -33,7 +34,7 @@ function applyBaitResolution(player,mounted,result){
  player.baits=result.stock;player.systems.mountedBait=result.mounted;return true;
 }
 export class FishingGame{
-  constructor(player,{seed=Date.now(),onChange=()=>{},wallClock=()=>Date.now()}={}){this.player=player;this.wallClock=wallClock;ensureInventory(player);player.systems.garden??=newGarden(wallClock());player.homeFish??=[];player.cooked??=0;this.random=seededRandom(seed);this.onChange=onChange;this.phase=player.pending?'landed':'idle';this.time=0;this.elapsed=0;this.paused=false;this.pulling=false;this.retrieving=false;this.deadlineReached=false;this.quietHint=false;this.quietHintOffered=false;this.message='Chọn điểm câu. Bắt đầu bằng giun và cần tre.';this.spot=0;const savedSpot=this.map.spots.findIndex((s,i)=>(s.id||String(i))===player.systems.trip?.spotId);if(savedSpot>=0)this.spot=savedSpot;this.castId=0;this.castTarget=null;this.castHabitat=null;this.castFlight=null;this.force=0;this.tracking=false;this.aim={x:.5,y:.5};this.fishPosition={x:.5,y:.5};this.controlRandom=seededRandom(seed^0xAC51);this.environmentRandom=seededRandom(seed^0xE872);this.hooked=null;this.target=null;this.fish=[];this.populate();}
+  constructor(player,{seed=Date.now(),onChange=()=>{},wallClock=()=>Date.now()}={}){this.player=player;this.wallClock=wallClock;ensureInventory(player);normalizeKeeperState(player);player.systems.garden??=newGarden(wallClock());player.homeFish??=[];player.cooked??=0;this.random=seededRandom(seed);this.onChange=onChange;this.phase=player.pending?'landed':'idle';this.time=0;this.elapsed=0;this.paused=false;this.pulling=false;this.retrieving=false;this.deadlineReached=false;this.quietHint=false;this.quietHintOffered=false;this.message='Chọn điểm câu. Bắt đầu bằng giun và cần tre.';this.spot=0;const savedSpot=this.map.spots.findIndex((s,i)=>(s.id||String(i))===player.systems.trip?.spotId);if(savedSpot>=0)this.spot=savedSpot;this.castId=0;this.castTarget=null;this.castHabitat=null;this.castFlight=null;this.force=0;this.tracking=false;this.aim={x:.5,y:.5};this.fishPosition={x:.5,y:.5};this.controlRandom=seededRandom(seed^0xAC51);this.environmentRandom=seededRandom(seed^0xE872);this.hooked=null;this.target=null;this.fish=[];this.populate();}
   changed(){this.onChange(this);}
   get map(){return getMap(this.player.map);}
   get rod(){return getRod(this.player.rod);}
@@ -247,6 +248,7 @@ export class FishingGame{
   step(dt){
     if(this.paused||this.deadlineReached)return;
     dt=clamp(dt,0,.1);this.time+=dt;this.elapsed+=dt;
+    if(advanceFishKeeping(this.player,dt))this.changed();
     if(this.player.settings.deadline&&this.elapsed>=this.player.settings.deadline){this.deadlineReached=true;this.releaseHands();if(['casting','waiting','nibble','bite','fight','snag'].includes(this.phase)){if(this.phase==='fight'||this.phase==='snag')this.consumeMounted('lost');this.phase='failed';this.target=null;this.castFlight=null;this.signal='quiet';}this.message='Đến giờ về nhà. Kết thúc buổi câu hoặc bắt đầu một buổi mới.';this.changed();return;}
     for(const f of this.fish){if(f.caught)continue;f.suspicion=Math.max(0,f.suspicion-dt*.025);if(f!==this.target){f.angle+=(this.random()-.5)*dt;f.x=clamp(f.x+Math.cos(f.angle)*dt*.004,.08,.92);f.y=clamp(f.y+Math.sin(f.angle)*dt*.002,.47,.82);}}
     if(this.phase==='casting')this.stepCastFlight(dt);
@@ -375,17 +377,18 @@ export class FishingGame{
   fail(message,outcome='lost'){this.consumeMounted(outcome);this.releaseHands();this.castFlight=null;this.phase='failed';this.signal='quiet';this.pulling=false;this.retrieving=false;this.quietHint=false;this.target=null;this.message=message;this.changed();}
   land(){
     const f=this.hooked;f.caught=true;const def=getFish(f.fishId),p=this.player;
-    p.serial++;p.pending={id:`catch-${p.serial}`,fishId:f.fishId,weight:f.weight,value:Math.round(def.price*f.weight),mapId:p.map};
+    p.serial++;p.pending={id:`catch-${p.serial}`,fishId:f.fishId,weight:f.weight,value:Math.round(def.price*f.weight),mapId:p.map,...initialFishCare()};
     p.catches++;const c=p.collection[f.fishId]||{count:0,best:0};p.collection[f.fishId]={count:c.count+1,best:Math.max(c.best,f.weight)};
     p.pending.status='landed';p.pending.caughtAt=this.wallClock();recordFishingCatch(p,p.pending,p.pending.caughtAt);this.event('FISH_LANDED',{success:true});this.phase='landed';this.releaseHands();this.message=`Đã đưa ${def.name.toLocaleLowerCase('vi')} lên bờ.`;this.changed();
   }
   resolveCatch(id,decision){
     const p=this.player,c=p.pending,legacy=!this.enabled('catch');
     if(!c||c.id!==id||!(legacy?['sell','release','gift','keep']:['release','keep']).includes(decision))return false;
-    if(decision==='keep'){const capacity=canStoreCatch(p.keptFish,c,p.container);if(!capacity.ok)return this.error('Rọ đã đầy hoặc con cá vượt sức chứa. Phóng sinh, đổi vật chứa hoặc mang rọ về nhà; cá vừa câu vẫn được giữ.');}
+    if(decision==='keep'){const capacity=canStoreCatch(p.keptFish,c,p.container,keeperDurability(p));if(!capacity.ok)return this.error(capacity.reason==='length'?'Con cá dài hơn giới hạn của rọng. Đổi rọng lớn hơn hoặc phóng sinh; cá vừa câu vẫn được giữ.':capacity.reason==='durability'?'Rọng đã hỏng. Về nhà sửa hoặc đổi rọng; cá vừa câu vẫn được giữ.':'Rọ đã đầy hoặc con cá vượt sức chứa. Phóng sinh, đổi vật chứa hoặc mang rọ về nhà; cá vừa câu vẫn được giữ.');}
     const ok=this.transact('catch:'+id+':resolve',draft=>{
       if(decision==='keep'){
-        const stored=keepCatch(draft.keptFish,{...c,status:'kept'},draft.container);if(!stored.ok)return false;
+        if(!draft.keptFish.length)draft.systems.keeperSeconds=0;
+        const stored=keepCatch(draft.keptFish,{...c,status:'kept'},draft.container,keeperDurability(draft));if(!stored.ok)return false;
         if(this.atHome){const shipped=shipHome(stored.catches,draft.homeFish);if(!shipped.ok)return false;draft.homeFish=shipped.home.map(f=>({...f,status:'home'}));draft.keptFish=[];}else draft.keptFish=stored.catches;
       }else if(decision==='release'){draft.released++;recordFishingRelease(draft,this.wallClock());}
       else if(decision==='sell'){draft.coins+=c.value;draft.sold++;}else draft.gifted++;
@@ -399,9 +402,10 @@ export class FishingGame{
     if(!['idle','failed','landed'].includes(this.phase)||!['sell','release','gift','cook'].includes(decision))return false;
     const p=this.player,home=p.homeFish.find(c=>c.id===id),kept=p.keptFish.find(c=>c.id===id),c=home||kept;
     if(!c||(!this.atHome&&decision!=='release')||(!home&&decision!=='release'&&this.enabled('catch')))return false;
+    if(decision==='release'&&!isLivingCatch(c))return this.error('Cá đã chết, không thể phóng sinh. Mang về nhà để xử lý.');
     const ok=this.transact('fish:'+id+':dispose',draft=>{
       const source=home?'homeFish':'keptFish';draft[source]=draft[source].filter(f=>f.id!==id);
-      if(decision==='sell'){draft.coins+=c.value;draft.sold++;}else if(decision==='gift')draft.gifted++;else if(decision==='cook')draft.cooked++;else {draft.released++;recordFishingRelease(draft,this.wallClock());}
+      if(decision==='sell'){draft.coins+=catchSaleValue(c);draft.sold++;}else if(decision==='gift')draft.gifted++;else if(decision==='cook')draft.cooked++;else {draft.released++;recordFishingRelease(draft,this.wallClock());}
       return true;
     });
     if(!ok)return false;
@@ -410,14 +414,24 @@ export class FishingGame{
   }
   sellKeptFish(){
     if(!this.atHome||!['idle','failed','landed'].includes(this.phase)||!this.player.homeFish.length)return false;
-    const n=this.player.homeFish.length,value=this.player.homeFish.reduce((sum,c)=>sum+c.value,0);
+    const n=this.player.homeFish.length,value=this.player.homeFish.reduce((sum,c)=>sum+catchSaleValue(c),0);
     if(!this.transact(nextTransactionId(this.player,'sell-all'),p=>{p.coins+=value;p.sold+=n;p.homeFish=[];return true;}))return false;
     this.event('TRIP_COMPLETED',{completed:true,returned:true,handled:true});this.message=`Đã bán ${n} con cá tại nhà. Nhận ${value.toLocaleString('vi-VN')} xu.`;this.changed();return true;
   }
   setContainer(id){
-    if(!canStoreCatch([], {id:'capacity-check',weight:.001},id).ok)return false;
+    id=resolveKeeperId(id);
+    if(!['idle','failed','landed'].includes(this.phase)||!findFishKeeper(id)||!this.player.fishKeepers.includes(id))return this.error('Chọn rọng đã sở hữu khi đã thu cần hoặc cá đã lên bờ.');
     const usage=containerUsage(this.player.keptFish,id);if(usage.count>usage.maxCount||usage.kg>usage.maxKg)return this.error('Vật chứa nhỏ hơn số cá hiện có. Cá vẫn được giữ nguyên; hãy về nhà xử lý trước.');
+    if(this.player.keptFish.some(fish=>!fitsKeeperLength(fish,id)))return this.error('Rọng này quá ngắn cho cá đang giữ. Về nhà xử lý cá hoặc chọn rọng lớn hơn.');
     this.player.container=id;this.message=`Đang dùng ${getContainer(id).name}.`;this.changed();return true;
+  }
+  repairKeeper(id,txId){
+    const keeper=FISH_KEEPERS.find(item=>item.id===id);
+    if(!keeper||!this.atHome||this.busy||!this.player.fishKeepers.includes(id))return false;
+    const cost=keeperRepairCost(this.player,id);
+    if(keeperDurability(this.player,id)>=keeper.durabilityMax||this.player.coins<cost)return false;
+    if(!this.transact(txId||nextTransactionId(this.player,'keeper-repair'),draft=>{draft.coins-=cost;draft.systems.keeperDurability[id]=keeper.durabilityMax;return true;}))return false;
+    this.message=`Đã sửa ${keeper.name}${cost?' · '+cost.toLocaleString('vi-VN')+' xu':' miễn phí'}.`;this.changed();return true;
   }
   gather(){return this.error('Nguồn mồi lấy ngay đã bỏ. Về Ruộng vườn chăm đất để thu ngô và đào giun; mồi bột mua ở Chợ bến.');}
   digWorms(){return this.workGarden('dig','worms');}
@@ -441,15 +455,16 @@ export class FishingGame{
       if(!this.transact(txId||nextTransactionId(this.player,'garden-buy'),p=>{p.coins-=result.item.price;p.systems.garden=result.garden;return true;}))return false;
       this.message=`Đã mua ${result.item.name}. Cất tại vườn nhà${result.item.kind==='tool'?', tự dùng dụng cụ tốt nhất':''}.`;this.changed();return true;
     }
-    const p=this.player,item=kind==='rod'?RODS.find(r=>r.id===id):kind==='bait'?BAITS.find(b=>b.id===id):kind==='accessory'?ACCESSORIES.find(a=>a.id===id):kind==='map'?MAPS.find(m=>m.id===id):kind==='bag'?BAG_TYPES[id]:null;
+    const p=this.player,item=kind==='rod'?RODS.find(r=>r.id===id):kind==='bait'?BAITS.find(b=>b.id===id):kind==='accessory'?ACCESSORIES.find(a=>a.id===id):kind==='map'?MAPS.find(m=>m.id===id):kind==='bag'?BAG_TYPES[id]:kind==='keeper'?FISH_KEEPERS.find(keeper=>keeper.id===id):null;
     if(!item||!item.price||p.coins<item.price)return false;
-    if(kind==='rod'&&p.rods.includes(id)||kind==='accessory'&&p.accessories.includes(id)||kind==='map'&&p.maps.includes(id)||kind==='bag'&&p.systems.bags.includes(id)||kind==='bait'&&(item.reusable&&p.baits[id]>0||(p.baits[id]||0)+item.amount>100000))return false;
+    if(kind==='rod'&&p.rods.includes(id)||kind==='accessory'&&p.accessories.includes(id)||kind==='map'&&p.maps.includes(id)||kind==='bag'&&p.systems.bags.includes(id)||kind==='keeper'&&p.fishKeepers.includes(id)||kind==='bait'&&(item.reusable&&p.baits[id]>0||(p.baits[id]||0)+item.amount>100000))return false;
     if(!this.transact(txId||nextTransactionId(p,'buy'),draft=>{
       draft.coins-=item.price;
       if(kind==='rod'){draft.rods.push(id);if(item.tech==='lure')draft.baits.lure=1;}
       else if(kind==='bait')draft.baits[id]=(draft.baits[id]||0)+item.amount;
       else if(kind==='accessory')draft.accessories.push(id);
       else if(kind==='map')draft.maps.push(id);
+      else if(kind==='keeper'){draft.fishKeepers.push(id);draft.systems.keeperDurability[id]=item.durabilityMax;}
       else draft.systems.bags.push(id);
       return true;
     }))return false;

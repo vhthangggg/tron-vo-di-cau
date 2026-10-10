@@ -33,7 +33,7 @@ export function applyTransaction(player,txId,mutate){
   if(result===false||result?.ok===false)return {ok:false,reason:result?.reason||'rejected'};
   if(result&&typeof result.then==='function')return {ok:false,reason:'async'};
   if(!validCount(draft.coins))return {ok:false,reason:'funds'};
-  for(const key of ['rods','accessories','maps']){
+  for(const key of ['rods','accessories','maps','fishKeepers']){
    if(key in draft&&(!Array.isArray(draft[key])||draft[key].some(id=>typeof id!=='string'||!id)||new Set(draft[key]).size!==draft[key].length))return {ok:false,reason:'ownership'};
   }
   if('baits' in draft&&(!record(draft.baits)||Object.values(draft.baits).some(value=>!validCount(value))))return {ok:false,reason:'bait'};

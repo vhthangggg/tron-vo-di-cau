@@ -7,8 +7,8 @@ import {MAX_KEPT_FISH,catchRemark} from '../src/catch-fate.js';
 import {AUDIO_THEMES,musicBar} from '../src/game-audio.js';
 import {loadSceneVideo} from '../src/scene-loader.js';
 
-const fish=id=>({id:'catch-'+id,fishId:'fish_01',weight:.6,value:120,mapId:'AO',status:'kept'});
-function pending(){const p=newPlayer();p.pending={...fish(1),status:'landed'};p.systems.trip={id:'trip-fixture',active:true,mapId:'AO',spotId:'ben-cau-tre'};p.catches=1;p.serial=1;p.collection.fish_01={count:1,best:.6};return p;}
+const fish=id=>({id:'catch-'+id,fishId:'fish_01',weight:.3,value:120,mapId:'AO',status:'kept'});
+function pending(){const p=newPlayer();p.pending={...fish(1),status:'landed'};p.systems.trip={id:'trip-fixture',active:true,mapId:'AO',spotId:'ben-cau-tre'};p.catches=1;p.serial=1;p.collection.fish_01={count:1,best:.3};return p;}
 
 test('Landed fish only keep or release; gifts are resolved once at home',()=>{
   for(const choice of ['keep','release']){
@@ -42,7 +42,7 @@ test('Old saves gain audio/container defaults; invalid and duplicated kept recor
   const raw=pending();delete raw.keptFish;delete raw.container;delete raw.gifted;raw.settings={sound:false,assist:true,deadline:0};
   const old=validateSave(raw);assert.equal(old.settings.sound,false);assert.equal(old.settings.music,.45);assert.deepEqual(old.keptFish,[]);
   raw.keptFish=[fish(1),fish(2),fish(2),{...fish(3),fishId:'invalid'},{...fish(4),weight:-1},fish(5)];raw.container='bucket';raw.settings.music=4;raw.settings.effects=-1;
-  const p=validateSave(raw);assert.deepEqual(p.keptFish.map(c=>c.id),['catch-2','catch-5']);assert.equal(p.serial,5);assert.equal(p.container,'bucket');assert.equal(p.settings.music,1);assert.equal(p.settings.effects,0);
+  const p=validateSave(raw);assert.deepEqual(p.keptFish.map(c=>c.id),['catch-2','catch-5']);assert.equal(p.serial,5);assert.equal(p.container,'fish_keeper_05');assert.equal(p.settings.music,1);assert.equal(p.settings.effects,0);
 });
 test('Home and every map have a unique, bounded musical arrangement',()=>{
   assert(AUDIO_THEMES.home);const signatures=new Set();

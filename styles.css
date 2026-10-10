@@ -724,3 +724,31 @@ max-height: 90%;
   object-fit: contain;
   object-position: center center;
 }
+
+/* Fish keeper icons use one transparent asset and a fallback only on failure. */
+.keeper-showcase{--keeper-image-scale:.8}
+.keeper-card{display:flex;flex-direction:column;min-width:0}
+.keeper-card .keeper-showcase{display:flex;align-items:center;justify-content:center;height:180px;min-height:180px;padding:0;overflow:hidden}
+.keeper-visual{display:block;position:relative;width:100%;height:100%;transform:scale(var(--keeper-image-scale,.8))}
+.keeper-visual>img{display:block;width:100%;height:100%;max-width:100%;object-fit:contain;object-position:center}
+.keeper-fallback{display:none;width:100%;height:100%;align-items:center;justify-content:center;color:var(--muted)}
+.keeper-fallback>.icon{width:70px;height:70px}
+.keeper-visual.image-missing>img{display:none}
+.keeper-visual.image-missing>.keeper-fallback{display:flex}
+.keeper-card h3{min-height:2.8em}
+.keeper-description{flex:1}
+.keeper-stats{display:grid;gap:7px;margin:12px 0 16px;font-size:12px}
+.keeper-stats>div{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.keeper-stats dt{color:var(--muted)}
+.keeper-stats dd{margin:0;text-align:right;font-weight:700}
+.keeper-actions{display:grid;gap:8px;margin-top:auto}
+.keeper-actions>.rod-affiliate{margin-top:0}
+.keeper-real-note{display:block;font-size:10px;color:var(--muted);margin-top:8px}
+.keeper-detail{display:grid;grid-template-columns:100px minmax(0,1fr);gap:16px;align-items:center;margin-bottom:16px}
+.keeper-detail-art{height:120px;overflow:hidden}
+.keeper-detail h3{margin:0 0 8px}
+.keeper-detail .keeper-stats{margin:0}
+.keeper-home-actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.fish-quality{color:var(--pond);margin-top:3px}
+.fish-quality[data-quality=spoiled],.fish-quality[data-quality=damaged]{color:#9a482c}
+@media(max-width:420px){.keeper-detail{grid-template-columns:72px minmax(0,1fr);gap:10px}.keeper-detail .keeper-stats{font-size:11px}.keeper-detail-art{height:100px}}

@@ -1,13 +1,10 @@
-export const CONTAINERS = [
-  {id:'keepnet',name:'Rọng cá',short:'rọng',line:'Vào rọng nghỉ nhé. Đừng rủ hội cá đến cứu.'},
-  {id:'bucket',name:'Xô cá',short:'xô',line:'Xô này không có Wi-Fi. Khỏi gọi cứu viện nhé.'},
-  {id:'box',name:'Thùng cá',short:'thùng',line:'Mời lên hạng thương gia: thùng rộng, nước mát.'}
-];
+import {FISH_KEEPERS,getFishKeeper} from './fish-keepers.js';
+export const CONTAINERS = FISH_KEEPERS;
 export const MAX_KEPT_FISH = 100;
-export const getContainer = id => CONTAINERS.find(c=>c.id===id)||CONTAINERS[0];
+export const getContainer = getFishKeeper;
 export function catchTeaser(c,decision,container='keepnet'){
   if(decision==='gift')return c.weight<.3?'Cá nhỏ, thành ý to.':c.weight>=3?'Quà to, xin tha vụ về muộn!':'Xin giấy phép đi câu lần sau.';
-  if(decision==='keep')return {keepnet:'Vào rọng nghỉ, đừng gọi cứu viện.',bucket:'Không Wi-Fi, khỏi gọi cứu viện.',box:'Hạng thương gia, miễn tiền vé.'}[getContainer(container).id];
+  if(decision==='keep')return getContainer(container).line;
   return 'Lần sau dẫn con to hơn nhé!';
 }
 export function catchRemark(c,decision,container='keepnet'){
