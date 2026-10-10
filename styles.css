@@ -684,3 +684,21 @@ body[data-screen=fishing] #dialog{width:min(660px,calc(100dvw - 32px));max-width
 @media(max-width:1100px){.product-grid.rod-deck{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}}
 @media(max-width:600px){.product-grid.rod-deck{grid-template-columns:minmax(0,1fr);gap:24px}.rod-deck-heading{align-items:flex-start}.rod-deck-heading h2{font-size:25px}.rod-deck-heading p{font-size:12px}.rod-deck-count{padding:5px 7px;font-size:10px}.rod-deck-legend{font-size:10px;gap:7px;margin-bottom:20px}.rod-deck-legend small{width:100%;margin-left:0;font-size:10px}.product.gear-card{padding:18px}.gear-card .gear-title h3{font-size:25px;min-height:0}.gear-card .gear-showcase{margin-top:14px}.gear-card .gear-specialty{font-size:12px}.gear-card button.gear-buy{font-size:14px}}
 @media(prefers-reduced-motion:reduce){.gear-gauge[data-stat=power] .gear-gain{animation:none}}
+
+/* Mồi giả: render the transparent WebP within the card, 20% smaller and vertically centered.
+   Width/height HTML attributes are intrinsic hints only; the frame must own layout sizing. */
+.product-icon > img.lure-image {
+  display: block;
+  box-sizing: border-box;
+  width: 80%;
+  height: 80%;
+  max-width: 80%;
+  max-height: 80%;
+  min-width: 0;
+  min-height: 0;
+  margin: auto;
+  justify-self: center;
+  align-self: center;
+  object-fit: contain;
+  object-position: center center;
+}
