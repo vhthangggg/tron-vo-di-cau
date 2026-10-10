@@ -14,9 +14,29 @@ html:has(body[data-layout=desktop]){scroll-padding-top:154px;scroll-padding-bott
 body[data-layout=desktop][data-screen=fishing]{background:var(--forest-deep);overflow:hidden}
 body[data-layout=desktop][data-screen=fishing] #main{min-height:0;height:100dvh}
 body[data-layout=desktop][data-screen=fishing] .fishing-layout{display:grid;grid-template-columns:minmax(0,1fr) clamp(260px,21vw,320px);height:100%;gap:0}
+body[data-layout=desktop][data-screen=fishing] .fishing-layout.panel-collapsed{grid-template-columns:minmax(0,1fr) 82px}
 body[data-layout=desktop][data-screen=fishing] .scene{height:100%;min-height:0;min-width:0;--hand-width:clamp(144px,18cqw,220px)}
 .desktop-fishing-panel{color:var(--surface);background:var(--forest-deep);border-left:1px solid var(--hud-line);padding:24px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--hud-line) var(--forest-deep)}
 body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel{display:flex;flex-direction:column;gap:22px}
+.desktop-panel-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.desktop-panel-toggle{width:auto!important;min-height:36px!important;justify-content:center!important;padding:7px 8px!important;font-size:11px!important;flex-shrink:0}
+.desktop-panel-toggle .icon{width:15px!important;height:15px!important;transform:rotate(90deg)}
+.desktop-panel-quick-actions{display:grid;gap:8px}
+.desktop-panel-quick-actions button{min-height:48px!important}
+.desktop-panel-quick-actions button>span{display:flex;flex-direction:column;min-width:0;line-height:1.35}
+.desktop-panel-quick-actions button>span b{font-size:12px;font-weight:700}
+.desktop-panel-quick-actions button>span small{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.desktop-panel-details{display:flex;flex-direction:column;gap:22px}
+body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel[data-collapsed=true]{padding:16px 10px;gap:12px;overflow:hidden}
+body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel[data-collapsed=true] .desktop-panel-heading>div,
+body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel[data-collapsed=true] .desktop-panel-details{display:none}
+body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel[data-collapsed=true] .desktop-panel-heading{justify-content:center}
+body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel[data-collapsed=true] .desktop-panel-toggle{width:44px!important;height:44px;min-height:44px!important;padding:8px!important}
+body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel[data-collapsed=true] .desktop-panel-toggle span,
+body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel[data-collapsed=true] .desktop-panel-quick-actions button>span,
+body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel[data-collapsed=true] .desktop-panel-quick-actions kbd{display:none}
+body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel[data-collapsed=true] .desktop-panel-quick-actions button{justify-content:center;padding:8px!important;min-height:44px!important}
+body[data-layout=desktop][data-screen=fishing] .desktop-fishing-panel[data-collapsed=true] .desktop-panel-quick-actions button .icon{width:20px;height:20px}
 .desktop-panel-heading .eyebrow{color:var(--gold-light);font-size:11px;letter-spacing:1.5px}
 .desktop-panel-heading h2{font-family:VietDisplay,Georgia,serif;color:var(--surface);font-size:24px;line-height:1.3;margin:8px 0}
 .desktop-panel-heading p{font-size:13px;line-height:1.6;margin:0;color:var(--dim)}

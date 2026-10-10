@@ -25,6 +25,7 @@ const money=v=>new Intl.NumberFormat('vi-VN').format(v);
 const kg=v=>new Intl.NumberFormat('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:3}).format(v);
 let storage;try{storage=window.localStorage;}catch{storage={getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}};}
 const deviceStorage=storage;
+const FISHING_PANEL_COLLAPSED_KEY='tron-vo-di-cau.fishing-panel-collapsed';
 const online=new OnlineClient({storage:deviceStorage});
 await online.initialize();
 storage=online.playerStorage;
@@ -76,6 +77,20 @@ function setSound(enabled){
   player.settings.sound=enabled;unlockAudio();audio.applySettings();persist();
   if($('#sound-toggle')){$('#sound-toggle').setAttribute('aria-pressed',String(enabled));$('#sound-toggle').setAttribute('aria-label',enabled?'Tắt âm thanh':'Bật âm thanh');$('#sound-toggle').innerHTML=icon(enabled?'sound':'muted');}
   announce(enabled?'Đã bật nhạc và hiệu ứng âm thanh.':'Đã tắt âm thanh.');
+}
+function setupDesktopFishingPanel(){
+  const panel=$('#desktop-fishing-panel'),toggle=$('#desktop-panel-toggle');
+  if(!panel||!toggle)return;
+  let collapsed=false;
+  try{collapsed=deviceStorage.getItem(FISHING_PANEL_COLLAPSED_KEY)==='1';}catch{}
+  const apply=next=>{
+    collapsed=next;panel.dataset.collapsed=String(collapsed);panel.closest('.fishing-layout')?.classList.toggle('panel-collapsed',collapsed);toggle.setAttribute('aria-expanded',String(!collapsed));
+    toggle.title=collapsed?'Hiện bảng thông tin':'Ẩn bảng thông tin';
+    const label=toggle.querySelector('span');if(label)label.textContent=collapsed?'Hiện bảng':'Ẩn bảng';
+    toggle.innerHTML=icon(collapsed?'arrow':'chevron')+`<span>${collapsed?'Hiện bảng':'Ẩn bảng'}</span>`;
+    try{deviceStorage.setItem(FISHING_PANEL_COLLAPSED_KEY,collapsed?'1':'0');}catch{}
+  };
+  apply(collapsed);toggle.onclick=()=>apply(!collapsed);
 }
 
 function homeHTML(){return renderHome(player,game,saveWarning)+`<a href="#online" class="online-home-link">${icon('trophy')}<span><b>Hội cần thủ</b><small>Tài khoản · Lưu tiến độ · Bảng xếp hạng</small></span>${icon('arrow')}</a>`;}
@@ -202,6 +217,7 @@ function bindScreen(){
     $('#start-fishing').onclick=()=>{unlockAudio();if(player.pending){showCatch();return;}navigate('fishing');};
   }
   if(screen==='fishing'){
+    setupDesktopFishingPanel();
     $('#help').onclick=showFishingInfo;
     $('#quiet-more').onclick=showQuietAdvice;
     $('#quiet-wait').onclick=()=>game.dismissQuietHint();
@@ -403,7 +419,7 @@ function updateDesktopFishing(){
   if($('#rod-control-note').textContent!==rodNote)$('#rod-control-note').textContent=rodNote;
   if(!desktop.matches)return;
   const line=ACCESSORIES.find(item=>item.id===player.equipment.line);
-  for(const [id,value] of [['desktop-rod',game.rod.name],['desktop-bait',getBait(player.bait).name],['desktop-bait-count',baitCount()],['desktop-line',`${line?.name||'Cước mặc định'} · Thẻo ${player.rig.leaderMm} mm`],['desktop-keepnet-label',`${getContainer(player.container).name} · ${player.keptFish.length} con`]]){
+  for(const [id,value] of [['desktop-rod',game.rod.name],['desktop-bait',getBait(player.bait).name],['desktop-kit-label',`${getBait(player.bait).name} · ${baitCount()}`],['desktop-bait-count',baitCount()],['desktop-line',`${line?.name||'Cước mặc định'} · Thẻo ${player.rig.leaderMm} mm`],['desktop-keepnet-label',`${getContainer(player.container).name} · ${player.keptFish.length} con`]]){
     const el=$('#'+id);if(el.textContent!==value)el.textContent=value;
   }
   $('#desktop-kit').disabled=!sceneReady||game.deadlineReached||!['idle','failed','waiting'].includes(game.phase)||!!player.pending;
