@@ -63,7 +63,8 @@ async function makePage(viewport,fixture){
     page=await makePage(viewport,p);let videoRequests=0;page.on('request',r=>{if(r.url().endsWith('.mp4'))videoRequests++;});
     await page.goto('http://127.0.0.1:5193/#fishing');await page.waitForFunction(()=>document.querySelector('.scene')?.dataset.loading==='ready');
     assert.equal(await page.locator('[data-catch-decision]').count(),2);await fits(page,'#dialog',viewport.width,viewport.height);
-    assert(await page.locator('#dialog').evaluate(el=>el.scrollHeight<=el.clientHeight+1),'Both catch choices fit without scrolling');
+    const dialogSize=await page.locator('#dialog').evaluate(el=>({scrollHeight:el.scrollHeight,clientHeight:el.clientHeight}));
+    assert(dialogSize.scrollHeight<=dialogSize.clientHeight+1,'Both catch choices fit without scrolling: '+JSON.stringify({decision,viewport,...dialogSize}));
     if(decision==='keep'){await page.locator('#catch-container').selectOption('bucket');assert.match(await page.locator('[data-catch-decision=keep]').innerText(),/xô/);await page.screenshot({path:path.join(out,'experience-catch-choices.png')});}
     const videoURL=await page.locator('video').getAttribute('src');await page.locator('[data-catch-decision='+decision+']').click();
     let state=await saved(page);assert.equal(state.pending,null);assert.equal(state.coins,12000);assert.equal(state.collection.fish_01.count,1);assert.equal(state.gifted,0);assert.equal(state.released,decision==='release'?1:0);assert.equal(state.keptFish.length,decision==='keep'?1:0);

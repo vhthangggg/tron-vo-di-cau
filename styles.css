@@ -446,6 +446,28 @@ body[data-screen=fishing] #dialog{width:min(660px,calc(100dvw - 32px));max-width
 .fishing-info button{min-height:44px}
 @media(max-width:480px) and (orientation:portrait){body:not([data-screen=fishing]) #dialog[data-kind=catch] .actions{grid-template-columns:1fr}.keepnet-fish{flex-wrap:wrap}.keepnet-fish-actions{width:100%;justify-content:flex-end}}
 @media(max-width:700px) and (orientation:portrait) and (pointer:coarse){body[data-screen=fishing] #dialog{position:fixed;left:50%;top:50%;right:auto;bottom:auto;margin:0;width:min(660px,calc(100dvh - 24px));max-width:none;max-height:calc(100dvw - 24px);transform:translate(-50%,-50%) rotate(90deg);padding:16px}body[data-screen=fishing] .fishing-topbar{top:calc(12px + env(safe-area-inset-left));left:calc(12px + env(safe-area-inset-top));right:calc(12px + env(safe-area-inset-bottom))}body[data-screen=fishing] .hand-panel{bottom:calc(16px + env(safe-area-inset-right))}body[data-screen=fishing] .left-hand{left:calc(16px + env(safe-area-inset-top))}body[data-screen=fishing] .right-hand{right:calc(16px + env(safe-area-inset-bottom))}}
+
+/* Keep both landing choices visible without scrolling in short landscape
+   and phone-portrait rotated-to-landscape fishing views. */
+@media (max-height:420px) and (min-width:701px), (max-width:700px) and (orientation:portrait) and (pointer:coarse){
+  body[data-screen=fishing] #dialog[data-kind=catch]{padding:9px 13px;max-height:calc(100dvh - 14px)}
+  #dialog[data-kind=catch] .dialog-top{margin-bottom:0}
+  #dialog[data-kind=catch] .dialog-top h2{font-size:18px}
+  #dialog[data-kind=catch] .dialog-top .close{height:36px;min-height:36px}
+  #dialog[data-kind=catch] .catch-summary{gap:9px;margin-bottom:2px}
+  #dialog[data-kind=catch] .fish-hero{width:70px;height:44px}
+  #dialog[data-kind=catch] .catch-summary h3{font-size:17px;margin:0}
+  #dialog[data-kind=catch] .catch-summary p{font-size:12px;line-height:1.2}
+  #dialog[data-kind=catch] .catch-summary .hint-note{font-size:10px;line-height:1.2}
+  #dialog[data-kind=catch] .catch-container{margin:2px 0}
+  #dialog[data-kind=catch] .catch-note{font-size:11px;line-height:1.25;margin:2px 0 4px}
+  #dialog[data-kind=catch] .actions{gap:7px;margin-top:2px}
+  #dialog[data-kind=catch] .decision-action{min-height:76px;padding:6px 9px;gap:2px}
+  #dialog[data-kind=catch] .decision-action>.icon{height:16px;width:16px}
+  #dialog[data-kind=catch] .decision-action .action-title{font-size:12px}
+  #dialog[data-kind=catch] .decision-action .action-copy{font-size:11px;line-height:1.2}
+}
+
 @media(prefers-reduced-motion:reduce){.map-hotspot::after{animation:none}.fishing-topbar button,.decision-action{transition:none}}
 
 /* Preparation, storage and practical lessons share the existing paper-and-green theme. */
