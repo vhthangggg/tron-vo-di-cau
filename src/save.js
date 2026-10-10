@@ -1,4 +1,4 @@
-import {FISH, MAPS, RODS, BAITS, ACCESSORIES, ACCESSORY_SLOTS, LESSONS, getRod, getBait, getFish, acceptsBait} from './content.js';
+import {FISH, MAPS, ALL_RODS as RODS, BAITS, ACCESSORIES, ACCESSORY_SLOTS, LESSONS, getRod, getBait, getFish, acceptsBait} from './content.js';
 import {CONTAINERS} from './catch-fate.js';
 import {BAG_TYPES, ensureInventory, carriedBaitCount, migratePacking} from './inventory.js';
 import {newGarden,normalizeGarden} from './garden.js';

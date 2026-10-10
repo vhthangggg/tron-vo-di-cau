@@ -1,4 +1,4 @@
-import {RODS,BAITS,ACCESSORIES,ACCESSORY_SLOTS,getRod,getBait,slotItem,usesFloat,usesReel,acceptsBait} from './content.js';
+import {ALL_RODS as RODS,BAITS,ACCESSORIES,ACCESSORY_SLOTS,getRod,getBait,slotItem,usesFloat,usesReel,acceptsBait} from './content.js';
 import {inventoryFor,BAG_TYPES,mountedAccessories,spareAccessoryCount,validateDeparture} from './inventory.js';
 import {getRigStats,getEquipmentSpecs,validateRig} from './equipment.js';
 import {floatState} from './rig-physics.js';

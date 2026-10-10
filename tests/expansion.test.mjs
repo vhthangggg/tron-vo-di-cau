@@ -2,15 +2,15 @@ import {guideFish,freeSnag} from './control-player.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {stat,readFile} from 'node:fs/promises';
-import {MAPS,FISH,RODS,BAITS,ACCESSORIES,TECHNIQUES,loadoutStats,usesFloat,acceptsBait} from '../src/content.js';
+import {MAPS,FISH,RODS,ALL_RODS,BAITS,ACCESSORIES,TECHNIQUES,loadoutStats,usesFloat,acceptsBait} from '../src/content.js';
 import {FishingGame,floatMarks,balancedLead} from '../src/engine.js';
 import {newPlayer,validateSave} from '../src/save.js';
 const tickUntil=(g,predicate,max=60)=>{for(let i=0;i<max*10;i++){freeSnag(g);g.step(.1);if(predicate())return;}assert.fail(g.message+' / '+g.phase);};
-const fullPlayer=()=>{const p=newPlayer();p.coins=10000000;p.maps=MAPS.map(m=>m.id);p.rods=RODS.map(r=>r.id);p.accessories=ACCESSORIES.map(a=>a.id);p.baits=Object.fromEntries(BAITS.map(b=>[b.id,b.reusable?1:100]));p.systems.inventory=null;return p;};
+const fullPlayer=()=>{const p=newPlayer();p.coins=10000000;p.maps=MAPS.map(m=>m.id);p.rods=ALL_RODS.map(r=>r.id);p.accessories=ACCESSORIES.map(a=>a.id);p.baits=Object.fromEntries(BAITS.map(b=>[b.id,b.reusable?1:100]));p.systems.inventory=null;return p;};
 const bite=g=>{assert.ok(g.cast());if(g.rod.tech==='lure')g.toggleRetrieve();tickUntil(g,()=>g.phase==='bite');};
 
 test('All 10 maps have unique packaged landscape art and valid playable content',async()=>{
- assert.equal(MAPS.length,10);assert.equal(FISH.length,56);assert.equal(RODS.length,12);assert.equal(BAITS.length,15);
+ assert.equal(MAPS.length,10);assert.equal(FISH.length,56);assert.equal(RODS.length,36);assert.equal(new Set(ALL_RODS.map(r=>r.id)).size,ALL_RODS.length);assert.equal(BAITS.length,15);
  // New equipment is additive: validate the original IDs instead of freezing the catalog size.
  const legacyAccessories={line:['line_basic','line18','fluoro','braid'],hook:['hook_basic','hook_barb','hook_wide','hook_pro'],float:['float_basic','float_canal','float_slender','float_sea'],reel:['reel_basic','reel2000','reel4000','reel6000'],net:['net_basic','net_fold','net_long','net_pro']};
  assert.equal(new Set(ACCESSORIES.map(a=>a.id)).size,ACCESSORIES.length,'Accessory IDs must remain unique');

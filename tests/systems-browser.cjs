@@ -90,7 +90,7 @@ async function comparisonRow(page,id,label,previous,next){
     await comparisonRow(page,'net_fold','Vớt khi sức cá ≤','0 %','6 %');
     await noOverflow(page,label+' numeric shop comparisons');
     checks.push(label+': shop shows precise current-to-new line diameter/strength, float buoyancy, hook timing, reel speed and net threshold');
-    const purchases=[['rod','dai'],['rod','spinning'],['accessory','line18'],['accessory','fluoro'],['bait','worm']];
+    const purchases=[['rod','rod_01'],['rod','rod_02'],['accessory','line18'],['accessory','fluoro'],['bait','worm']];
     let expected=legacy.coins;
     for(const [kind,id] of purchases){
       await page.locator('[data-shop-category="'+kind+'"]').click();
@@ -102,7 +102,7 @@ async function comparisonRow(page,id,label,previous,next){
     }
     state=await saved(page);
     assert.deepEqual(state.systems.inventory.carried.rods,['bamboo']);
-    assert(state.systems.inventory.stored.rods.includes('dai'));
+    assert(state.systems.inventory.stored.rods.includes('rod_01'));
     assert(state.systems.inventory.stored.accessories.includes('fluoro'));
     assert.equal(state.baits.worm,30);assert.equal(state.systems.inventory.carried.baits.worm,18);
     assert.equal(state.systems.inventory.stored.baits.worm,12);
@@ -116,8 +116,8 @@ async function comparisonRow(page,id,label,previous,next){
     await item(page,'bait:corn');await page.locator('[data-transfer-count="corn"]').fill('6');
     await page.locator('[data-transfer-bait="corn"][data-transfer-to="carried"]').click();
     assert.deepEqual((await saved(page)).systems.inventory,beforeCapacity,'Cloth bag rejects a third bait type without losing stock');
-    await item(page,'rod:dai');await page.locator('[data-transfer-id="dai"][data-transfer-to="carried"]').click();
-    state=await saved(page);assert.deepEqual(state.systems.inventory.carried.rods,['dai']);assert(state.systems.inventory.stored.rods.includes('bamboo'));
+    await item(page,'rod:rod_01');await page.locator('[data-transfer-id="rod_01"][data-transfer-to="carried"]').click();
+    state=await saved(page);assert.deepEqual(state.systems.inventory.carried.rods,['rod_01']);assert(state.systems.inventory.stored.rods.includes('bamboo'));
     await item(page,'rod:bamboo');await page.locator('[data-transfer-id="bamboo"][data-transfer-to="carried"]').click();
     state=await saved(page);assert.equal(state.rod,'bamboo');assert.equal(state.rods.length,3);
 
@@ -125,7 +125,7 @@ async function comparisonRow(page,id,label,previous,next){
     await page.locator('[data-buy="bag"][data-id="standard"]').click();expected-=14000;
     assert.equal((await saved(page)).coins,expected);
     await navigate(page,'rig');await view(page,'packing');await page.locator('#bag-select').selectOption('standard');
-    await item(page,'rod:dai');await page.locator('[data-transfer-id="dai"][data-transfer-to="carried"]').click();
+    await item(page,'rod:rod_01');await page.locator('[data-transfer-id="rod_01"][data-transfer-to="carried"]').click();
     await page.locator('#bag-select').selectOption('cloth');
     assert.equal(await page.locator('#bag-select').inputValue(),'standard');
     assert.equal((await saved(page)).systems.inventory.carried.rods.length,2,'A smaller bag cannot discard a carried rod');
@@ -192,8 +192,8 @@ async function comparisonRow(page,id,label,previous,next){
 
     await navigate(page,'rig');state=await saved(page);const tripId=state.systems.trip.id;
     await view(page,'packing');assert(await page.locator('#bag-select').isDisabled());
-    await item(page,'rod:spinning');assert(await page.locator('[data-transfer-id="spinning"][data-transfer-to="carried"]').isDisabled());
-    await part(page,'rod');await rejectStoredSelection(page,'#rod','spinning','bamboo');
+    await item(page,'rod:rod_02');assert(await page.locator('[data-transfer-id="rod_02"][data-transfer-to="carried"]').isDisabled());
+    await part(page,'rod');await rejectStoredSelection(page,'#rod','rod_02','bamboo');
     await part(page,'line');await rejectStoredSelection(page,'#gear-line','fluoro','line18');
     state=await saved(page);assert.equal(state.rod,'bamboo');assert.equal(state.equipment.line,'line18');
     assert.equal(state.keptFish[0].id,naturalCatch.id);assert.equal(state.systems.trip.id,tripId);

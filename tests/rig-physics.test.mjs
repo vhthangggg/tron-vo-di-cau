@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ACCESSORIES,BAITS,RODS} from '../src/content.js';
+import {ACCESSORIES,BAITS,ALL_RODS as RODS} from '../src/content.js';
 import {RIG_DEFAULTS,RIG_OPTIONS,getRigStats,validateRig,validatePreset} from '../src/equipment.js';
 import {balancedLead,floatState} from '../src/rig-physics.js';
 

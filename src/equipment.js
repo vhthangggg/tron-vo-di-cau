@@ -1,4 +1,4 @@
-import {ACCESSORIES, BAITS, RODS, TECHNIQUES, acceptsBait, getBait, getMap, getRod, loadoutStats, slotItem, usesFloat, usesReel} from './content.js';
+import {ACCESSORIES, BAITS, ALL_RODS as RODS, TECHNIQUES, acceptsBait, getBait, getMap, getRod, loadoutStats, slotItem, usesFloat, usesReel} from './content.js';
 
 // These are deliberately modest gameplay ratings, not a manufacturer's breaking-load chart.
 // Separate leader and hook dimensions keep an old accessory ID valid as the catalog grows.
