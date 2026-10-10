@@ -1,6 +1,6 @@
 {
   "name": "tron-vo-di-cau",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
   "description": "Game câu cá Việt Nam, hai tay và môi trường động",
@@ -25,12 +25,18 @@
     "test:browser:fish-images": "node tests/fish-images-browser.cjs",
     "export:species": "node scripts/export-fish-catalog.mjs",
     "test:browser:garden": "node tests/garden-browser.cjs",
-    "test:browser:workbench": "node tests/workbench-browser.cjs"
+    "test:browser:workbench": "node tests/workbench-browser.cjs",
+    "test:browser:online": "node tests/online-browser.cjs"
   },
   "engines": {
     "node": ">=22"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "esbuild": "^0.28.2",
     "playwright": "1.62.1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.3"
   }
 }

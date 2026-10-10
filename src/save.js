@@ -191,3 +191,13 @@ export function savePlayer(storage,player){
   return true;
  }catch{return false;}
 }
+
+// Explicit restore/import only: validate and preserve the previous bytes before
+// clearing the read-only protection applied to a corrupt or future-version save.
+export function restorePlayer(storage,raw){
+ const player=validateSave(raw),previous=storage.getItem(SAVE_KEY);
+ if(previous)storage.setItem(SAVE_KEY+'.before-restore',previous);
+ storage.setItem(SAVE_KEY,JSON.stringify(player));
+ protect(storage,{blocked:false});
+ return player;
+}

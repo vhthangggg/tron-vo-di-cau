@@ -10,13 +10,14 @@
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./desktop.css">
   <link rel="stylesheet" href="./workbench.css">
+  <link rel="stylesheet" href="./online.css">
   <script type="module" src="./src/app.js"></script>
 </head>
 <body>
   <a class="skip" href="#main">Đến nội dung chính</a>
   <header class="game-header">
     <nav class="brand-nav" aria-label="Trang nhà"><a class="brand" href="#home" data-screen="home" aria-label="Trốn Vợ Đi Câu, về nhà"><span class="brand-icon" id="brand-icon" aria-hidden="true"></span><span>TRỐN VỢ<br><b>ĐI CÂU</b></span></a></nav>
-    <div class="player-profile"><span class="profile-avatar" id="profile-avatar" aria-hidden="true"></span><div class="profile-copy"><div><strong id="profile-rank">Tân thủ</strong><span id="rank-count" class="num">0 / 5 cá</span></div><progress id="rank-progress" value="0" max="5" aria-label="Tiến độ cấp cần thủ"></progress></div></div>
+    <div class="player-profile" role="button" tabindex="0" aria-label="Tài khoản và bảng xếp hạng"><span class="profile-avatar" id="profile-avatar" aria-hidden="true"></span><div class="profile-copy"><div><strong id="profile-rank">Tân thủ</strong><span id="rank-count" class="num">0 / 5 cá</span></div><progress id="rank-progress" value="0" max="5" aria-label="Tiến độ cấp cần thủ"></progress></div></div>
     <div class="header-tools"><div class="wallet" aria-label="Số xu trong game"><span id="coin-icon" aria-hidden="true"></span><span id="wallet" class="num">12.000</span><small>xu</small></div><button class="icon-button" id="settings" aria-label="Tùy chọn và bản lưu"></button></div>
   </header>
   <main id="main" tabindex="-1"></main>

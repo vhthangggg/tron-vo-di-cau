@@ -1,0 +1,52 @@
+import {FISH} from './content.js';
+import {icon} from './ui.js';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const kg=g=>(g/1000).toLocaleString('vi-VN',{maximumFractionDigits:3})+' kg';
+export function renderOnline(client){
+ return `<section class="online-page"><div class="online-heading"><div><p class="eyebrow">TRỐN VỢ ĐI CÂU</p><h1>Hội cần thủ</h1></div><a class="button small" href="#home">${icon('home')} Về nhà</a></div>
+ <div class="online-columns"><section class="panel online-account"><h2>${client.user?'Hồ sơ cần thủ':'Tài khoản của bạn'}</h2><p id="online-status" role="status">${esc(client.message)}</p>
+ ${client.config.enabled?client.user?`<form id="profile-form"><label for="online-name">Tên trên bảng xếp hạng</label><div class="online-input-row"><input id="online-name" value="${esc(client.profile?.name||'')}" minlength="2" maxlength="24" required autocomplete="nickname"><button class="small">Lưu tên</button></div></form><p class="smalltext muted">${esc(client.user.email||'')}</p><div id="cloud-save-panel"></div><button class="small secondary" id="online-signout">Đăng xuất</button>`:`<form id="auth-form"><label for="online-email">Email</label><input id="online-email" type="email" autocomplete="email" required maxlength="254"><label for="online-password">Mật khẩu</label><input id="online-password" type="password" autocomplete="current-password" minlength="8" maxlength="128" required><div class="online-actions"><button class="primary" name="intent" value="signin">Đăng nhập</button><button name="intent" value="signup">Tạo tài khoản</button></div><button class="text-button" type="button" id="online-reset">Quên mật khẩu</button></form>${client.config.googleEnabled?'<button id="online-google" class="button secondary">Tiếp tục với Google</button>':''}`:`<p class="hint-note">Bạn có thể tiếp tục chơi khách và tải bản lưu để giữ thành quả.</p>`}
+ ${client.recovering?'<form id="password-form"><label for="new-password">Mật khẩu mới</label><input id="new-password" type="password" minlength="8" maxlength="128" required autocomplete="new-password"><button class="primary">Đổi mật khẩu</button></form>':''}
+ <div class="online-local"><h3>Bản lưu trên máy</h3><p class="smalltext">Tải một bản dự phòng hoặc nhập tiến độ bạn đã lưu. Thành tích nhập vào được giữ trong sổ cá cá nhân.</p><div class="online-actions"><button id="online-export" class="small">Tải bản lưu</button><label class="button small secondary" for="online-import">Nhập bản lưu</label><input id="online-import" type="file" accept="application/json,.json" hidden></div><button id="online-backup" class="small secondary">Tải bản trước khi thay</button></div></section>
+ <section class="panel online-rankings"><div class="online-section-title"><h2>${icon('trophy')} Bảng xếp hạng</h2><button class="small" id="board-refresh">Làm mới</button></div>
+ <div class="online-tabs" role="group" aria-label="Loại bảng xếp hạng"><button data-board="weekly" aria-pressed="true">Thử thách tuần</button><button data-board="species" aria-pressed="false">Kỷ lục từng loài</button><button data-board="collection" aria-pressed="false">Nhà sưu tầm</button></div>
+ <label id="board-species-label" hidden>Chọn loài cá<select id="board-species">${FISH.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('')}</select></label>
+ <p id="board-description" class="smalltext">Buổi câu 3 phút · Cần tre, mồi giun, cùng một bờ ao. Lấy kết quả tốt nhất trong tuần.</p><div id="board-results" aria-live="polite"></div><div class="online-pagination"><button id="board-prev" class="small" disabled>Trước</button><span id="board-page">Trang 1</span><button id="board-next" class="small" disabled>Sau</button></div>
+ <div class="online-challenge"><h3>Một bờ ao, cùng bộ cần.</h3><p>Mọi người dùng bộ câu được cấp riêng. Cá được tự thả sau khi ghi nhận; xu, mồi và trang bị cá nhân không bị tiêu hao.</p><button class="primary" id="ranked-start" ${!client.user||!client.config.enabled?'disabled':''}>Vào thử thách 3 phút ${icon('arrow')}</button><p class="smalltext">${client.user?'Cần kết nối mạng khi bắt đầu và gửi kết quả.':'Đăng nhập để tham gia và ghi tên trên bảng.'}</p></div></section></div></section>`;
+}
+export function bindOnline(root,client,{toast,exportSave,importSave,startRanked}){
+ const $=s=>root.querySelector(s);let board='weekly',page=0,loadId=0,alive=true;
+ const action=async(button,fn)=>{if(button?.disabled)return;button&&(button.disabled=true);try{await fn();}catch(e){toast(e.message||'Chưa thực hiện được.');}finally{if(button?.isConnected)button.disabled=false;}};
+ function refresh(){
+   if(!alive)return;$('#online-status').textContent=client.message;
+   const panel=$('#cloud-save-panel');if(!panel)return;
+   if(client.profile&&document.activeElement!==$('#online-name')&&!$('#online-name').value)$('#online-name').value=client.profile.name;
+   const remote=client.remote?.save;
+   panel.innerHTML=['choose','conflict'].includes(client.state)?`<div class="save-choice"><strong>${client.state==='choose'?'Chọn tiến độ khởi đầu':'Chọn bản muốn tiếp tục'}</strong><p class="smalltext">Bản trên máy: ${client.getPlayer().catches} cá · ${client.getPlayer().coins.toLocaleString('vi-VN')} xu${remote?`<br>Bản online: ${remote.catches} cá · ${remote.coins.toLocaleString('vi-VN')} xu`:''}</p><div class="online-actions">${remote?'<button class="small primary" data-save-choice="remote">Dùng bản online</button>':''}<button class="small" data-save-choice="local">Dùng bản trên máy</button>${client.state==='choose'?'<button class="small" data-save-choice="guest">Mang tiến độ chơi khách</button>':''}</div><p class="smalltext">Bản bị thay được giữ trên thiết bị để khôi phục.</p></div>`:`<button id="cloud-sync" class="small" ${client.state==='syncing'?'disabled':''}>Đồng bộ ngay</button>`;
+   panel.querySelectorAll('[data-save-choice]').forEach(b=>b.onclick=()=>action(b,()=>client.choose(b.dataset.saveChoice)));
+   const sync=$('#cloud-sync');if(sync)sync.onclick=()=>action(sync,async()=>{if(client.state==='offline')await client.checkRemote();await client.flush();});
+ }
+ async function loadBoard(){
+   const id=++loadId;$('#board-results').innerHTML='<p class="online-empty">Đang tải thành tích…</p>';
+   if(!client.config.enabled){$('#board-results').innerHTML='<p class="online-empty">Bảng xếp hạng sẽ mở khi dịch vụ online sẵn sàng.</p>';return;}
+   try{
+     const data=await client.request('leaderboard',{query:{board,page,species:board==='species'?$('#board-species').value:null}});if(!alive||id!==loadId)return;
+     const unit=score=>board==='collection'?score+' loài':kg(score);
+     $('#board-results').innerHTML=data.rows.length?`<table class="online-table"><thead><tr><th scope="col">Hạng</th><th scope="col">Cần thủ</th><th scope="col">${board==='collection'?'Bộ sưu tập':'Trọng lượng'}</th></tr></thead><tbody>${data.rows.map(r=>`<tr class="${r.self?'is-self':''}"><td>${r.rank}</td><th scope="row">${esc(r.name)}${r.self?' · Bạn':''}</th><td>${unit(r.score)}</td></tr>`).join('')}</tbody></table>${data.me?`<p class="my-rank">Hạng của bạn: <b>${data.me.rank}</b> · ${unit(data.me.score)}</p>`:''}`:'<p class="online-empty">Chưa có thành tích được xác nhận. Hãy là người đầu tiên ghi tên.</p>';
+     $('#board-page').textContent='Trang '+(page+1);$('#board-prev').disabled=page===0;$('#board-next').disabled=(page+1)*25>=data.total||page>=20;
+   }catch(e){if(alive&&id===loadId)$('#board-results').innerHTML=`<p class="online-empty">${esc(e.message||'Chưa tải được bảng. Vui lòng thử lại.')}</p>`;}
+ }
+ const auth=$('#auth-form');if(auth)auth.onsubmit=e=>{e.preventDefault();const intent=e.submitter?.value||'signin';action(e.submitter,async()=>{await client.authAction(intent,{email:$('#online-email').value.trim(),password:$('#online-password').value});if(intent==='signup')toast('Nếu email hợp lệ, hãy kiểm tra hộp thư để xác nhận tài khoản.');});};
+ if($('#online-google'))$('#online-google').onclick=e=>action(e.currentTarget,()=>client.authAction('google'));
+ if($('#online-reset'))$('#online-reset').onclick=e=>action(e.currentTarget,async()=>{if(!$('#online-email').reportValidity())return;await client.authAction('reset',{email:$('#online-email').value.trim()});toast('Nếu email đã đăng ký, bạn sẽ nhận được hướng dẫn đổi mật khẩu.');});
+ if($('#password-form'))$('#password-form').onsubmit=e=>{e.preventDefault();action(e.submitter,async()=>{await client.authAction('password',{password:$('#new-password').value});toast('Đã đổi mật khẩu.');$('#password-form').remove();});};
+ if($('#profile-form'))$('#profile-form').onsubmit=e=>{e.preventDefault();action(e.submitter,async()=>{client.profile=await client.request('profile',{method:'POST',body:{name:$('#online-name').value}});toast('Đã lưu tên cần thủ.');loadBoard();});};
+ if($('#online-signout'))$('#online-signout').onclick=e=>action(e.currentTarget,()=>client.signOut());
+ $('#online-backup').onclick=()=>{try{const raw=client.storage.getItem('tron-vo-di-cau.v01.recovery.'+(client.activeUser||'guest')+'.local');if(!raw){toast('Chưa có bản dự phòng từ lần thay tiến độ.');return;}const url=URL.createObjectURL(new Blob([raw],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='tron-vo-di-cau-truoc-khi-thay.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch{toast('Chưa đọc được bản dự phòng.');}};
+ $('#online-export').onclick=exportSave;$('#online-import').onchange=e=>{const file=e.target.files[0];if(file)importSave(file);e.target.value='';};
+ $('#ranked-start').onclick=e=>action(e.currentTarget,startRanked);
+ $('#board-refresh').onclick=loadBoard;$('#board-species').onchange=()=>{page=0;loadBoard();};
+ root.querySelectorAll('[data-board]').forEach(b=>b.onclick=()=>{board=b.dataset.board;page=0;root.querySelectorAll('[data-board]').forEach(t=>t.setAttribute('aria-pressed',String(t===b)));$('#board-species-label').hidden=board!=='species';$('#board-description').textContent=board==='weekly'?'Buổi câu 3 phút · Cùng bộ câu và bờ ao. Lấy kết quả tốt nhất trong tuần.':board==='species'?'Kỷ lục mọi thời gian từ các buổi thi đã được xác nhận.':'Số loài khác nhau câu được trong các buổi thi tuần này.';loadBoard();});
+ $('#board-prev').onclick=()=>{page=Math.max(0,page-1);loadBoard();};$('#board-next').onclick=()=>{page++;loadBoard();};
+ refresh();loadBoard();return {refresh,destroy(){alive=false;loadId++;}};
+}

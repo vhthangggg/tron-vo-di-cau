@@ -1,3 +1,5 @@
+import handler from '../api/online.js';
+import {authBundle} from './auth-bundle.mjs';
 import {fishAssetModule} from './fish-assets.mjs';
 import {createServer} from 'node:http';
 import {readFile,stat} from 'node:fs/promises';
@@ -15,8 +17,10 @@ createServer(async(req,res)=>{
       if(!path.startsWith(base+'/')){res.writeHead(404);res.end('Not found');return;}
       path=path.slice(base.length);
     }
+    if(path==='/api/online'){await handler(req,res);return;}
+    if(path==='/assets/vendor/supabase.js'){res.writeHead(200,{'Content-Type':'text/javascript'});res.end(await authBundle());return;}
     // Research exports are development files, never public game downloads.
-    if(path.startsWith('/data/')||path.startsWith('/docs/')){res.writeHead(404);res.end('Not found');return;}
+    if(['/data/','/docs/','/server/','/supabase/','/api/','/tests/','/node_modules/'].some(prefix=>path.startsWith(prefix))){res.writeHead(404);res.end('Not found');return;}
     if(path==='/src/fish-assets.js'){res.writeHead(200,{'Content-Type':'text/javascript; charset=utf-8','Cache-Control':'no-cache'});res.end(await fishAssetModule(root));return;}
     if(path.endsWith('/'))path+='index.html';
     const file=(path.startsWith('/assets/items/')||path.startsWith('/assets/fish/'))?resolve(root,'public'+path):resolve(root,'.'+path);

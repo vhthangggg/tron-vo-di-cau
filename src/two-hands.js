@@ -55,8 +55,9 @@ export function twoHands(game,{canUse,onUpdate,mouseTrackingEnabled=()=>false}){
     // A button click cannot silently substitute for the held two-hand gesture.
     element.onclick=e=>e.preventDefault();
   }
-  addEventListener('pointerup',e=>release(e.pointerId),true);
-  addEventListener('pointercancel',e=>release(e.pointerId),true);
+  const pointerEnd=e=>release(e.pointerId);
+  addEventListener('pointerup',pointerEnd,true);
+  addEventListener('pointercancel',pointerEnd,true);
   function keydown(e){
     if(!canUse()||/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))return false;
     const key=e.code,control=['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown'].includes(key);
@@ -68,7 +69,8 @@ export function twoHands(game,{canUse,onUpdate,mouseTrackingEnabled=()=>false}){
     }
     return false;
   }
-  addEventListener('keyup',e=>{if(keys.delete(e.code)){e.preventDefault();sync();}});
+  const keyup=e=>{if(keys.delete(e.code)){e.preventDefault();sync();}};
+  addEventListener('keyup',keyup);
   function step(dt){
     if(!canUse())return;
     if(heldKey()||hasHand('rod')){
@@ -80,5 +82,5 @@ export function twoHands(game,{canUse,onUpdate,mouseTrackingEnabled=()=>false}){
       }
     }
   }
-  return {clear,keydown,step,bind(){trackElement=document.querySelector('#track-pad');rodElement=document.querySelector('#strike');bindHand(trackElement,'track');bindHand(rodElement,'rod');}};
+  return {clear,keydown,step,destroy(){clear();removeEventListener('pointerup',pointerEnd,true);removeEventListener('pointercancel',pointerEnd,true);removeEventListener('keyup',keyup);},bind(){trackElement=document.querySelector('#track-pad');rodElement=document.querySelector('#strike');bindHand(trackElement,'track');bindHand(rodElement,'rod');}};
 }

@@ -1,3 +1,6 @@
+import {OnlineClient} from './online-client.js';
+import {renderOnline,bindOnline} from './online-ui.js';
+import {renderRanked,bindRanked} from './ranked-ui.js';
 import {inventoryEntry,inventorySearchText,rigParts} from './gear-workbench.js';
 import {renderGarden} from './garden-ui.js';
 import {inventoryFor,carriedBaitCount,BAG_TYPES} from './inventory.js';
@@ -12,7 +15,7 @@ import {paintWater} from './water-world.js';
 import {rodLoad,stepRodPose,rodGeometry,paintRod} from './fight-physics.js';
 import {MAPS,FISH,RODS,BAITS,ACCESSORIES,ACCESSORY_SLOTS,LESSONS,getMap,getRod,getBait,getFish,getBag,usesFloat,usesReel} from './content.js';
 import {FishingGame,floatMarks,rigError,clamp,FIGHT_ZONE,NO_BITE_HINT} from './engine.js';
-import {loadPlayer,savePlayer} from './save.js';
+import {loadPlayer,savePlayer,restorePlayer,validateSave,SAVE_KEY} from './save.js';
 import {icon,avatarArt,fishArt,NAV_ITEMS,rankFor,renderHome,renderPrepare,renderFishing,renderRig,renderLearn,journalRows as fishRows,renderJournal,renderShop,renderMapAtlas,renderRigCalibration,renderRigDiagram,renderRigPartFacts,renderInventoryInspector,renderFieldKit,toolArt,speciesDetailHTML,specimenSummary} from './ui.js';
 
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -20,6 +23,11 @@ const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const money=v=>new Intl.NumberFormat('vi-VN').format(v);
 const kg=v=>new Intl.NumberFormat('vi-VN',{minimumFractionDigits:2,maximumFractionDigits:3}).format(v);
 let storage;try{storage=window.localStorage;}catch{storage={getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}};}
+const deviceStorage=storage;
+const online=new OnlineClient({storage:deviceStorage});
+await online.initialize();
+storage=online.playerStorage;
+let onlineView=null,rankedView=null,rankedSession=null;
 const loaded=loadPlayer(storage);let player=loaded.player,saveWarning=loaded.warning;
 let screen='home',canvas=null,context=null,sceneObserver=null,toastTimer,previousFocus,dialogPaused=false,lastPhase='idle',lastFrame=0,lastUpdate=0,sceneReady=true,sceneLoader=null,pinSignal=false;
 let rodPose={force:0,bend:0};
@@ -33,7 +41,7 @@ const dialogPointerStarts=new Set();
 const hands=twoHands(game,{canUse:()=>screen==='fishing'&&sceneReady&&!game.paused&&!$('#dialog').open&&!game.deadlineReached,mouseTrackingEnabled:()=>desktop.matches,onUpdate:()=>{unlockAudio();updateFishing();}});
 function clearRodHold(){hands.clear();}
 
-function persist(){if(!savePlayer(storage,player))saveWarning='Trình duyệt đang chặn lưu. Tiến độ chỉ giữ trong phiên này.';}
+function persist(sync=true){if(!savePlayer(storage,player))saveWarning='Trình duyệt đang chặn lưu. Tiến độ chỉ giữ trong phiên này.';else if(sync!==false)online.markDirty();}
 function announce(message){$('#live').textContent=message;}
 function toast(message){$('#toast').textContent=message;$('#toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').hidden=true,4200);announce(message);}
 function gameChanged(){
@@ -69,7 +77,7 @@ function setSound(enabled){
   announce(enabled?'Đã bật nhạc và hiệu ứng âm thanh.':'Đã tắt âm thanh.');
 }
 
-function homeHTML(){return renderHome(player,game,saveWarning);}
+function homeHTML(){return renderHome(player,game,saveWarning)+`<a href="#online" class="online-home-link">${icon('trophy')}<span><b>Hội cần thủ</b><small>Tài khoản · Lưu tiến độ · Bảng xếp hạng</small></span>${icon('arrow')}</a>`;}
 function prepareHTML(){return renderPrepare(player,game,saveWarning);}
 function fishingHTML(){return renderFishing(player,game,saveWarning);}
 function rigHTML(){return renderRig(player,game,workbench);}
@@ -92,8 +100,10 @@ function filterShop(category){
   filterShopAccessory(shopAccessoryCategory);
 }
 
-const renderers={home:homeHTML,prepare:prepareHTML,fishing:fishingHTML,rig:rigHTML,learn:learnHTML,journal:journalHTML,shop:shopHTML,garden:()=>renderGarden(player,game)};
+const renderers={home:homeHTML,prepare:prepareHTML,fishing:fishingHTML,rig:rigHTML,learn:learnHTML,journal:journalHTML,shop:shopHTML,garden:()=>renderGarden(player,game),online:()=>renderOnline(online),ranked:renderRanked};
 function render(){
+  onlineView?.destroy();onlineView=null;rankedView?.destroy();rankedView=null;
+  if(screen==='ranked'&&!rankedSession)screen='online';
   clearRodHold();sceneLoader?.cancel();sceneLoader=null;sceneObserver?.disconnect();canvas=null;context=null;
   sceneReady=screen!=='fishing'||!game.spotData.video;
   document.body.dataset.screen=screen;$('#main').innerHTML=renderers[screen]();
@@ -135,6 +145,7 @@ function changeScreen(next){
   else if(wasFishing)setFishingOrientation(false);
 }
 function navigate(next){
+  if(screen==='ranked'&&next!=='ranked'&&!confirm('Rời thử thách hiện tại để chuyển màn hình?'))return;
   if(!renderers[next])next='home';if(next===screen)return;
   if(['casting','waiting','nibble','bite','fight','snag'].includes(game.phase)){
     setHash(screen);
@@ -171,6 +182,8 @@ function bindWaterCast(){
   };
 }
 function bindScreen(){
+  if(screen==='online')onlineView=bindOnline($('#main'),online,{toast,exportSave,importSave,startRanked});
+  if(screen==='ranked')rankedView=bindRanked($('#main'),online,rankedSession,{leave:()=>changeScreen('online'),toast});
   $$('[data-workbench-link]').forEach(link=>link.onclick=e=>{e.preventDefault();workbench.view=link.dataset.workbenchLink;navigate('rig');});
   $$('[data-open-keepnet]').forEach(button=>button.onclick=()=>showKeepnet());
   $$('[data-open-packing]').forEach(button=>button.onclick=showPacking);
@@ -543,11 +556,25 @@ function showLesson(id){
   $$('[data-answer]').forEach(b=>b.onclick=()=>{const first=!player.lessons.includes(id),correct=game.answerLesson(id,+b.dataset.answer);if(correct){$('#quiz-feedback').className='quiz-feedback good';$('#quiz-feedback').textContent=l.explain+(first?' Hoàn thành, nhận 2.500 xu.':' Bài đã hoàn thành trước đó.');$$('[data-answer]').forEach(x=>x.disabled=true);const done=document.createElement('button');done.className='primary';done.textContent='Ghi vào sổ';done.onclick=()=>{closeDialog();render();};$('#dialog-content .actions').append(done);}else{$('#quiz-feedback').className='quiz-feedback bad';$('#quiz-feedback').textContent='Chưa đúng nhịp. Thử một lựa chọn khác.';}});
 }
 function showSettings(){
-  showDialog('Tùy chọn bên bờ ao',`${audioOptionsHTML('global')}<div class="settingline"><label for="setting-assist">Gợi ý đọc tín hiệu</label><input id="setting-assist" type="checkbox" ${player.settings.assist?'checked':''}></div><label for="deadline">Giờ về nhà (tùy chọn)</label><select id="deadline"><option value="0" ${!player.settings.deadline?'selected':''}>Thư thả · Không giới hạn</option><option value="180" ${player.settings.deadline===180?'selected':''}>Một buổi 3 phút</option><option value="300" ${player.settings.deadline===300?'selected':''}>Một buổi 5 phút</option></select><p class="hint-note" style="margin-top:12px">Đồng hồ chạy khi chơi; dừng lúc tạm dừng, mở hộp thoại hoặc rời tab. Áp dụng ngay cho buổi hiện tại.</p><div class="rule"></div><p class="smalltext muted">Bản web v0.4 · Tiến độ lưu trên trình duyệt này. Xuất bản lưu để giữ một bản riêng. Cấp cần thủ tăng theo tổng cá đã câu: 5, 15, 30 và 60 con.</p>`,[{label:'Xuất bản lưu',action:exportSave},{label:'Xong',primary:true,action:closeDialog}]);
+  showDialog('Tùy chọn bên bờ ao',`${audioOptionsHTML('global')}<div class="settingline"><label for="setting-assist">Gợi ý đọc tín hiệu</label><input id="setting-assist" type="checkbox" ${player.settings.assist?'checked':''}></div><label for="deadline">Giờ về nhà (tùy chọn)</label><select id="deadline"><option value="0" ${!player.settings.deadline?'selected':''}>Thư thả · Không giới hạn</option><option value="180" ${player.settings.deadline===180?'selected':''}>Một buổi 3 phút</option><option value="300" ${player.settings.deadline===300?'selected':''}>Một buổi 5 phút</option></select><p class="hint-note" style="margin-top:12px">Đồng hồ chạy khi chơi; dừng lúc tạm dừng, mở hộp thoại hoặc rời tab. Áp dụng ngay cho buổi hiện tại.</p><div class="rule"></div><p class="smalltext muted">Bản web v0.6 · Tiến độ lưu trên thiết bị. Mở Hội cần thủ để quản lý bản lưu và tài khoản online. Cấp cần thủ tăng theo tổng cá đã câu: 5, 15, 30 và 60 con.</p>`,[{label:'Tài khoản & xếp hạng',action:()=>{closeDialog();navigate('online');}},{label:'Xuất bản lưu',action:exportSave},{label:'Xong',primary:true,action:closeDialog}]);
   bindAudioOptions('global');$('#setting-assist').onchange=e=>{player.settings.assist=e.target.checked;persist();};$('#deadline').onchange=e=>{player.settings.deadline=+e.target.value;persist();if(screen==='fishing')updateFishing();};
 }
 function exportSave(){const blob=new Blob([JSON.stringify(player,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='tron-vo-di-cau-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Đã xuất bản lưu JSON.');}
+function applyOnlinePlayer(next){
+  clearRodHold();player=restorePlayer(storage,next);Object.assign(game,new FishingGame(player,{onChange:gameChanged}));lastPhase=game.phase;persist(false);render();
+}
+async function startRanked(){
+  if(game.busy)throw Error('Kết thúc lượt câu hiện tại trước khi vào thử thách.');
+  await online.flush();rankedSession=await online.request('ranked-start',{method:'POST',body:{}});changeScreen('ranked');
+}
+async function importSave(file){
+  if(game.busy){toast('Kết thúc lượt câu trước khi nhập bản lưu.');return;}
+  if(file.size>512*1024){toast('Bản lưu quá lớn. Chọn file JSON dưới 512 KB.');return;}
+  let next;try{next=validateSave(JSON.parse(await file.text()));}catch{toast('Không đọc được bản lưu hợp lệ. Tiến độ hiện tại được giữ nguyên.');return;}
+  showDialog('Nhập tiến độ đã lưu?',`<p>Bản nhập có ${next.catches} cá và ${money(next.coins)} xu. Bản hiện tại sẽ được giữ trên máy để khôi phục.</p>`,[{label:'Giữ bản hiện tại',action:closeDialog},{label:'Nhập bản lưu',primary:true,action:()=>{try{online.backup(player,'local');closeDialog();applyOnlinePlayer(next);online.markDirty();toast('Đã nhập tiến độ. Thành tích nằm trong sổ cá cá nhân.');}catch{toast('Chưa tạo được bản dự phòng. Tiến độ hiện tại được giữ nguyên.');}}}]);
+}
 $('#settings').onclick=showSettings;
+$('.player-profile').onclick=()=>navigate('online');$('.player-profile').onkeydown=e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();navigate('online');}};
 document.addEventListener('click',e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;e.preventDefault();if(a.classList.contains('skip')){$('#main').focus();return;}navigate(a.getAttribute('href').slice(1));});
 addEventListener('hashchange',()=>navigate(location.hash.slice(1)));
 document.addEventListener('keydown',e=>{
@@ -628,5 +655,8 @@ function frame(now){
 }
 $('#brand-icon').innerHTML=icon('fish');$('#profile-avatar').innerHTML=avatarArt();$('#coin-icon').innerHTML=icon('coin');$('#settings').innerHTML=icon('settings');
 $('#game-nav').innerHTML=NAV_ITEMS.map(([id,symbol,label])=>`<a href="#${id}" data-screen="${id}"><span class="dock-icon">${icon(symbol)}</span><span>${label}</span></a>`).join('');
-screen=renderers[location.hash.slice(1)]?location.hash.slice(1):(game.atHome?'home':'prepare');if(!game.atHome&&['home','garden'].includes(screen))screen='prepare';setHash(screen);render();if(screen==='fishing')setFishingOrientation(true);persist();requestAnimationFrame(frame);
+screen=renderers[location.hash.slice(1)]?location.hash.slice(1):(game.atHome?'home':'prepare');if(!game.atHome&&['home','garden'].includes(screen))screen='prepare';setHash(screen);render();if(screen==='fishing')setFishingOrientation(true);persist(false);requestAnimationFrame(frame);
+online.onStatus=()=>onlineView?.refresh();
+online.connect({getPlayer:()=>player,applyPlayer:applyOnlinePlayer,canReplace:()=>!game.busy&&screen!=='ranked'});
+addEventListener('online',()=>online.checkRemote());
 if(player.pending)showCatch();

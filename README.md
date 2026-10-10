@@ -32,7 +32,7 @@ Luồng **Nhà → Chuẩn bị → Đi câu**. Chọn map, góc bờ, cần và
 - Mười bài thực hành tùy chọn ghi nhận kết quả chơi thật, thưởng một lần và giữ tiến độ; ba bài trắc nghiệm cũ vẫn có thưởng lần đầu. Ruộng vườn cần chăm hàng ngày để thu ngô và giun; ủ lá cho phép người hết xu phục hồi sau thời gian chờ. Mồi bột chỉ mua ở chợ. Có xuất bản lưu JSON.
 - Lưu tự động trên trình duyệt, bàn phím, nút cảm ứng, giảm chuyển động và chế độ giờ về nhà 3 hoặc 5 phút.
 
-Khởi đầu có cần tre, 12.000 xu và mồi. Xu hoàn toàn là tiền trong game. Không có tài khoản, thanh toán, quảng cáo hoặc dịch vụ máy chủ.
+Khởi đầu có cần tre, 12.000 xu và mồi. Xu hoàn toàn là tiền trong game. Chơi khách không cần đăng nhập. Tài khoản, lưu online và bảng xếp hạng v0.6 cần cấu hình Supabase/Vercel theo tài liệu bên dưới; chưa có thanh toán hoặc quảng cáo.
 
 Bản phát hành v0.3 và đối chiếu yêu cầu 36 giờ: [RELEASE_2026-10-09.md](docs/RELEASE_2026-10-09.md).
 
@@ -64,7 +64,7 @@ Chọn **Tạm dừng → Chuẩn bị lại** để đổi map, góc bờ, cầ
 
 ## Chạy tại máy
 
-Cần Node.js 22 trở lên. Game không có thư viện chạy ở phía người chơi và không cần cài gói để phục vụ bản tĩnh.
+Cần Node.js 22 trở lên. Chạy `npm ci` trước lần chạy đầu để cài công cụ build và SDK đăng nhập. Gameplay vẫn chạy cục bộ; API online là phần tùy chọn cần cấu hình.
 
 ```sh
 npm start
@@ -141,7 +141,7 @@ Bản v0.3 tiếp nối bản chơi web đầu tiên của [GDD v0.1](docs/GDD_v
 
 Mỗi map dùng tranh riêng, ảnh nhỏ trong bản đồ/chợ lấy từ đúng cảnh đó. Hình cá là SVG có dáng và hoa văn theo nhóm minh họa; mô hình tìm mồi và lực dây là mô phỏng 2D giản lược. Lớp cảnh động được vẽ bằng Canvas trên tranh hiện có; chưa phải mô phỏng chất lỏng. Giảm chuyển động tắt hiệu ứng cảnh nhưng giữ chuyển động cá cần thiết cho điều khiển. Chưa có nhân vật 3D, mô phỏng nút buộc, thế giới mở, nhiều người chơi hoặc kiểm chứng hiệu năng native. Cân bằng riêng của bản web thay đổi giá đồ và cách mở map so với kế hoạch GDD. Dữ liệu kế hoạch giữ riêng ở `docs/data/`, không điều khiển bản chơi này.
 
-Tiến độ lưu theo trình duyệt/domain, không đồng bộ giữa thiết bị. Xóa dữ liệu trình duyệt sẽ xóa tiến độ. Xuất JSON giữ được bản riêng, nhưng chưa có chức năng nhập lại trong giao diện. Thời lượng buổi câu bắt đầu lại khi tải trang; cá đang kéo không giữ giữa hai lần tải, cá đã lên bờ, cá trong rọng và cá ở nhà được giữ để tiếp tục xử lý. Cần và phụ kiện hiện mỗi loại sở hữu một bản; độ bền được lưu để mở rộng sau, chưa có hao mòn hoặc sửa đồ.
+Tiến độ lưu theo trình duyệt/domain, không đồng bộ giữa thiết bị. Xóa dữ liệu trình duyệt sẽ xóa tiến độ. Xuất JSON giữ được bản riêng; Hội cần thủ có nhập lại JSON và giữ bản dự phòng trước khi thay. Thời lượng buổi câu bắt đầu lại khi tải trang; cá đang kéo không giữ giữa hai lần tải, cá đã lên bờ, cá trong rọng và cá ở nhà được giữ để tiếp tục xử lý. Cần và phụ kiện hiện mỗi loại sở hữu một bản; độ bền được lưu để mở rộng sau, chưa có hao mòn hoặc sửa đồ.
 
 Các mô tả sinh học, tên phân loại và phân bố trong GDD đang chờ rà soát chuyên gia. Game không đưa ra bảo đảm về kỹ thuật câu cá ngoài đời.
 
@@ -176,3 +176,12 @@ Có **56 loài câu được**, sử dụng 57 ID ảnh: `fish_55` gộp vào tr
 Túi hiển thị từng ngăn theo đúng loại túi đang sở hữu. Kho có tìm kiếm không dấu, lọc loại và vị trí; chọn món để xem thông số, chuyển số lượng mồi hoặc lắp đồ. PC có kéo thả: chuyển toàn bộ số phần ở nguồn sang ngăn phù hợp. Nút chuyển đồ hỗ trợ điện thoại và bàn phím. Túi đầy, đích sai, đồ đang lắp và chuyển đồ khi ở bờ đều bị chặn; sở hữu vẫn dùng cùng bản lưu, không đổi schema hay cấp thêm vật phẩm.
 
 Kiểm tra: `npm run test:browser:workbench` cùng kiểm thử kho/túi và các luồng chơi hiện có.
+
+
+## Hội cần thủ v0.6
+
+Mở **Hội cần thủ** từ trang nhà hoặc bấm hồ sơ trên đầu trang. Có giao diện tài khoản, lưu/khôi phục JSON, đồng bộ có kiểm tra xung đột và bảng xếp hạng. Thử thách 3 phút dùng bộ câu riêng; máy chủ chạy lại thao tác để xác nhận thành tích, không dùng xu/đồ/điểm trong bản lưu cá nhân.
+
+**Cần kích hoạt backend trước khi đăng nhập và thi online:** [ONLINE_PLAYERS.md](docs/ONLINE_PLAYERS.md) ghi migration SQL, env Vercel, Google/SMTP, tiêu chí kiểm chứng và phần chưa xác minh live. Khi dịch vụ chưa được cấu hình, game thông báo đúng trạng thái và tiếp tục hỗ trợ chơi khách. Không có bảng điểm mẫu trong production.
+
+Kiểm tra mới: `npm run test:browser:online`; migration và xác minh dữ liệu nằm trong `npm test`. API `/api/online` do Vercel Functions phục vụ; bản GitHub Pages thuần tĩnh chỉ có chế độ chơi khách.
