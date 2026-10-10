@@ -11,7 +11,8 @@
     "baits": "baits",
     "reels": "reels",
     "bags": "bags",
-    "accessories": "accessories"
+    "accessories": "accessories",
+    "lures": "lures"
   },
   "lines": [
     {
@@ -219,6 +220,68 @@
       "id": "rod_35",
       "name": "Rice Fishing V5 Thế Hệ 3",
       "file": "rods/rod_35.webp"
+    }
+  ],
+  "lures": [
+    {
+      "id": "lure_01",
+      "name": "Minnow nổi HENGJIA",
+      "file": "lures/moi-minnow-noi.webp"
+    },
+    {
+      "id": "lure_02",
+      "name": "Minnow lơ lửng",
+      "file": "lures/moi-minnow-lo-lung.webp"
+    },
+    {
+      "id": "lure_03",
+      "name": "Crankbaits 3D",
+      "file": "lures/moi-crankbait.webp"
+    },
+    {
+      "id": "lure_04",
+      "name": "Popper",
+      "file": "lures/moi-popper.webp"
+    },
+    {
+      "id": "lure_05",
+      "name": "RINLURE Pencil sinking",
+      "file": "lures/moi-pencil.webp"
+    },
+    {
+      "id": "lure_06",
+      "name": "Nhái hơi chống vướng",
+      "file": "lures/moi-nhai-hoi.webp"
+    },
+    {
+      "id": "lure_07",
+      "name": "Nhái nhảy",
+      "file": "lures/moi-nhai-nhay.webp"
+    },
+    {
+      "id": "lure_08",
+      "name": "Thìa lượn",
+      "file": "lures/moi-thia-luon.webp"
+    },
+    {
+      "id": "lure_09",
+      "name": "Thìa lượn gắn mồi ruồi",
+      "file": "lures/moi-thia-gan-ruoi.webp"
+    },
+    {
+      "id": "lure_10",
+      "name": "Cá mềm đuôi mái chèo",
+      "file": "lures/moi-ca-mem.webp"
+    },
+    {
+      "id": "lure_11",
+      "name": "Cá sắt VIB",
+      "file": "lures/moi-ca-sat-vib.webp"
+    },
+    {
+      "id": "lure_12",
+      "name": "Metal Jig phản quang",
+      "file": "lures/moi-metal-jig.webp"
     }
   ]
 }
