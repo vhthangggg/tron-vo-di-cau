@@ -1,3 +1,4 @@
+import {LURE_CATALOG} from './lure-catalog.js';
 import {NEW_CATCHABLE_SPECIES,enrichSpecies,FISH_ASSET_ALIASES} from './species-data.js';
 // Địa điểm, tập tính, khối lượng và giá là mô hình gameplay; không phải dữ liệu khảo sát.
 export const TECHNIQUES = {
@@ -2296,7 +2297,7 @@ export const RODS = [
   }
 ];
 
-export const BAITS = [
+const LEGACY_BAITS = [
   {
     "id": "worm",
     "name": "Giun",
@@ -2497,6 +2498,18 @@ export const BAITS = [
     "reusable": true,
     "note": "Mồi giả nổi dùng lại. Tìm lóc bông ở hồ và kênh Miền Tây."
   }
+];
+
+ // Old crank/spoon/popper IDs stay loadable for saves; new purchases use the 12-item catalog.
+export const BAITS = [
+ ...LEGACY_BAITS.map(bait=>['crank','spoon','popper'].includes(bait.id)?{...bait,legacyCatalog:true}:bait),
+ ...LURE_CATALOG.map(lure=>({
+  id:lure.id,name:lure.name,tech:['lure'],price:lure.game.priceCoins,amount:1,mass:0,reusable:true,
+  note:lure.note+' '+lure.game.retrieveNote,
+  asset:lure.asset,affiliateUrl:lure.affiliateUrl,
+  lureProfile:lure.game,lureFamily:lure.category,
+  fishBaitAlias:lure.game.compatibleFishBaitId
+ }))
 ];
 
 export const BAGS = [
