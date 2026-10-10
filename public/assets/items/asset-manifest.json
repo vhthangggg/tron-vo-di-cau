@@ -38,5 +38,182 @@
       "name": "Thiên Tơ — Huyền Vũ",
       "file": "lines/thien-to-huyen-vu.webp"
     }
+  ],
+  "rods": [
+    {
+      "id": "bamboo",
+      "name": "Cần tre ao",
+      "file": "rods/can-tre-ao.webp"
+    },
+    {
+      "id": "rod_01",
+      "name": "Handing Hoàng Vũ TH2",
+      "file": "rods/rod_01.webp"
+    },
+    {
+      "id": "rod_02",
+      "name": "Daiwa SWEEPFIRE",
+      "file": "rods/rod_02.webp"
+    },
+    {
+      "id": "rod_03",
+      "name": "Handing Toàn Năng Chiến",
+      "file": "rods/rod_03.webp"
+    },
+    {
+      "id": "rod_04",
+      "name": "GW Phong Ảnh",
+      "file": "rods/rod_04.webp"
+    },
+    {
+      "id": "rod_05",
+      "name": "Handing / Ryuki Phong Kích",
+      "file": "rods/rod_05.webp"
+    },
+    {
+      "id": "rod_06",
+      "name": "GW Long Hoa",
+      "file": "rods/rod_06.webp"
+    },
+    {
+      "id": "rod_07",
+      "name": "Ryobi SAKURANO",
+      "file": "rods/rod_07.webp"
+    },
+    {
+      "id": "rod_08",
+      "name": "Handing Tốc Chiến Cực",
+      "file": "rods/rod_08.webp"
+    },
+    {
+      "id": "rod_09",
+      "name": "Handing Chân Đỉnh",
+      "file": "rods/rod_09.webp"
+    },
+    {
+      "id": "rod_10",
+      "name": "Handing / Ryuki Bất Phàm",
+      "file": "rods/rod_10.webp"
+    },
+    {
+      "id": "rod_11",
+      "name": "Handing Nhất Hào Hắc Khanh TH6",
+      "file": "rods/rod_11.webp"
+    },
+    {
+      "id": "rod_12",
+      "name": "Handing Nhất Hào Hắc Khanh TH7",
+      "file": "rods/rod_12.webp"
+    },
+    {
+      "id": "rod_13",
+      "name": "Daiwa LIBERTY CLUB ISO",
+      "file": "rods/rod_13.webp"
+    },
+    {
+      "id": "rod_14",
+      "name": "Handing Hỏa Điểu",
+      "file": "rods/rod_14.webp"
+    },
+    {
+      "id": "rod_15",
+      "name": "Handing / Ryuki Thiết Sa",
+      "file": "rods/rod_15.webp"
+    },
+    {
+      "id": "rod_16",
+      "name": "Major Craft BASSPARA MOBILE",
+      "file": "rods/rod_16.webp"
+    },
+    {
+      "id": "rod_17",
+      "name": "Major Craft FIRSTCAST ROCKFISH",
+      "file": "rods/rod_17.webp"
+    },
+    {
+      "id": "rod_18",
+      "name": "Daiwa CROSSFIRE Việt Nam",
+      "file": "rods/rod_18.webp"
+    },
+    {
+      "id": "rod_19",
+      "name": "GW CA-Lure",
+      "file": "rods/rod_19.webp"
+    },
+    {
+      "id": "rod_20",
+      "name": "Daiwa D-BLUE",
+      "file": "rods/rod_20.webp"
+    },
+    {
+      "id": "rod_21",
+      "name": "Daiwa 22 TATULA XT",
+      "file": "rods/rod_21.webp"
+    },
+    {
+      "id": "rod_22",
+      "name": "Major Craft BASSPARA",
+      "file": "rods/rod_22.webp"
+    },
+    {
+      "id": "rod_23",
+      "name": "Handing Chiến Vũ Lý",
+      "file": "rods/rod_23.webp"
+    },
+    {
+      "id": "rod_24",
+      "name": "Shimano 26 ZODIAS",
+      "file": "rods/rod_24.webp"
+    },
+    {
+      "id": "rod_25",
+      "name": "Shimano 22 EXPRIDE",
+      "file": "rods/rod_25.webp"
+    },
+    {
+      "id": "rod_26",
+      "name": "Shimano WORLD SHAULA BG",
+      "file": "rods/rod_26.webp"
+    },
+    {
+      "id": "rod_27",
+      "name": "VuaKong Huyền Vũ RS",
+      "file": "rods/rod_27.webp"
+    },
+    {
+      "id": "rod_28",
+      "name": "Daiwa PRIME SURF T",
+      "file": "rods/rod_28.webp"
+    },
+    {
+      "id": "rod_29",
+      "name": "Major Craft DAYS CASTING",
+      "file": "rods/rod_29.webp"
+    },
+    {
+      "id": "rod_30",
+      "name": "Shimano SCORPION",
+      "file": "rods/rod_30.webp"
+    },
+    {
+      "id": "rod_31",
+      "name": "Thiên Trượng — Huyền Vũ",
+      "file": "rods/rod_31.webp"
+    },
+    {
+      "id": "rod_32",
+      "name": "Cần Trúc Xanh 3H",
+      "file": "rods/rod_32.webp"
+    },
+    {
+      "id": "rod_33",
+      "name": "LK Hòa Rô Chép 2026",
+      "file": "rods/rod_33.webp"
+    },
+    {
+      "id": "rod_34",
+      "name": "Shimano Carbon Giá Rẻ",
+      "file": "rods/rod_34.webp"
+    }
   ]
 }
