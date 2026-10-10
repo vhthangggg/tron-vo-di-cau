@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {LURE_CATALOG} from '../src/lure-catalog.js';
 import {BAITS,getBait} from '../src/content.js';
 import {FishingGame} from '../src/engine.js';
+import {getEquipmentSpecs} from '../src/equipment.js';
 import {newPlayer} from '../src/save.js';
 
 test('twelve lure catalog entries are unique, linked and consistent with the JSON export',async()=>{
@@ -49,4 +50,13 @@ test('lure compatibility remains playable for predatory fish and older saves',()
  assert.equal(game.eligible({fishId:'fish_01',spot:game.spot,caught:false,suspicion:0,depth:0.5}),false);
  for(const id of ['crank','spoon','popper'])assert.equal(getBait(id).legacyCatalog,true);
  assert.equal(BAITS.filter(b=>b.lureProfile).length,12);
+});
+
+test('shop specifications render for all twelve lures without ReferenceError',()=>{
+ for(const lure of LURE_CATALOG){
+  const rows=getEquipmentSpecs('bait',lure.id);
+  assert.deepEqual(rows.map(row=>row.key),['minDepth','maxDepth','attraction','durability','snagRisk']);
+  assert.ok(rows.every(row=>Number.isFinite(row.value)));
+  assert.ok(rows.every(row=>!row.label.includes('(game)')));
+ }
 });
