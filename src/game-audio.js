@@ -18,18 +18,40 @@ export const audioTheme = id => AUDIO_THEMES[id]||AUDIO_THEMES.home;
 const hz = midi => 440*2**((midi-69)/12);
 const clamp = n => Math.max(0,Math.min(1,Number.isFinite(n)?n:0));
 
-export function fightSoundState(game){
+export const LINE_AUDIO_PROFILES = Object.freeze({
+  line_basic:{tone:0.64,roughness:0.88,air:0.27,flutter:0.82},
+  line18:{tone:0.82,roughness:0.35,air:0.38,flutter:0.35},
+  braid:{tone:1.32,roughness:0.82,air:0.73,flutter:0.65},
+  line_copolymer:{tone:1.05,roughness:0.42,air:0.49,flutter:0.3},
+  line_fluorocarbon:{tone:1.19,roughness:0.62,air:0.55,flutter:0.26},
+  line_carbyne:{tone:1.68,roughness:0.17,air:0.74,flutter:0.12}
+});
+export function lineSoundState(game){
   if(game.phase!=='fight'||game.paused)return null;
-  const reel=usesReel(game.rod),tension=clamp(game.tension/100);
+  const id=game.player?.equipment?.line||'line_basic';
+  const profile=LINE_AUDIO_PROFILES[id]||LINE_AUDIO_PROFILES.line_basic;
+  const tension=clamp(game.tension/100);
   const motion=clamp(Math.hypot(game.velocity?.x||0,game.velocity?.y||0)/.35);
   const load=clamp(Math.sqrt(Math.max(0,game.hooked?.weight||0)/Math.max(.1,game.rod.power))/1.3);
-  // Reels click only as the fish takes line. Hand rods sing under taut-line load.
-  const payingOut=game.surge||(game.velocity?.y||0)<-.025||tension>.72;
-  const active=reel?tension>.35&&payingOut:tension>.28;
-  const bamboo=game.rod.id==='bamboo';
-  return {kind:reel?'drag':'line',timbre:bamboo?'bamboo':reel?'drag':'carbon',level:active?((reel?.09:bamboo?.12:.14)+Math.max(0,tension-.28)*.26+load*.06+motion*.025)*(bamboo?.85:1):0,
-    rate:reel?.65+motion*.75+tension*.7+(game.surge?.25:0):.78+tension*.3+motion*.1,
-    frequency:reel?650+tension*700:bamboo?1100+tension*1000:1600+tension*1800+(game.surge?200:0)};
+  const active=tension>.28&&(motion>.08||game.surge||game.pulling);
+  return {kind:'line',timbre:'material:'+id,profile,
+    level:active?(.055+Math.max(0,tension-.28)*.19+motion*.045+load*.035):0,
+    rate:.72+motion*.44+tension*.26,
+    frequency:(850+tension*1050+motion*370)*profile.tone};
+}
+export function fightSoundState(game){
+  if(game.phase!=='fight'||game.paused)return null;
+  const reel=usesReel(game.rod);
+  if(!reel)return lineSoundState(game);
+  const tension=clamp(game.tension/100);
+  const motion=clamp(Math.hypot(game.velocity?.x||0,game.velocity?.y||0)/.35);
+  const load=clamp(Math.sqrt(Math.max(0,game.hooked?.weight||0)/Math.max(.1,game.rod.power))/1.3);
+  // Drag is a spool mechanism, not simply high line tension.
+  const payingOut=game.surge||(game.velocity?.y||0)<-.025;
+  const active=tension>.35&&payingOut;
+  return {kind:'drag',timbre:'drag',level:active?(.09+Math.max(0,tension-.28)*.26+load*.06+motion*.025):0,
+    rate:.65+motion*.75+tension*.7+(game.surge?.25:0),
+    frequency:650+tension*700};
 }
 
 // Seamless friction and ratchet PCM, cached once per AudioContext.
@@ -66,6 +88,22 @@ export function fillFightSound(samples,rate,kind){
   const edge=Math.min(Math.floor(rate*.005),Math.floor(samples.length/2));
   for(let i=0;i<edge;i++){const fade=i/edge;samples[i]*=fade;samples[samples.length-1-i]*=fade;}
 }
+// A material-specific friction loop; no machine ratchet is mixed into pole sounds.
+export function fillMaterialLineSound(samples,rate,profile){
+  let seed=293,pink=0,phase=0;
+  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296*2-1;};
+  for(let i=0;i<samples.length;i++){
+    const t=i/rate,noise=random();pink=pink*.955+noise*.045;
+    const vibrato=1+.024*Math.sin(t*13.1)+.013*Math.sin(t*29.7);
+    phase+=2*Math.PI*(1100*profile.tone*vibrato)/rate;
+    const texture=(noise-pink)*profile.roughness*.23+pink*profile.air*.26;
+    const filament=Math.sin(phase)*(.06+.075*profile.air);
+    const flutter=1-profile.flutter*.19*(.5+.5*Math.sin(t*37));
+    samples[i]=(texture+filament)*flutter;
+  }
+  const edge=Math.min(Math.floor(rate*.006),Math.floor(samples.length/2));
+  for(let i=0;i<edge;i++){const fade=i/edge;samples[i]*=fade;samples[samples.length-1-i]*=fade;}
+}
 export function musicBar(id,bar){
   const t=audioTheme(id),minor=t.mode==='minor';
   const roots=minor?[0,-4,3,-2]:[0,-3,-7,-5];
@@ -83,7 +121,7 @@ export function musicBar(id,bar){
 export class GameAudio{
   constructor({getSettings,contextFactory=()=>{const C=globalThis.AudioContext||globalThis.webkitAudioContext;return C?new C():null;}}){
     this.getSettings=getSettings;this.contextFactory=contextFactory;this.theme='home';this.paused=false;this.hidden=false;
-    this.voices=new Set();this.buffers=new Map();this.bar=0;this.unlocked=false;this.lastReel=-9;this.lastWarning=-9;
+    this.voices=new Set();this.buffers=new Map();this.bar=0;this.unlocked=false;this.lastReel=-9;this.lastWarning=-9;this.lineVoice=null;
   }
   unlock(){
     try{
@@ -168,16 +206,40 @@ export class GameAudio{
     if(voice)this.fightVoice={...voice,kind,timbre,filter};
   }
   stopFightSound(fade=.12){
+    this.stopLineSound(fade);
     this.setFightMix(false);
     const v=this.fightVoice;if(!v)return;this.fightVoice=null;
     this.ramp(v.gain.gain,0,Math.max(.005,fade/4));this.stopVoice(v,this.ctx.currentTime+fade);
+  }
+  stopLineSound(fade=.12){
+    const v=this.lineVoice;if(!v||!this.ctx)return;this.lineVoice=null;
+    this.ramp(v.gain.gain,0,Math.max(.005,fade/4));this.stopVoice(v,this.ctx.currentTime+fade);
+  }
+  updateLineSound(game){
+    const state=lineSoundState(game);
+    if(!state||state.level<=0){this.stopLineSound();return;}
+    if(this.lineVoice?.timbre!==state.timbre)this.stopLineSound();
+    if(!this.lineVoice){
+      const c=this.ctx,key='line:'+state.timbre;let buffer=this.buffers.get(key);
+      if(!buffer){buffer=c.createBuffer(1,c.sampleRate*2,c.sampleRate);
+        fillMaterialLineSound(buffer.getChannelData(0),c.sampleRate,state.profile);this.buffers.set(key,buffer);}
+      const source=c.createBufferSource();source.buffer=buffer;source.loop=true;
+      const filter=c.createBiquadFilter();filter.type='bandpass';filter.Q.value=.55;
+      const voice=this.voice(source,{duration:Infinity,level:.0001,filter});
+      if(voice)this.lineVoice={...voice,timbre:state.timbre,filter};
+    }
+    const v=this.lineVoice;if(!v)return;
+    this.ramp(v.gain.gain,state.level,.035);
+    this.ramp(v.source.playbackRate,state.rate,.05);
+    this.ramp(v.filter.frequency,state.frequency,.05);
   }
   updateFightSound(game){
     const s=this.getSettings();
     const state=s.sound&&clamp(s.effects??.7)&&this.ctx.state==='running'&&!this.paused&&!this.hidden?fightSoundState(game):null;
     if(!state){this.stopFightSound();return;}
+    if(state.kind==='drag')this.updateLineSound(game);else this.stopLineSound();
     if(this.fightVoice&&this.fightVoice.timbre!==state.timbre)this.stopFightSound();
-    this.setFightMix(state.level>0);
+    this.setFightMix(state.level>0||(this.lineVoice!=null));
     if(!this.fightVoice&&state.level>0)this.startFightSound(state.kind,state.timbre);
     const v=this.fightVoice;if(!v)return;
     this.ramp(v.gain.gain,state.level,.035);this.ramp(v.source.playbackRate,state.rate,.05);this.ramp(v.filter.frequency,state.frequency,.05);
