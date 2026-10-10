@@ -2260,6 +2260,39 @@ export const RODS = [
     "curve": "progressive",
     "affiliateUrl": "https://s.shopee.vn/Lnswej8L0",
     "fictional": false
+  },
+  {
+    "id": "rod_35",
+    "name": "Rice Fishing V5 Thế Hệ 3",
+    "tech": "dai",
+    "power": 6.8,
+    "price": 118000,
+    "note": "Cần đài carbon 30T/40T, nhiều phiên bản 3.5H/4.5H/5.5H; thống kê cân bằng game dựa trên bản 4.5H dài 4.5 m. Tải tĩnh nhà bán công bố, không phải tải kéo cá thực tế.",
+    "label": "Câu Đài",
+    "asset": "/assets/items/rods/rod_35.webp",
+    "marketPrice": 644000,
+    "lengthM": 4.5,
+    "weightG": 106,
+    "hardness": "4.5H",
+    "sections": 4,
+    "closedLengthCm": 125,
+    "staticLoadKg": [
+      2.3,
+      2.8
+    ],
+    "material": "Carbon 30T + 40T (theo nhà bán)",
+    "ratings": {
+      "durability": 7,
+      "backbone": 6.5,
+      "sensitivity": 7.5,
+      "control": 7,
+      "cast": 2
+    },
+    "curve": "progressive",
+    "affiliateUrl": "https://s.shopee.vn/7AeD61kHut",
+    "fictional": false,
+    "sourceUrl": "https://vuadocau.com/can-cau-tay-v5-the-he-3/",
+    "variantNote": "4.5H/4.5m làm mốc gameplay; link affiliate chưa đối chiếu được biến thể"
   }
 ];
 
