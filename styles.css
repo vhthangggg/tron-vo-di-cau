@@ -690,10 +690,10 @@ body[data-screen=fishing] #dialog{width:min(660px,calc(100dvw - 32px));max-width
 .product-icon > img.lure-image {
   display: block;
   box-sizing: border-box;
-  width: 80%;
-  height: 80%;
-  max-width: 80%;
-  max-height: 80%;
+  width: 90%;
+height: 90%;
+max-width: 90%;
+max-height: 90%;
   min-width: 0;
   min-height: 0;
   margin: auto;
