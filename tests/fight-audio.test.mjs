@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {RODS,getRod,usesReel} from '../src/content.js';
-import {fightSoundState,fillFightSound} from '../src/game-audio.js';
+import {fightSoundState,lineSoundState,LINE_AUDIO_PROFILES,fillMaterialLineSound,fillFightSound} from '../src/game-audio.js';
 
 const fight=(rod='rod_23',extra={})=>({phase:'fight',rod:getRod(rod),tension:55,surge:false,velocity:{x:.1,y:.06},hooked:{weight:.7},...extra});
 
@@ -13,7 +13,7 @@ test('Every hand rod has taut-line friction; every reel rod has a payout drag so
   const reel=RODS.find(usesReel).id;
   assert.equal(fightSoundState(fight(reel)).level,0,'A resting spool does not click');
   assert(fightSoundState(fight(reel,{velocity:{x:0,y:-.1}})).level>0,'Fish moving away takes line');
-  assert(fightSoundState(fight(reel,{tension:80})).level>0,'High tension slips the spool');
+  assert.equal(fightSoundState(fight(reel,{tension:80})).level,0,'Tension alone cannot spin the spool');
 });
 test('Fighting sound follows pressure and movement, fades on slack and stops outside a fight',()=>{
   const soft=fightSoundState(fight('rod_23',{tension:36,hooked:{weight:.05}}));
@@ -42,6 +42,21 @@ test('Friction is continuous and drag is a distinct impulsive, bounded loop',()=
 
 test('Bamboo has softer fibre friction while carbon poles sing and reels use ratchet drag',()=>{
  const bamboo=fightSoundState(fight('bamboo')),carbon=fightSoundState(fight('rod_23'));
- assert.equal(bamboo.timbre,'bamboo');assert.equal(carbon.timbre,'carbon');assert(bamboo.frequency<carbon.frequency);assert(bamboo.level<carbon.level);
+ assert.equal(bamboo.timbre,'material:line_basic');assert.equal(carbon.timbre,'material:line_basic');
  const a=new Float32Array(48000),b=new Float32Array(48000);fillFightSound(a,24000,'bamboo');fillFightSound(b,24000,'line');assert.notDeepEqual(a,b);assert(a.every(v=>Number.isFinite(v)&&Math.abs(v)<=1));
+});
+
+test('All six line materials have unique audio profiles and stable PCM',()=>{
+  assert.equal(Object.keys(LINE_AUDIO_PROFILES).length,6);
+  const waveforms=[];
+  for(const id of Object.keys(LINE_AUDIO_PROFILES)){
+    const state=lineSoundState(fight('rod_23',{player:{equipment:{line:id}},surge:true}));
+    assert.equal(state.timbre,'material:'+id);
+    const samples=new Float32Array(24000);
+    fillMaterialLineSound(samples,24000,state.profile);
+    assert(samples.every(v=>Number.isFinite(v)&&Math.abs(v)<=1));
+    assert.equal(samples[0],0);assert.equal(samples.at(-1),0);
+    waveforms.push(samples.slice(100,110));
+  }
+  assert.equal(new Set(waveforms.map(a=>a.join(','))).size,6);
 });
