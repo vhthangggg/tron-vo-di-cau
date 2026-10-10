@@ -24,6 +24,8 @@ async function makeScenario(viewport,fixture,label){
   await page.clock.install({time:new Date('2026-10-07T01:00:00Z')});
   await page.clock.pauseAt(new Date('2026-10-07T01:00:01Z'));
   await page.goto(origin+'/#home');
+  // Online initialization is awaited before the app restores and persists the save.
+  await page.waitForFunction(()=>document.body.hasAttribute('data-screen'));
   return {page,context};
 }
 async function navigate(page,target){

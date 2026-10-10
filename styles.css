@@ -613,3 +613,77 @@ body[data-screen=fishing] #dialog{width:min(660px,calc(100dvw - 32px));max-width
 .rod-visual.image-missing>svg{display:block}
 .product-icon>.rod-visual{position:absolute;inset:0}
 .rod-affiliate{margin-top:8px;width:100%;font-size:12px;text-align:center}
+
+/* Rod showcase deck: parchment, timber and collection-tier accents. */
+.rod-deck-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}
+.rod-deck-heading h2{margin:0 0 6px;font-family:VietDisplay,Georgia,serif;font-size:30px;color:var(--surface)}
+.rod-deck-heading p{margin:0;color:var(--dim);font-size:14px}
+.rod-deck-count{flex-shrink:0;color:var(--gold-light);border:1px solid var(--hud-line);border-radius:7px;padding:7px 12px;font-size:12px}
+.rod-deck-legend{display:flex;align-items:center;flex-wrap:wrap;gap:7px 10px;color:var(--dim);font-size:12px;margin:0 0 24px}
+.rod-deck-legend small{margin-left:auto;font-size:11px}
+.gear-legend-gain{width:20px;height:8px;background:#8bb869;border:1px solid #a5c881;border-radius:2px}
+.gear-legend-marker{height:14px;width:3px;margin-left:12px;background:#f5d998}
+.product-grid.rod-deck{grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;align-items:stretch}
+.product.gear-card{--rarity:#41714b;--rarity-ink:#29513b;--rarity-wash:#dbe9cf;--rarity-glow:#78945e33;position:relative;isolation:isolate;display:flex;flex-direction:column;min-width:0;padding:18px;border:3px solid var(--rarity);border-bottom-width:6px;border-radius:18px;background:linear-gradient(115deg,#ffffff60,transparent 40%),repeating-linear-gradient(0deg,#7f633706 0 1px,transparent 1px 4px),linear-gradient(#f8efd9,#ede0bf);box-shadow:inset 0 0 0 2px #fffae1,inset 0 0 0 5px #98744c45,0 5px 0 #142f2290,0 10px 20px #071b2240;overflow:hidden;color:#3b3524}
+.gear-card[data-rarity=rare]{--rarity:#47728b;--rarity-ink:#294f65;--rarity-wash:#d4e2e8;--rarity-glow:#5182a533}
+.gear-card[data-rarity=epic]{--rarity:#866193;--rarity-ink:#684175;--rarity-wash:#e4d9eb;--rarity-glow:#966aad33}
+.gear-card[data-rarity=masterwork]{--rarity:#ad8138;--rarity-ink:#72501d;--rarity-wash:#f1dfb1;--rarity-glow:#d6ad5540}
+.gear-card[data-rarity=legendary]{--rarity:#ad8138;--rarity-ink:#72501d;--rarity-wash:#f1dfb1;--rarity-glow:#d6ad5550}
+.gear-card-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:16px}
+.gear-rarity{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;background:var(--rarity-wash);border:1px solid var(--rarity);border-radius:4px 10px 10px 4px;color:var(--rarity-ink);font-size:12px;font-weight:700;box-shadow:inset 0 1px #fff9,0 2px 0 #6f57391a}
+.gear-rarity .icon{width:16px;height:16px}
+.gear-stars{display:flex;gap:3px;color:var(--rarity-ink)}
+.gear-stars .icon{width:14px;height:14px;fill:var(--rarity-wash);stroke-width:1.7}
+.gear-title{position:relative;z-index:1}
+.gear-card .gear-title h3{font-family:VietDisplay,Georgia,serif;font-size:25px;line-height:1.15;min-height:2.3em;margin:0 0 8px;color:#2a4032;overflow-wrap:anywhere}
+.gear-title>span{display:block;font-size:12px;color:#5a513b;font-weight:700}
+.gear-title i{font-style:normal;margin:0 5px;color:#8d744d}
+.gear-card .gear-showcase{position:relative;aspect-ratio:4/3;height:auto;margin:14px -6px 12px;padding:0;display:block;isolation:isolate;border:1px solid #99825660;border-radius:50% 50% 12px 12px;background:radial-gradient(ellipse at 50% 42%,#fff7e6 5%,#e2d5b9 57%,#c6bea06b 100%);overflow:hidden}
+.gear-halo{position:absolute;inset:13% 8% 21%;border-radius:50%;background:radial-gradient(ellipse,var(--rarity-glow),transparent 72%);pointer-events:none}
+.gear-card .gear-showcase>.gear-rack{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(1px 8px 4px #45321f40)}
+.gear-card .gear-showcase>.rod-visual{position:absolute;inset:auto;left:6%;top:30.5%;width:88%;height:39%;transform:rotate(-32deg);filter:drop-shadow(2px 7px 3px #312b264d);z-index:1}
+.gear-card .gear-showcase .rod-image{object-fit:contain}
+.gear-card .gear-showcase>.rod-visual.image-missing{transform:none;top:5%;height:78%}
+.gear-display-caption{position:absolute;top:12px;left:6px;right:6px;display:flex;align-items:center;justify-content:center;gap:5px;font-size:9px;letter-spacing:1.1px;font-weight:700;color:#5d543d;z-index:2}
+.gear-display-caption .icon{width:13px;height:13px;letter-spacing:0}
+.gear-card .gear-specialty{font-size:13px;line-height:1.5;text-align:center;color:#574b34;min-height:0;margin:0 0 16px}
+.gear-comparison{padding:14px 12px 16px;background:#fff8e65c;border:1px solid #ad966b66;border-radius:9px;box-shadow:inset 0 1px 4px #86643b0d}
+.gear-comparison>small{display:block;font-size:11px;color:#64553a;line-height:1.5;margin-bottom:12px;overflow-wrap:anywhere}
+.gear-gauge+.gear-gauge{margin-top:10px}
+.gear-gauge-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;line-height:1.5;margin-bottom:5px}
+.gear-gauge-heading>span:last-child{white-space:nowrap;font-variant-numeric:tabular-nums}
+.gear-gauge-heading b{font-size:13px;color:#342c1d}
+.gear-gauge-heading small{font-size:10px;color:#675e48}
+.gear-delta{display:inline-block;min-width:38px;text-align:right;font-style:normal;font-size:11px;font-weight:700;margin-left:6px}
+.gear-delta.gain{color:#356134}.gear-delta.loss{color:#a13e29}.gear-delta.equal{color:#675e48}
+.gear-track{height:10px;position:relative;border:1px solid #ac9874;border-radius:4px;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),#8b714b33 calc(10% - 1px) 10%),#d7cbb0;box-shadow:inset 0 1px 3px #5e4a2926}
+.gear-track>span{position:absolute;top:0;bottom:0}
+.gear-base{left:0;background:linear-gradient(#9c8661,#735d3f);border-radius:3px 0 0 3px}
+.gear-gain{background:repeating-linear-gradient(135deg,#ffffff20 0 3px,transparent 3px 7px),linear-gradient(#91b871,#588449);border-radius:0 3px 3px 0}
+.gear-lost{background:repeating-linear-gradient(135deg,#b873514a 0 3px,transparent 3px 6px);border-right:1px solid #b16c49}
+.gear-current-marker{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:#58432b;box-shadow:0 0 0 1px #fff3ca;z-index:1}
+.gear-gauge[data-stat=power] .gear-gain{animation:gear-upgrade-pulse 2.4s ease-in-out 2}
+@keyframes gear-upgrade-pulse{0%,100%{opacity:1}50%{opacity:.58}}
+.gear-card-footer{margin-top:auto;padding-top:16px}
+.gear-price-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.gear-coin{width:36px;height:36px;flex-shrink:0;border:2px solid #aa7b28;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 25%,#fff3bb,#e8bf58 58%,#b5822d);box-shadow:inset 0 0 0 2px #fbe398,0 3px 0 #876027,2px 4px 5px #6b492a30;color:#73501b}
+.gear-coin .icon{width:28px;height:28px;stroke-width:1.6}
+.gear-price{min-width:0;color:#674a21}
+.gear-price strong{display:block;font-size:21px;line-height:1.25;font-variant-numeric:tabular-nums}
+.gear-price strong small{font-size:12px;font-weight:400}
+.gear-price>span{display:block;font-size:10px;line-height:1.5;margin-top:3px;color:#66593f}
+.gear-price.is-short strong,.gear-price.is-short>span{color:#a33e25}
+.gear-card button.gear-buy{width:100%;min-height:52px;font-size:14px;padding:10px 12px;gap:8px;border:1px solid #a17b40;border-bottom:4px solid #7b562c;border-radius:10px;color:#49301b;background:linear-gradient(#f3d796,#d9ad64);box-shadow:inset 0 1px 0 #fff1ca,0 3px 0 #6e492e,inset 0 -1px #eaca89;text-shadow:0 1px #fff5}
+.gear-card button.gear-buy .icon{width:19px;height:19px}
+.gear-buy>.icon:last-child:not(:first-child){margin-left:auto}
+.gear-card button.gear-buy:hover:enabled{background:linear-gradient(#ffe4aa,#e5bb74);box-shadow:inset 0 1px #fff5d8,0 3px 0 #6e492e,0 5px 10px #6b492a30}
+.gear-card button.gear-buy:active:enabled{background:linear-gradient(#d6ac68,#ebc988);box-shadow:inset 0 2px 5px #69452c40,0 1px 0 #6e492e}
+.gear-card button.gear-buy:disabled{opacity:1;color:#756249;border-color:#b19b78;border-bottom-color:#9c8058;background:linear-gradient(#e9d8b5,#d5c3a0);box-shadow:inset 0 1px #fff4,0 2px 0 #9c805866;text-shadow:none}
+.gear-card button.gear-buy.is-owned{color:#38513b;background:linear-gradient(#dae1c4,#c5cfad);border-color:#8b9d74;border-bottom-color:#758460;box-shadow:inset 0 1px #fff5,0 2px 0 #61735355}
+.gear-card .rod-affiliate{display:flex;align-items:center;justify-content:center;gap:6px;width:fit-content;max-width:100%;min-height:44px;margin:8px auto -4px;padding:5px 8px;font-size:11px;line-height:1.5;color:#6c5535;text-decoration:none;border-radius:6px}
+.gear-card .rod-affiliate .icon{width:15px;height:15px}
+.gear-card .rod-affiliate:hover{background:#a17b4012;color:#46321a;text-decoration:underline;text-underline-offset:3px}
+.gear-card :focus-visible{outline:3px solid #315f50;outline-offset:3px}
+@media(max-width:1100px){.product-grid.rod-deck{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}}
+@media(max-width:600px){.product-grid.rod-deck{grid-template-columns:minmax(0,1fr);gap:24px}.rod-deck-heading{align-items:flex-start}.rod-deck-heading h2{font-size:25px}.rod-deck-heading p{font-size:12px}.rod-deck-count{padding:5px 7px;font-size:10px}.rod-deck-legend{font-size:10px;gap:7px;margin-bottom:20px}.rod-deck-legend small{width:100%;margin-left:0;font-size:10px}.product.gear-card{padding:18px}.gear-card .gear-title h3{font-size:25px;min-height:0}.gear-card .gear-showcase{margin-top:14px}.gear-card .gear-specialty{font-size:12px}.gear-card button.gear-buy{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.gear-gauge[data-stat=power] .gear-gain{animation:none}}
