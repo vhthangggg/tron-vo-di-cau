@@ -203,7 +203,12 @@ export class FishingGame{
     }else if(!getBait(this.player.bait).reusable){this.player.baits[this.player.bait]--;syncInventory(this.player);}
     this.player.casts++;this.castId++;this.phase='casting';this.wait=0;this.quietHint=false;this.quietHintOffered=false;this.stageTime=0;this.target=null;this.hooked=null;this.retrieving=false;this.releaseHands();this.snagProgress=0;this.snagTriggered=false;
     this.castHabitat=castHabitat(this.spotData,this.castTarget||this.defaultCastPoint);
-    this.snagScheduled=this.environmentRandom()<snagChance(this.map,this.spot,this.player.rig.depth,this.rod.tech,this.castHabitat);this.snagAt=.85+this.environmentRandom()*.85;
+    const lureProfile=getBait(this.player.bait).lureProfile;
+    const snagDepth=lureProfile?lureProfile.minDepthM:this.player.rig.depth;
+    const baseSnag=snagChance(this.map,this.spot,snagDepth,this.rod.tech,this.castHabitat);
+    const lureSnagFactor=lureProfile?clamp(lureProfile.snagRisk/42,.2,1.65):1;
+    this.snagScheduled=this.environmentRandom()<clamp(baseSnag*lureSnagFactor,0,.95);
+    this.snagAt=.85+this.environmentRandom()*.85;
     this.baitPoint={...(this.castTarget||this.defaultCastPoint)};this.castFlight={t:0,duration:.72,start:{x:.16,y:.72},end:{...this.baitPoint}};this.signal='quiet';this.message='Đang vung cần…';this.changed();return true;
   }
   habitatAffinity(def,f){
@@ -218,9 +223,24 @@ export class FishingGame{
     if(def.fight?.style==='crab'||def.group==='amphibian')score*=1+h.near*2+h.cover;
     return score;
   }
-  eligible(f){const def=getFish(f.fishId);return !f.caught&&f.spot===this.spot&&f.suspicion<.6&&def.baits.includes(this.player.bait)&&def.tech.includes(this.rod.tech)&& (this.rod.tech==='lure'||Math.abs(f.depth-this.player.rig.depth)<.65);}
+  eligible(f){
+    const def=getFish(f.fishId),bait=getBait(this.player.bait);
+    // Existing species use generic lure IDs; a catalog lure maps to a compatible style.
+    const baitId=bait.fishBaitAlias||bait.id;
+    return !f.caught&&f.spot===this.spot&&f.suspicion<.6
+      &&(def.baits.includes(this.player.bait)||def.baits.includes(baitId))
+      &&def.tech.includes(this.rod.tech)
+      &&(this.rod.tech==='lure'||Math.abs(f.depth-this.player.rig.depth)<.65);
+  }
   pickTarget(candidates){
-    const weighted=candidates.map(f=>({f,w:this.habitatAffinity(getFish(f.fishId),f)*(getFish(f.fishId).baitWeights?.[this.player.bait]||1)/(Math.hypot(f.x-this.baitPoint.x,f.y-this.baitPoint.y)+.07)}));
+    const bait=getBait(this.player.bait),profile=bait.lureProfile;
+    const compatibleId=bait.fishBaitAlias||this.player.bait;
+    const weighted=candidates.map(f=>({
+      f,w:this.habitatAffinity(getFish(f.fishId),f)
+        *(getFish(f.fishId).baitWeights?.[compatibleId]||1)
+        *(profile?(.7+profile.attraction/100*.5)*(profile.targetFishIds.includes(f.fishId)?1.2:1):1)
+        /(Math.hypot(f.x-this.baitPoint.x,f.y-this.baitPoint.y)+.07)
+    }));
     const total=weighted.reduce((n,v)=>n+v.w,0);let roll=this.random()*total;
     for(const v of weighted){roll-=v.w;if(roll<=0)return v.f;}return weighted[0]?.f||null;
   }
