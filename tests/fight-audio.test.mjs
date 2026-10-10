@@ -42,7 +42,7 @@ test('Friction is continuous and drag is a distinct impulsive, bounded loop',()=
 
 test('Bamboo has softer fibre friction while carbon poles sing and reels use ratchet drag',()=>{
  const bamboo=fightSoundState(fight('bamboo')),carbon=fightSoundState(fight('rod_23'));
- assert.equal(bamboo.timbre,'material:line_basic');assert.equal(carbon.timbre,'material:line_basic');
+ assert.equal(bamboo.timbre,'material:line_basic:bamboo');assert.equal(carbon.timbre,'material:line_basic');
  const a=new Float32Array(48000),b=new Float32Array(48000);fillFightSound(a,24000,'bamboo');fillFightSound(b,24000,'line');assert.notDeepEqual(a,b);assert(a.every(v=>Number.isFinite(v)&&Math.abs(v)<=1));
 });
 
@@ -55,7 +55,7 @@ test('All six line materials have unique audio profiles and stable PCM',()=>{
     const samples=new Float32Array(24000);
     fillMaterialLineSound(samples,24000,state.profile);
     assert(samples.every(v=>Number.isFinite(v)&&Math.abs(v)<=1));
-    assert.equal(samples[0],0);assert.equal(samples.at(-1),0);
+    assert.equal(Math.abs(samples[0]),0);assert.equal(Math.abs(samples.at(-1)),0);
     waveforms.push(samples.slice(100,110));
   }
   assert.equal(new Set(waveforms.map(a=>a.join(','))).size,6);

@@ -32,7 +32,7 @@ let server,browser;
   checks.push('Trusted gesture unlocks real Web Audio; taut-line PCM reaches output, pressure changes gain, slack silences, 1000 updates reuse one source');
 
   await page.evaluate(async()=>{f.rod=(await import('/src/content.js')).getRod('bamboo');f.tension=68;a.fishing(f);});
-  await page.waitForFunction(()=>a.voices.size===1&&a.fightVoice?.timbre==='bamboo');await page.waitForFunction(()=>rms()>.001);
+  await page.waitForFunction(()=>a.voices.size===1&&a.fightVoice?.timbre==='material:line_basic:bamboo');await page.waitForFunction(()=>rms()>.001);
   assert(await page.evaluate(()=>a.fightVoice.source.buffer!==first.source.buffer));
   checks.push('Bamboo uses a separate audible soft fibre-creak buffer, while carbon uses taut-line friction');
 
@@ -70,11 +70,11 @@ let server,browser;
   checks.push('Pause, effects=0, mute and background stop loops; return resumes only when fishing runs');
 
   await page.evaluate(async()=>{f.rod=(await import('/src/content.js')).getRod('rod_28');f.surge=true;a.fishing(f);});
-  await page.waitForFunction(()=>a.voices.size===1&&a.fightVoice?.kind==='drag');await page.waitForFunction(()=>rms()>.001);
+  await page.waitForFunction(()=>a.voices.size===2&&a.fightVoice?.kind==='drag'&&a.lineVoice?.timbre==='material:line_basic');await page.waitForFunction(()=>rms()>.001);
   assert(await page.evaluate(()=>a.fightVoice.source.buffer!==first.source.buffer));
   await page.evaluate(()=>{window.drag=a.fightVoice;f.tension=55;f.surge=false;f.velocity={x:0,y:.1};a.fishing(f);});await page.waitForFunction(()=>a.fightVoice.gain.gain.value<.001);
   await page.evaluate(()=>{f.surge=true;a.fishing(f);});assert(await page.evaluate(()=>a.fightVoice.source===drag.source));
-  await page.evaluate(()=>{for(let i=0;i<500;i++){f.surge=i%2===0;a.fishing(f);}});assert(await page.evaluate(()=>a.voices.size===1));
+  await page.evaluate(()=>{for(let i=0;i<500;i++){f.surge=i%2===0;a.fishing(f);}});assert(await page.evaluate(()=>a.voices.size===2));
   checks.push('Reel drag uses distinct audible ratchet PCM; stationary spool is silent, renewed payout reuses its loop');
 
   for(const phase of ['landed','failed','idle','waiting','snag']){

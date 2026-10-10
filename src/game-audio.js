@@ -34,7 +34,7 @@ export function lineSoundState(game){
   const motion=clamp(Math.hypot(game.velocity?.x||0,game.velocity?.y||0)/.35);
   const load=clamp(Math.sqrt(Math.max(0,game.hooked?.weight||0)/Math.max(.1,game.rod.power))/1.3);
   const active=tension>.28&&(motion>.08||game.surge||game.pulling);
-  return {kind:'line',timbre:'material:'+id,profile,
+  return {kind:'line',timbre:'material:'+id+(game.rod.id==='bamboo'?':bamboo':''),profile,
     level:active?(.055+Math.max(0,tension-.28)*.19+motion*.045+load*.035):0,
     rate:.72+motion*.44+tension*.26,
     frequency:(850+tension*1050+motion*370)*profile.tone};
@@ -199,7 +199,18 @@ export class GameAudio{
   }
   startFightSound(kind,timbre=kind){
     const c=this.ctx,key='fight:'+timbre;let buffer=this.buffers.get(key);
-    if(!buffer){buffer=c.createBuffer(1,c.sampleRate*2,c.sampleRate);fillFightSound(buffer.getChannelData(0),c.sampleRate,timbre==='carbon'?'line':timbre);this.buffers.set(key,buffer);}
+    if(!buffer){
+      buffer=c.createBuffer(1,c.sampleRate*2,c.sampleRate);
+      const materialId=timbre.startsWith('material:')?timbre.split(':')[1]:null;
+      const material=materialId&&LINE_AUDIO_PROFILES[materialId];
+      if(material){
+        const profile=timbre.endsWith(':bamboo')
+          ?{...material,tone:material.tone*.82,air:material.air*.65,flutter:Math.min(1,material.flutter+.12)}
+          :material;
+        fillMaterialLineSound(buffer.getChannelData(0),c.sampleRate,profile);
+      }else fillFightSound(buffer.getChannelData(0),c.sampleRate,timbre==='carbon'?'line':timbre);
+      this.buffers.set(key,buffer);
+    }
     const source=c.createBufferSource();source.buffer=buffer;source.loop=true;
     const filter=c.createBiquadFilter();filter.type=kind==='drag'?'highpass':'bandpass';filter.Q.value=kind==='drag'?.6:timbre==='bamboo'?.5:.8;
     const voice=this.voice(source,{duration:Infinity,level:.0001,filter});
@@ -237,8 +248,8 @@ export class GameAudio{
     const s=this.getSettings();
     const state=s.sound&&clamp(s.effects??.7)&&this.ctx.state==='running'&&!this.paused&&!this.hidden?fightSoundState(game):null;
     if(!state){this.stopFightSound();return;}
-    if(state.kind==='drag')this.updateLineSound(game);else this.stopLineSound();
     if(this.fightVoice&&this.fightVoice.timbre!==state.timbre)this.stopFightSound();
+    if(state.kind==='drag')this.updateLineSound(game);else this.stopLineSound();
     this.setFightMix(state.level>0||(this.lineVoice!=null));
     if(!this.fightVoice&&state.level>0)this.startFightSound(state.kind,state.timbre);
     const v=this.fightVoice;if(!v)return;
