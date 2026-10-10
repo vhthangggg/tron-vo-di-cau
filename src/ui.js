@@ -225,7 +225,7 @@ function shopStats(player,kind,item){
 function shopButton(player,kind,item,owned=false){const away=player.systems?.trip?.active;return `<button data-buy="${kind}" data-id="${item.id}" ${owned||away||player.coins<item.price?'disabled':''} class="${owned?'':'green'}">${owned?`${icon('check')} Đã sở hữu`:away?'Về nhà để mua':player.coins<item.price?'Thiếu xu':'Mua '+money(item.price)}</button>`;}
 function lureAffiliate(lure){
  if(!/^https:\/\/(?:s\.shopee\.vn|shopee\.vn)\//.test(lure.affiliateUrl||''))return '';
- return '<a class="rod-affiliate" href="'+esc(lure.affiliateUrl)+'" target="_blank" rel="sponsored noopener noreferrer" aria-label="Xem thực tế">'+icon('bag')+'Xem thực tế'+icon('arrow')+'</a>';
+ return '<a class="rod-affiliate" href="'+esc(lure.affiliateUrl)+'" target="_blank" rel="sponsored noopener noreferrer" aria-label="Xem bản thật">'+icon('bag')+'Xem bản thật'+icon('arrow')+'</a>';
 }
 function rodAffiliate(rod){
  if(!/^https:\/\/(?:s\.shopee\.vn|shopee\.vn)\//.test(rod.affiliateUrl||''))return '';
