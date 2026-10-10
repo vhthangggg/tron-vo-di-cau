@@ -1510,7 +1510,7 @@ export const RODS = [
       "cast": 1
     },
     "curve": "parabolic",
-    "affiliateUrl": null,
+    "affiliateUrl": "https://s.shopee.vn/1LgQ7cqpO8",
     "fictional": false
   },
   {
@@ -2192,7 +2192,7 @@ export const RODS = [
       "cast": 9
     },
     "curve": "adaptive_progressive",
-    "affiliateUrl": null,
+    "affiliateUrl": "https://s.shopee.vn/9fLY3rWvss",
     "fictional": true
   },
   {
